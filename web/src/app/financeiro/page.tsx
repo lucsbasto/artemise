@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Landmark, Wallet, Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -121,7 +122,7 @@ export default function FinanceiroPage() {
         <Card>
           <CardHeader>
             <CardTitle>A receber</CardTitle>
-            <button className="text-sm text-brand hover:underline">Ver todas</button>
+            <Link href="/contas-a-receber" className="text-sm text-brand hover:underline">Ver todas</Link>
           </CardHeader>
           <CardContent className="pt-2">
             <ul className="space-y-2.5">
@@ -139,7 +140,7 @@ export default function FinanceiroPage() {
         <Card>
           <CardHeader>
             <CardTitle>A pagar</CardTitle>
-            <button className="text-sm text-brand hover:underline">Ver todas</button>
+            <Link href="/contas-a-pagar" className="text-sm text-brand hover:underline">Ver todas</Link>
           </CardHeader>
           <CardContent className="pt-2">
             <ul className="space-y-2.5">

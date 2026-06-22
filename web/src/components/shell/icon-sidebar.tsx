@@ -8,6 +8,7 @@ import {
   Calendar,
   Users,
   Stethoscope,
+  Truck,
   ShoppingCart,
   DollarSign,
   BadgePercent,
@@ -27,7 +28,8 @@ const TOP: Item[] = [
   { icon: Home, label: "Início", href: "/" },
   { icon: Calendar, label: "Agenda", href: "/agenda" },
   { icon: Users, label: "Pacientes", href: "/pacientes" },
-  { icon: Stethoscope, label: "Profissionais" },
+  { icon: Stethoscope, label: "Profissionais", href: "/profissionais" },
+  { icon: Truck, label: "Fornecedores", href: "/fornecedores" },
   { icon: ShoppingCart, label: "Vendas" },
   { icon: DollarSign, label: "Financeiro", href: "/financeiro" },
   { icon: BadgePercent, label: "Marketing" },
@@ -41,21 +43,31 @@ const BOTTOM: Item[] = [{ icon: Settings, label: "Configurações" }];
 
 function NavIcon({ item, active }: { item: Item; active: boolean }) {
   const Icon = item.icon;
+  const dead = !item.href;
   const inner = (
     <span
       className={cn(
         "group relative grid size-10 place-items-center rounded-xl transition-colors",
-        active ? "bg-brand text-white" : "text-muted-2 hover:bg-brand-50 hover:text-brand"
+        active && "bg-brand text-white",
+        !active && !dead && "text-muted-2 hover:bg-brand-50 hover:text-brand",
+        dead && "cursor-not-allowed text-muted-2/60 hover:bg-background"
       )}
     >
       <Icon className="size-[19px]" strokeWidth={2} />
       {item.badge && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-brand" />}
       <span className="pointer-events-none absolute left-12 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-white group-hover:block">
         {item.label}
+        {dead && <span className="ml-1 text-white/50">· Em breve</span>}
       </span>
     </span>
   );
-  return item.href ? <Link href={item.href}>{inner}</Link> : <button>{inner}</button>;
+  return item.href ? (
+    <Link href={item.href}>{inner}</Link>
+  ) : (
+    <button aria-disabled className="cursor-not-allowed">
+      {inner}
+    </button>
+  );
 }
 
 export function IconSidebar() {
