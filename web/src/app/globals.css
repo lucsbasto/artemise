@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f4f6;
+  --surface: #ffffff;
+  --foreground: #1f2430;
+  --muted: #6b7280;
+  --muted-2: #9ca3af;
+  --border: #eceef2;
+
+  /* brand */
+  --brand: #7c3aed;
+  --brand-600: #6d28d9;
+  --brand-50: #f4effe;
+  --brand-100: #ede5fd;
+
+  /* semantic */
+  --success: #16a34a;
+  --success-soft: #4ade80;
+  --danger: #ef4444;
+  --danger-soft: #fca5a5;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-border: var(--border);
+
+  --color-brand: var(--brand);
+  --color-brand-600: var(--brand-600);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-sans);
+  --radius-card: 16px;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* thin scrollbars for the app shell */
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #d8dbe2;
+  border-radius: 9999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}

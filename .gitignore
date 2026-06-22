@@ -1,0 +1,16 @@
+# OMC local state
+.omc/
+
+# Claude local settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (root-level safety net)
+node_modules/
+
+# Env
+.env
+.env.*
