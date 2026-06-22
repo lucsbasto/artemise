@@ -129,6 +129,113 @@ export const patients: Patient[] = [
   },
 ];
 
+/* ---------- Profissionais (10) / Fornecedores (11) — tabela de contatos ---------- */
+
+export type Contact = {
+  id: string;
+  nome: string;
+  tipo: string;
+  etiquetas: string[];
+  identificador: string;
+  ativo: boolean;
+  avatarTone: "brand" | "green";
+};
+
+export const profissionais: Contact[] = [
+  {
+    id: "1",
+    nome: "Lucas Bastos",
+    tipo: "Profissional",
+    etiquetas: [],
+    identificador: "+55 (63) 98502-1531",
+    ativo: false,
+    avatarTone: "green",
+  },
+];
+
+export const fornecedores: Contact[] = [
+  {
+    id: "1",
+    nome: "Fornecedor de exemplo",
+    tipo: "Fornecedor",
+    etiquetas: [],
+    identificador: "+55 (11) 98888-7777",
+    ativo: true,
+    avatarTone: "brand",
+  },
+];
+
+/* ---------- Contas a receber (13) / a pagar (14) — tabela financeira ---------- */
+
+export type FinanceStatus = "Recebido" | "Pago" | "Em atraso" | "Em aberto";
+
+export type FinanceRow = {
+  vencimento: string;
+  liquidacao: string; // Recebimento / Pagamento
+  atrasado?: boolean; // ⏱ + barra vermelha
+  descricao: string;
+  categoria: string;
+  situacao: FinanceStatus;
+  valor: number;
+};
+
+export type FinanceKpi = { label: string; valor: number; tone: "danger" | "warning" | "info" | "success"; ativo?: boolean };
+
+export const contasReceber = {
+  periodo: "23/05/2026 - 22/06/2026",
+  total: 15,
+  kpis: [
+    { label: "Vencidos", valor: 780, tone: "danger" },
+    { label: "Vencem hoje", valor: 1400, tone: "warning" },
+    { label: "A vencer", valor: 0, tone: "info" },
+    { label: "A receber", valor: 0, tone: "info" },
+    { label: "Recebidos", valor: 6320, tone: "success" },
+    { label: "Total do período", valor: 8500, tone: "info", ativo: true },
+  ] as FinanceKpi[],
+  rows: [
+    { vencimento: "17/06", liquidacao: "17/06", descricao: "Massagem Relaxante", categoria: "Receitas d...", situacao: "Recebido", valor: 150 },
+    { vencimento: "17/06", liquidacao: "17/06", descricao: "Preenchimento Facial", categoria: "Receitas d...", situacao: "Recebido", valor: 1800 },
+    { vencimento: "17/06", liquidacao: "17/06", atrasado: true, descricao: "Venda de Cremes Anti-idade", categoria: "Receitas d...", situacao: "Em atraso", valor: 350 },
+    { vencimento: "18/06", liquidacao: "18/06", atrasado: true, descricao: "Drenagem Linfática", categoria: "Receitas d...", situacao: "Em atraso", valor: 180 },
+    { vencimento: "18/06", liquidacao: "18/06", descricao: "Microagulhamento", categoria: "Receitas d...", situacao: "Recebido", valor: 600 },
+    { vencimento: "19/06", liquidacao: "19/06", descricao: "Limpeza de Pele", categoria: "Receitas d...", situacao: "Recebido", valor: 200 },
+    { vencimento: "19/06", liquidacao: "19/06", descricao: "Venda de Produtos Cosméticos", categoria: "Receitas d...", situacao: "Recebido", valor: 120 },
+    { vencimento: "19/06", liquidacao: "19/06", descricao: "Peeling Físico", categoria: "Receitas d...", situacao: "Recebido", valor: 300 },
+    { vencimento: "19/06", liquidacao: "19/06", atrasado: true, descricao: "Tratamento Acne", categoria: "Receitas d...", situacao: "Em atraso", valor: 250 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Peeling Químico", categoria: "Receitas d...", situacao: "Recebido", valor: 350 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Toxina Botulínica", categoria: "Receitas d...", situacao: "Recebido", valor: 1300 },
+    { vencimento: "22/06", liquidacao: "22/06", atrasado: true, descricao: "Consulta de Avaliações", categoria: "Receitas d...", situacao: "Em aberto", valor: 100 },
+    { vencimento: "22/06", liquidacao: "22/06", atrasado: true, descricao: "Laser CO2", categoria: "Receitas d...", situacao: "Em aberto", valor: 900 },
+  ] as FinanceRow[],
+};
+
+export const contasPagar = {
+  periodo: "23/05/2026 - 22/06/2026",
+  total: 13,
+  kpis: [
+    { label: "Vencidos", valor: 500, tone: "danger" },
+    { label: "Vencem hoje", valor: 2880, tone: "warning" },
+    { label: "A vencer", valor: 0, tone: "info" },
+    { label: "Pagos", valor: 3889, tone: "success" },
+    { label: "Total do período", valor: 7269, tone: "info", ativo: true },
+  ] as FinanceKpi[],
+  rows: [
+    { vencimento: "17/06", liquidacao: "17/06", descricao: "Aluguel da Clínica", categoria: "Outras de...", situacao: "Pago", valor: 1200 },
+    { vencimento: "17/06", liquidacao: "17/06", descricao: "Material de Escritório", categoria: "Outras de...", situacao: "Pago", valor: 150 },
+    { vencimento: "17/06", liquidacao: "17/06", atrasado: true, descricao: "Renovação de Licenças", categoria: "Outras de...", situacao: "Em atraso", valor: 500 },
+    { vencimento: "18/06", liquidacao: "18/06", descricao: "Água", categoria: "Outras de...", situacao: "Pago", valor: 400 },
+    { vencimento: "18/06", liquidacao: "18/06", descricao: "Manutenção de Equipamentos", categoria: "Outras de...", situacao: "Pago", valor: 800 },
+    { vencimento: "18/06", liquidacao: "18/06", descricao: "Limpeza", categoria: "Outras de...", situacao: "Pago", valor: 300 },
+    { vencimento: "20/06", liquidacao: "20/06", descricao: "Software de Gestão", categoria: "Outras de...", situacao: "Pago", valor: 238 },
+    { vencimento: "20/06", liquidacao: "20/06", descricao: "Internet", categoria: "Outras de...", situacao: "Pago", valor: 300 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Energia Elétrica", categoria: "Outras de...", situacao: "Pago", valor: 500 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Serviços Contábeis", categoria: "Outras de...", situacao: "Em aberto", valor: 750 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Telefone Fixo", categoria: "Outras de...", situacao: "Em aberto", valor: 150 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Marketing Digital", categoria: "Outras de...", situacao: "Em aberto", valor: 1000 },
+    { vencimento: "22/06", liquidacao: "22/06", descricao: "Assessoria Jurídica", categoria: "Outras de...", situacao: "Em aberto", valor: 980 },
+  ] as FinanceRow[],
+};
+
 /* ---------- Financeiro Visão Geral (12-financeiro-visao-geral.md) ---------- */
 
 export const financeKpis = [
