@@ -1,4 +1,4 @@
-# Tasks: UI Core
+# Tasks: UI Core  — STATUS: ✅ todas concluídas (build + lint verdes)
 
 Legenda: [P] = paralelizável. Gate de cada task: `npm run build` continua passando ou ao menos `tsc`/import resolve.
 

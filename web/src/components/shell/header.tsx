@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Menu, Search, HelpCircle, Bell, MessageCircle } from "lucide-react";
 import { currentUser } from "@/lib/mock";
 
@@ -13,14 +14,14 @@ export function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         <Menu className="size-5" />
       </button>
 
-      <a href="/" className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2">
         <span className="grid size-7 place-items-center rounded-full border-2 border-brand text-brand">
           <span className="block size-2.5 rounded-full border-2 border-brand" />
         </span>
         <span className="text-[15px] tracking-tight text-foreground">
           clínica<span className="font-bold">experts</span>
         </span>
-      </a>
+      </Link>
 
       <div className="ml-auto flex items-center gap-1">
         <button className="grid size-9 place-items-center rounded-full bg-pink-50 text-green-500 hover:bg-pink-100" aria-label="WhatsApp">

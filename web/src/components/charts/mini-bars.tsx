@@ -2,17 +2,22 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 /** Barras verticais simples roxas (dias movimentados, faturamento, por profissional). */
+// Formatadores serializáveis (não podem ser passados como função por Server Components)
+const FORMATTERS: Record<string, (v: number) => string> = {
+  "currency-k": (v) => (v >= 1000 ? `R$ ${v / 1000}k` : `R$ ${v}`),
+};
+
 export function MiniBars({
   data,
   height = 150,
   showY = false,
-  yFormatter,
+  yFormat,
   highlightLast,
 }: {
   data: { label: string; valor: number }[];
   height?: number;
   showY?: boolean;
-  yFormatter?: (v: number) => string;
+  yFormat?: keyof typeof FORMATTERS;
   highlightLast?: boolean;
 }) {
   return (
@@ -24,7 +29,7 @@ export function MiniBars({
           axisLine={false}
           tick={showY ? { fontSize: 10, fill: "#9ca3af" } : false}
           width={showY ? 40 : 0}
-          tickFormatter={yFormatter}
+          tickFormatter={yFormat ? FORMATTERS[yFormat] : undefined}
         />
         <Bar dataKey="valor" radius={[4, 4, 0, 0]} barSize={26}>
           {data.map((_, i) => (
