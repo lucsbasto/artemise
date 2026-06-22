@@ -16,7 +16,9 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - **L2** — Recharts `ResponsiveContainer` emite warning `width(-1)` no prerender estático — inofensivo, hidrata no client.
 
 ## Concluído
-- Feature **ui-core**: AppShell + 4 telas (Dashboard, Agenda, Pacientes, Financeiro). `npm run build` ✅ · `npm run lint` ✅. Ver `.specs/features/ui-core/`.
+- Feature **ui-core**: AppShell + 4 telas (Dashboard, Agenda, Pacientes, Financeiro). `.specs/features/ui-core/`.
+- Feature **ui-tables**: +4 telas — Profissionais (10), Fornecedores (11), Contas a receber (13), Contas a pagar (14). Componentes reusáveis `ContactsTable`, `FinanceTable`, `StatusBadge`. 8/36 telas.
+- Ambas no `origin/main` (PR #1 mergeado via hook OMC). build ✅ lint ✅.
 
 ## Pendências / próximos
 - Verificação visual pixel-a-pixel pelo usuário (abrir http://localhost:3000).
