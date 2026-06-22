@@ -161,7 +161,7 @@ export default function DashboardPage() {
                 data={reports.faturamentoComparado.map((f) => ({ label: f.label, valor: f.valor }))}
                 showY
                 highlightLast
-                yFormatter={(v) => (v >= 1000 ? `R$ ${v / 1000}k` : `R$ ${v}`)}
+                yFormat="currency-k"
               />
             </CardContent>
           </Card>
