@@ -20,6 +20,13 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Feature **ui-tables**: +4 telas — Profissionais (10), Fornecedores (11), Contas a receber (13), Contas a pagar (14). Componentes reusáveis `ContactsTable`, `FinanceTable`, `StatusBadge`. 8/36 telas.
 - Ambas no `origin/main` (PR #1 mergeado via hook OMC). build ✅ lint ✅.
 
+## Sessão / retomada
+- **PAUSADO em 2026-06-22.** Usuário vai retomar em OUTRA sessão.
+- **Estado limpo:** `origin/main` @ `4392e68`, working tree limpo, build ✅ lint ✅.
+- **Retomar com:** `cd web && npm run dev` → http://localhost:3000.
+- **Próximo passo combinado:** lote 3 de telas. Candidatos: Ficha do paciente (spec 08, complexa — abas) OU cadastros (Procedimentos 32, Pacotes 34, Estoque 24).
+- Branches locais `feat/ui-core` e `feat/ui-tables` já mergeadas (podem ser deletadas).
+
 ## Pendências / próximos
 - Verificação visual pixel-a-pixel pelo usuário (abrir http://localhost:3000).
 - Ajustar rótulos dia-da-semana em `weekDays` (mock) se divergir do screenshot.
