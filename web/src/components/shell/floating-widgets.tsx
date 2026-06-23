@@ -1,3 +1,4 @@
+"use client";
 import { ChevronRight, Plus, Sparkles } from "lucide-react";
 import { currentUser } from "@/lib/mock";
 
@@ -20,7 +21,11 @@ export function FloatingWidgets() {
 
       {/* canto inferior direito */}
       <div className="fixed bottom-5 right-5 z-20 flex flex-col items-center gap-3">
-        <button className="grid size-12 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600" aria-label="Criar">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("artemise:novo-evento"))}
+          className="grid size-12 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600"
+          aria-label="Criar"
+        >
           <Plus className="size-6" />
         </button>
         <button

@@ -11,6 +11,20 @@ export default function AgendaPage() {
   const [modalAberto, setModalAberto] = React.useState(false);
   const [drawerAberto, setDrawerAberto] = React.useState(false);
 
+  // Abre o drawer de detalhe quando chega de /inicio com ?detalhe=... (leitura única da URL no mount).
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- leitura única de sistema externo (URL) no mount
+    if (params.get("detalhe")) setDrawerAberto(true);
+  }, []);
+
+  // FAB global (canto inferior direito) dispara a criação de evento.
+  React.useEffect(() => {
+    const onCreate = () => setModalAberto(true);
+    window.addEventListener("artemise:novo-evento", onCreate);
+    return () => window.removeEventListener("artemise:novo-evento", onCreate);
+  }, []);
+
   return (
     <div className="flex h-full">
       <AgendaSubmenu />
@@ -57,7 +71,10 @@ export default function AgendaPage() {
 
         {/* Grade semanal */}
         <div className="flex flex-1 flex-col overflow-hidden bg-surface">
-          <WeekGrid onEventClick={() => setDrawerAberto(true)} />
+          <WeekGrid
+            onEventClick={() => setDrawerAberto(true)}
+            onSlotClick={() => setModalAberto(true)}
+          />
         </div>
       </div>
 

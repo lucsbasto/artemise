@@ -14,7 +14,10 @@ function hourToTop(hour: number): number {
   return (hour - GRID_START) * HOUR_HEIGHT;
 }
 
-export function WeekGrid({ onEventClick }: { onEventClick?: (id: string) => void } = {}) {
+export function WeekGrid({
+  onEventClick,
+  onSlotClick,
+}: { onEventClick?: (id: string) => void; onSlotClick?: () => void } = {}) {
   const { items: eventos } = useCollection(eventosStore);
   return (
     <div className="flex flex-1 overflow-hidden rounded-b-[var(--radius-card)]">
@@ -69,8 +72,9 @@ export function WeekGrid({ onEventClick }: { onEventClick?: (id: string) => void
                 {dayHours.map((h, idx) => (
                   <div
                     key={h}
+                    onClick={() => onSlotClick?.()}
                     className={cn(
-                      "border-b border-border",
+                      "border-b border-border cursor-pointer hover:bg-brand-50/40 transition-colors",
                       idx % 2 === 0 ? "bg-surface" : "bg-background/60"
                     )}
                     style={{ height: HOUR_HEIGHT }}

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, EyeOff, ExternalLink, User, ClipboardList, Clock, LayoutGrid } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ClipboardList, Clock, LayoutGrid } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, InfoDot } from "@/components/ui/card";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { TextTabs, IconTabs } from "@/components/ui/tabs";
@@ -7,8 +7,9 @@ import { CashflowChart, CashflowLegend } from "@/components/charts/cashflow-char
 import { Donut } from "@/components/charts/donut";
 import { MiniBars, SingleBar } from "@/components/charts/mini-bars";
 import { Heatmap } from "@/components/charts/heatmap";
-import { brl } from "@/lib/utils";
-import { cashflowDaily, balance, next24h, reports } from "@/lib/mock";
+import { BalancoCard } from "@/components/inicio/balanco-card";
+import { Next24hCard } from "@/components/inicio/next24h-card";
+import { cashflowDaily, balance, reports } from "@/lib/mock";
 
 export default function DashboardPage() {
   return (
@@ -47,56 +48,13 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle info>Balanço</CardTitle>
-              <EyeOff className="size-4 text-brand" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-xl font-semibold text-success">{brl(balance.saldoRealizado)}</p>
-                <p className="text-xs text-muted-2">de {brl(balance.saldoPrevisto)} previstos</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="flex items-center gap-1 text-sm text-muted">
-                    Entradas: <ExternalLink className="size-3 text-brand" />
-                  </p>
-                  <p className="font-semibold text-success">{brl(balance.entradasRealizadas)}</p>
-                  <p className="text-xs text-muted-2">de {brl(balance.entradasPrevistas)} previsto</p>
-                </div>
-                <div>
-                  <p className="flex items-center gap-1 text-sm text-muted">
-                    Saídas: <ExternalLink className="size-3 text-brand" />
-                  </p>
-                  <p className="font-semibold text-danger">{brl(balance.saidasRealizadas)}</p>
-                  <p className="text-xs text-muted-2">de {brl(balance.saidasPrevistas)} previsto</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <BalancoCard />
         </div>
       </div>
 
       {/* Meio: agendamentos 24h + aniversariantes */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Agendamentos das próximas 24h</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {next24h.map((a) => (
-              <div key={a.paciente} className="rounded-lg border-l-4 border-brand bg-brand-50/50 px-3 py-2">
-                <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <span className="size-1.5 rounded-full bg-brand" />
-                  {a.paciente}
-                </p>
-                <p className="text-sm text-muted">{a.procedimento}</p>
-                <p className="text-xs text-muted-2">{a.horario}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <Next24hCard />
 
         <Card>
           <CardHeader>
