@@ -7,7 +7,6 @@ export default function ContasAReceberPage() {
       titulo="Contas a receber"
       breadcrumb={["Financeiro", "Contas a receber"]}
       periodo={contasReceber.periodo}
-      total={contasReceber.total}
       kpis={contasReceber.kpis}
       rows={contasReceber.rows}
       liquidacaoLabel="Recebimento"

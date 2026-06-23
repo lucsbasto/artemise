@@ -6,7 +6,6 @@ export default function FluxoMensalPage() {
     <FluxoCaixaView
       granularidade="mes"
       titulo="Fluxo de caixa mensal"
-      periodoLabel="2026"
       points={fluxoMensalPoints}
     />
   );

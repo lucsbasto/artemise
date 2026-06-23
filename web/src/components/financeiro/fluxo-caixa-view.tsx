@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react";
 import { ChevronDown, X } from "lucide-react";
 import { brl, cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -6,6 +7,7 @@ import { CashflowChart } from "@/components/charts/cashflow-chart";
 import { PeriodSelector } from "@/components/financeiro/period-selector";
 import { fluxoRows } from "@/lib/financeiro-calc";
 import { fluxoFiltrosGerais, type CashflowPoint } from "@/lib/mock";
+import { type DateRange } from "@/components/ui/date-picker";
 
 const LEGEND = [
   { label: "Entradas", color: "#22c55e" },
@@ -20,14 +22,17 @@ function num(v: number) {
 export function FluxoCaixaView({
   granularidade,
   titulo,
-  periodoLabel,
   points,
 }: {
   granularidade: "dia" | "mes";
   titulo: string;
-  periodoLabel: string;
   points: CashflowPoint[];
 }) {
+  const [range, setRange] = React.useState<DateRange | undefined>({
+    from: new Date(2026, 4, 23),
+    to: new Date(2026, 5, 22),
+  });
+
   const rows = fluxoRows(points, 0);
   const colLabel = granularidade === "dia" ? "Dia" : "Mês";
 
@@ -46,7 +51,7 @@ export function FluxoCaixaView({
 
         {/* Filtros */}
         <div className="flex flex-wrap items-center gap-2 px-5 py-4">
-          <PeriodSelector label={periodoLabel} />
+          <PeriodSelector range={range} onRangeChange={setRange} />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground">
             <span className="text-muted">Filtros gerais:</span>
             {fluxoFiltrosGerais}

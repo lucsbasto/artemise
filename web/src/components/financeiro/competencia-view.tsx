@@ -1,9 +1,11 @@
 "use client";
+import * as React from "react";
 import { Search, ChevronDown, Settings, MoreVertical } from "lucide-react";
 import { cn, brl } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { FinanceKpiCards } from "@/components/financeiro/finance-kpi-cards";
 import { PeriodSelector } from "@/components/financeiro/period-selector";
+import { type DateRange } from "@/components/ui/date-picker";
 import type { CompetenciaData } from "@/lib/mock";
 
 function valorCell(v: number, tipo: "receita" | "despesa" | "saldo") {
@@ -13,6 +15,11 @@ function valorCell(v: number, tipo: "receita" | "despesa" | "saldo") {
 }
 
 export function CompetenciaView({ data }: { data: CompetenciaData }) {
+  const [range, setRange] = React.useState<DateRange | undefined>({
+    from: new Date(2026, 4, 23),
+    to: new Date(2026, 5, 22),
+  });
+
   const totalBruto = data.rows.reduce((a, r) => a + r.bruto, 0);
   const totalLiquido = data.rows.reduce((a, r) => a + r.liquido, 0);
 
@@ -32,7 +39,7 @@ export function CompetenciaView({ data }: { data: CompetenciaData }) {
 
         {/* Filtros */}
         <div className="flex flex-wrap items-center gap-2 px-5 py-4">
-          <PeriodSelector label={data.mes} />
+          <PeriodSelector range={range} onRangeChange={setRange} />
           <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
           <div className="relative ml-auto">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />

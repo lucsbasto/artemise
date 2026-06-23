@@ -1,3 +1,5 @@
+"use client";
+import * as React from "react";
 import {
   Info,
   MessageCircle,
@@ -13,6 +15,14 @@ import { EmptyFilter } from "@/components/comunicacao/canais-empty";
 
 /** Tela 28 — Canais de atendimento. Estado capturado: filtro Status: Ativo, lista vazia. */
 export function CanaisView() {
+  const [busca, setBusca] = React.useState("");
+  const [chipAtivo, setChipAtivo] = React.useState(true);
+
+  function limparFiltros() {
+    setBusca("");
+    setChipAtivo(false);
+  }
+
   return (
     <div className="mx-auto max-w-[1100px] p-5">
       <h1 className="text-lg font-semibold text-foreground">Canais de Atendimento</h1>
@@ -41,18 +51,34 @@ export function CanaisView() {
 
         {/* filtros */}
         <div className="flex flex-wrap items-center gap-2 px-5 py-4">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-sm font-medium text-brand">
-            Status: Ativo
-            <button aria-label="Remover filtro" className="text-brand/70 hover:text-brand">
-              <X className="size-3.5" />
-            </button>
-          </span>
+          {chipAtivo && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-sm font-medium text-brand">
+              Status: Ativo
+              <button
+                aria-label="Remover filtro"
+                className="text-brand/70 hover:text-brand"
+                onClick={() => setChipAtivo(false)}
+              >
+                <X className="size-3.5" />
+              </button>
+            </span>
+          )}
           <button className="text-sm font-medium text-brand hover:underline">
             + Adicionar filtro
           </button>
+          {(busca || chipAtivo) && (
+            <button
+              onClick={limparFiltros}
+              className="text-sm font-medium text-muted-2 hover:text-foreground hover:underline"
+            >
+              Limpar filtros
+            </button>
+          )}
           <div className="relative ml-auto">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
             <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar"
               className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
             />

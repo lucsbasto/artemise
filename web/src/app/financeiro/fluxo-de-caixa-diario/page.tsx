@@ -6,7 +6,6 @@ export default function FluxoDiarioPage() {
     <FluxoCaixaView
       granularidade="dia"
       titulo="Fluxo de caixa diário"
-      periodoLabel="Junho de 2026"
       points={fluxoDiarioPoints}
     />
   );

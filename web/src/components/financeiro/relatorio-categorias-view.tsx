@@ -7,6 +7,7 @@ import { Pie100 } from "@/components/charts/donut";
 import { PeriodSelector } from "@/components/financeiro/period-selector";
 import { percentual, totalNode, totalGrupo } from "@/lib/financeiro-calc";
 import type { CategoriaReportNode } from "@/lib/mock";
+import { type DateRange } from "@/components/ui/date-picker";
 
 function GrupoTabela({
   titulo,
@@ -82,12 +83,15 @@ function GrupoTabela({
 export function RelatorioCategoriasView({
   receitas,
   despesas,
-  periodoLabel,
 }: {
   receitas: CategoriaReportNode[];
   despesas: CategoriaReportNode[];
-  periodoLabel: string;
 }) {
+  const [range, setRange] = React.useState<DateRange | undefined>({
+    from: new Date(2026, 4, 23),
+    to: new Date(2026, 5, 22),
+  });
+
   const segReceitas = receitas.map((n) => ({ nome: n.nome, valor: totalNode(n), cor: n.cor }));
   const segDespesas = despesas.map((n) => ({ nome: n.nome, valor: totalNode(n), cor: n.cor }));
 
@@ -106,7 +110,7 @@ export function RelatorioCategoriasView({
 
         {/* Filtros */}
         <div className="flex flex-wrap items-center gap-2 px-5 py-4">
-          <PeriodSelector label={periodoLabel} />
+          <PeriodSelector range={range} onRangeChange={setRange} />
         </div>
 
         {/* Donuts */}

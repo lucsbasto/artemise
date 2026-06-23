@@ -7,7 +7,6 @@ export default function ContasAPagarPage() {
       titulo="Contas a pagar"
       breadcrumb={["Financeiro", "Contas a pagar"]}
       periodo={contasPagar.periodo}
-      total={contasPagar.total}
       kpis={contasPagar.kpis}
       rows={contasPagar.rows}
       liquidacaoLabel="Pagamento"
