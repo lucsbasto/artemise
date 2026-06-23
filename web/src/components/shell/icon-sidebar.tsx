@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Item = { icon: React.ElementType; label: string; href?: string; badge?: boolean };
+type Item = { icon: React.ElementType; label: string; href?: string; badge?: boolean; match?: string };
 
 const TOP: Item[] = [
   { icon: Crown, label: "Planos / Novidades" },
@@ -33,13 +33,15 @@ const TOP: Item[] = [
   { icon: ShoppingCart, label: "Vendas" },
   { icon: DollarSign, label: "Financeiro", href: "/financeiro" },
   { icon: BadgePercent, label: "Marketing" },
-  { icon: Package, label: "Estoque" },
+  { icon: Package, label: "Estoque", href: "/estoque/items", match: "/estoque" },
   { icon: MessageSquare, label: "Mensagens" },
   { icon: Target, label: "Integrações", badge: true },
   { icon: ShieldCheck, label: "Segurança" },
 ];
 
-const BOTTOM: Item[] = [{ icon: Settings, label: "Configurações" }];
+const BOTTOM: Item[] = [
+  { icon: Settings, label: "Configurações", href: "/configuracoes/procedimentos", match: "/configuracoes" },
+];
 
 function NavIcon({ item, active }: { item: Item; active: boolean }) {
   const Icon = item.icon;
@@ -72,17 +74,19 @@ function NavIcon({ item, active }: { item: Item; active: boolean }) {
 
 export function IconSidebar() {
   const pathname = usePathname();
-  const isActive = (href?: string) =>
-    !!href && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const isActive = (it: Item) => {
+    if (it.match) return pathname.startsWith(it.match);
+    return !!it.href && (it.href === "/" ? pathname === "/" : pathname.startsWith(it.href));
+  };
 
   return (
     <nav className="flex w-16 shrink-0 flex-col items-center gap-1 border-r border-border bg-surface py-3">
       {TOP.map((it) => (
-        <NavIcon key={it.label} item={it} active={isActive(it.href)} />
+        <NavIcon key={it.label} item={it} active={isActive(it)} />
       ))}
       <div className="mt-auto">
         {BOTTOM.map((it) => (
-          <NavIcon key={it.label} item={it} active={isActive(it.href)} />
+          <NavIcon key={it.label} item={it} active={isActive(it)} />
         ))}
       </div>
     </nav>

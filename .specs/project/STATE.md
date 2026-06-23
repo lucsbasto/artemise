@@ -19,6 +19,7 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Feature **ui-core**: AppShell + 4 telas (Dashboard, Agenda, Pacientes, Financeiro). `.specs/features/ui-core/`.
 - Feature **ui-tables**: +4 telas — Profissionais (10), Fornecedores (11), Contas a receber (13), Contas a pagar (14). Componentes reusáveis `ContactsTable`, `FinanceTable`, `StatusBadge`. 8/36 telas.
 - Ambas no `origin/main` (PR #1 mergeado via hook OMC). build ✅ lint ✅.
+- Feature **cadastros** (lote 3): +3 telas — Procedimentos (32), Pacotes (34), Estoque/Controle (24), cada uma com modal de cadastro/edição. Novos primitives reusáveis: `ListShell`, `Modal`, `Field`/`Input`/`Select`. Helper `lib/pacote-calc.ts` (cálculo de total de pacote, testável). Submenu de Estoque (`app/estoque/layout.tsx`). Rotas reais: `/configuracoes/procedimentos`, `/configuracoes/pacotes`, `/estoque/items`. Sidebar Configurações/Estoque navegáveis. **11/36 telas.** `.specs/features/cadastros/`. build ✅ lint ✅. Branch `feat/cadastros`.
 
 ## Sessão / retomada
 - **PAUSADO em 2026-06-22.** Usuário vai retomar em OUTRA sessão.
