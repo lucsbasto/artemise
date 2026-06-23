@@ -34,7 +34,7 @@ const TOP: Item[] = [
   { icon: DollarSign, label: "Financeiro", href: "/financeiro" },
   { icon: BadgePercent, label: "Marketing" },
   { icon: Package, label: "Estoque", href: "/estoque/items", match: "/estoque" },
-  { icon: MessageSquare, label: "Mensagens" },
+  { icon: MessageSquare, label: "Mensagens", href: "/comunicacao/canais-de-comunicacao", match: "/comunicacao" },
   { icon: Target, label: "Integrações", badge: true },
   { icon: ShieldCheck, label: "Segurança" },
 ];
