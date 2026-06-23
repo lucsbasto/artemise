@@ -1,3 +1,5 @@
+"use client";
+import * as React from "react";
 import { Search, Info, Settings, MoreVertical } from "lucide-react";
 import { brl, cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -21,6 +23,16 @@ function valorClass(v: number) {
 }
 
 export function AbaFinanceiro() {
+  const [query, setQuery] = React.useState("");
+
+  const rows = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return fichaFinanceiroRows;
+    return fichaFinanceiroRows.filter((r) =>
+      r.descricao.toLowerCase().includes(q)
+    );
+  }, [query]);
+
   return (
     <div className="rounded-[var(--radius-card)] border border-border bg-surface shadow-sm">
       {/* header */}
@@ -35,6 +47,8 @@ export function AbaFinanceiro() {
         <div className="relative ml-auto">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
           <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar"
             className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
           />
@@ -84,7 +98,7 @@ export function AbaFinanceiro() {
             </tr>
           </thead>
           <tbody>
-            {fichaFinanceiroRows.map((row, i) => (
+            {rows.map((row, i) => (
               <tr
                 key={i}
                 className={cn(

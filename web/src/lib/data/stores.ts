@@ -16,6 +16,8 @@ import {
   metodosPagamento,
   fichasAtendimento,
   modelosDocumento,
+  weekEvents,
+  type WeekEvent,
 } from "@/lib/mock";
 
 export const profissionaisStore = createCollection(profissionais);
@@ -28,3 +30,20 @@ export const categoriasContasStore = createCollection(categoriasContas);
 export const metodosPagamentoStore = createCollection(metodosPagamento);
 export const fichasAtendimentoStore = createCollection(fichasAtendimento);
 export const modelosDocumentoStore = createCollection(modelosDocumento);
+
+/* ---------- Eventos da agenda (calendário) ---------- */
+export type WeekEventItem = WeekEvent & { id: string };
+export const eventosStore = createCollection<WeekEventItem>(
+  weekEvents.map((e, i) => ({ ...e, id: `ev-${i + 1}` }))
+);
+
+/* ---------- Orçamentos (por paciente, ficha) ---------- */
+export type Orcamento = {
+  id: string;
+  cliente: string;
+  vendedor: string;
+  itens: number;
+  total: number;
+  data: string;
+};
+export const orcamentosStore = createCollection<Orcamento>([]);

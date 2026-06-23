@@ -20,7 +20,15 @@ import {
   currentUser,
   recorrenciasEvento,
   statusEventoOpcoes,
+  weekDays,
 } from "@/lib/mock";
+import { useCollection, nextId } from "@/lib/data/create-collection";
+import { eventosStore } from "@/lib/data/stores";
+
+function parseHora(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h ?? 9) + (m ?? 0) / 60;
+}
 
 // Modal único compartilhado parametrizado por tipo (spec 06 §Visão geral da arquitetura).
 type TipoEvento = "consultation" | "lock" | "reminder" | "promotion";
@@ -40,6 +48,12 @@ export function NovoEventoModal({ open, onClose }: { open: boolean; onClose: () 
   const [financeiroAberto, setFinanceiroAberto] = React.useState(false);
   const [itens, setItens] = React.useState<ItemLinha[]>([{ nome: "", qtd: 1 }]);
 
+  // Campos do formulário de agendamento
+  const [paciente, setPaciente] = React.useState("");
+  const [horaInicio, setHoraInicio] = React.useState("15:29");
+  const [horaFim, setHoraFim] = React.useState("15:59");
+
+  const { add } = useCollection(eventosStore);
   const meta = TIPOS.find((t) => t.key === tipo)!;
 
   function addItem() {
@@ -52,6 +66,22 @@ export function NovoEventoModal({ open, onClose }: { open: boolean; onClose: () 
     setItens((prev) => prev.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   }
 
+  function handleSalvar() {
+    if (tipo === "consultation") {
+      const hoje = weekDays.find((d) => d.hoje) ?? weekDays[0];
+      const procedimento = itens[0]?.nome || "Consulta";
+      add({
+        id: nextId("ev"),
+        dayNum: hoje.num,
+        start: parseHora(horaInicio),
+        end: parseHora(horaFim),
+        paciente: paciente.trim() || "Novo agendamento",
+        procedimento,
+      });
+    }
+    onClose();
+  }
+
   return (
     <Modal
       open={open}
@@ -59,7 +89,7 @@ export function NovoEventoModal({ open, onClose }: { open: boolean; onClose: () 
       title={meta.titulo}
       size="lg"
       footer={
-        <Button variant="brand" className="px-8" onClick={onClose}>
+        <Button variant="brand" className="px-8" onClick={handleSalvar}>
           Salvar
         </Button>
       }
@@ -85,7 +115,24 @@ export function NovoEventoModal({ open, onClose }: { open: boolean; onClose: () 
       </Field>
 
       <div className="mt-5 flex flex-col gap-4">
-        {tipo === "consultation" && <FormAgendamento itens={itens} addItem={addItem} removeItem={removeItem} patchItem={patchItem} dataAberta={dataAberta} setDataAberta={setDataAberta} financeiroAberto={financeiroAberto} setFinanceiroAberto={setFinanceiroAberto} />}
+        {tipo === "consultation" && (
+          <FormAgendamento
+            itens={itens}
+            addItem={addItem}
+            removeItem={removeItem}
+            patchItem={patchItem}
+            dataAberta={dataAberta}
+            setDataAberta={setDataAberta}
+            financeiroAberto={financeiroAberto}
+            setFinanceiroAberto={setFinanceiroAberto}
+            paciente={paciente}
+            setPaciente={setPaciente}
+            horaInicio={horaInicio}
+            setHoraInicio={setHoraInicio}
+            horaFim={horaFim}
+            setHoraFim={setHoraFim}
+          />
+        )}
         {tipo === "lock" && <FormBloqueio />}
         {tipo === "reminder" && <FormLembrete />}
         {tipo === "promotion" && <FormEvento />}
@@ -104,6 +151,12 @@ function FormAgendamento({
   setDataAberta,
   financeiroAberto,
   setFinanceiroAberto,
+  paciente,
+  setPaciente,
+  horaInicio,
+  setHoraInicio,
+  horaFim,
+  setHoraFim,
 }: {
   itens: ItemLinha[];
   addItem: () => void;
@@ -113,6 +166,12 @@ function FormAgendamento({
   setDataAberta: (v: boolean) => void;
   financeiroAberto: boolean;
   setFinanceiroAberto: (v: boolean) => void;
+  paciente: string;
+  setPaciente: (v: string) => void;
+  horaInicio: string;
+  setHoraInicio: (v: string) => void;
+  horaFim: string;
+  setHoraFim: (v: string) => void;
 }) {
   return (
     <>
@@ -121,7 +180,11 @@ function FormAgendamento({
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Paciente">
-          <Input placeholder="Pesquise/Selecione" />
+          <Input
+            placeholder="Pesquise/Selecione"
+            value={paciente}
+            onChange={(e) => setPaciente(e.target.value)}
+          />
         </Field>
         <Field label="Profissional" required>
           <Select defaultValue={currentUser.nome}>
@@ -198,8 +261,8 @@ function FormAgendamento({
               ))}
             </Select>
           </Field>
-          <TimeField label="Início" defaultValue="15:29" />
-          <TimeField label="Fim" defaultValue="15:59" />
+          <TimeField label="Início" value={horaInicio} onChange={setHoraInicio} />
+          <TimeField label="Fim" value={horaFim} onChange={setHoraFim} />
         </div>
         <Banner />
       </Collapsible>
@@ -333,11 +396,25 @@ function DataField({ label = "Dia" }: { label?: string }) {
   );
 }
 
-function TimeField({ label, defaultValue }: { label: string; defaultValue: string }) {
+function TimeField({
+  label,
+  defaultValue,
+  value,
+  onChange,
+}: {
+  label: string;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (v: string) => void;
+}) {
   return (
     <Field label={label} required>
       <div className="relative">
-        <Input defaultValue={defaultValue} />
+        {value !== undefined ? (
+          <Input value={value} onChange={(e) => onChange?.(e.target.value)} />
+        ) : (
+          <Input defaultValue={defaultValue} />
+        )}
         <Clock className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
       </div>
     </Field>

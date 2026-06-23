@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { weekDays, dayHours, weekEvents, nowLineHour } from "@/lib/mock";
+import { weekDays, dayHours, nowLineHour } from "@/lib/mock";
+import { useCollection } from "@/lib/data/create-collection";
+import { eventosStore } from "@/lib/data/stores";
 
 // Total hours displayed: 08:00–22:00 = 14 slots
 const HOUR_HEIGHT = 64; // px per hour
@@ -12,7 +14,8 @@ function hourToTop(hour: number): number {
   return (hour - GRID_START) * HOUR_HEIGHT;
 }
 
-export function WeekGrid() {
+export function WeekGrid({ onEventClick }: { onEventClick?: (id: string) => void } = {}) {
+  const { items: eventos } = useCollection(eventosStore);
   return (
     <div className="flex flex-1 overflow-hidden rounded-b-[var(--radius-card)]">
       {/* Hour gutter */}
@@ -75,18 +78,19 @@ export function WeekGrid() {
                 ))}
 
                 {/* Events for this day */}
-                {weekEvents
+                {eventos
                   .filter((ev) => ev.dayNum === day.num)
-                  .map((ev, i) => {
+                  .map((ev) => {
                     const top = hourToTop(ev.start);
                     const height = (ev.end - ev.start) * HOUR_HEIGHT;
-                    const startLabel = `${String(ev.start).padStart(2, "0")}:00`;
-                    const endLabel = `${String(ev.end).padStart(2, "0")}:00`;
+                    const startLabel = `${String(Math.floor(ev.start)).padStart(2, "0")}:${String(Math.round((ev.start % 1) * 60)).padStart(2, "0")}`;
+                    const endLabel = `${String(Math.floor(ev.end)).padStart(2, "0")}:${String(Math.round((ev.end % 1) * 60)).padStart(2, "0")}`;
                     return (
                       <div
-                        key={i}
+                        key={ev.id}
                         className="absolute inset-x-1 overflow-hidden rounded-md border-l-[3px] border-brand-600 bg-brand px-2 py-1 shadow-sm cursor-pointer hover:brightness-95 transition-[filter]"
-                        style={{ top, height: height - 2 }}
+                        style={{ top, height: Math.max(height - 2, 20) }}
+                        onClick={() => onEventClick?.(ev.id)}
                       >
                         <p className="truncate text-[11px] font-semibold text-white leading-tight">
                           {ev.paciente}

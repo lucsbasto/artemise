@@ -19,6 +19,7 @@ import {
   itensOrcamento,
   metodosPagamentoOrcamento,
 } from "@/lib/mock";
+import type { Orcamento } from "@/lib/data/stores";
 
 type Modo = "personalizado" | "pacote";
 // Desconto do orçamento: "none" = "Sem desconto ou uso de saldo" (spec §Desconto).
@@ -34,7 +35,15 @@ const linhaVazia = (): ItemPacoteDraft => ({
 
 type CondicaoDraft = { metodo: string; valor: number };
 
-export function OrcamentoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function OrcamentoModal({
+  open,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSave?: (o: Omit<Orcamento, "id">) => void;
+}) {
   const [modo, setModo] = React.useState<Modo>("personalizado");
   const [cliente, setCliente] = React.useState(fichaPaciente.nome);
   const [vendedor, setVendedor] = React.useState(currentUser.nome);
@@ -90,7 +99,16 @@ export function OrcamentoModal({ open, onClose }: { open: boolean; onClose: () =
       size="lg"
       footer={
         <button
-          onClick={onClose}
+          onClick={() => {
+            onSave?.({
+              cliente,
+              vendedor,
+              itens: itens.length,
+              total,
+              data: "22/06/2026",
+            });
+            onClose();
+          }}
           className="inline-flex h-9 items-center justify-center rounded-lg bg-brand px-8 text-sm font-medium text-white transition-colors hover:bg-brand/90"
         >
           Salvar

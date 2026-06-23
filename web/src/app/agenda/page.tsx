@@ -1,9 +1,16 @@
-import { ChevronLeft, ChevronRight, ChevronDown, Sparkles } from "lucide-react";
+"use client";
+import * as React from "react";
+import { ChevronLeft, ChevronRight, ChevronDown, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekGrid } from "@/components/agenda/week-grid";
 import { AgendaSubmenu } from "@/components/agenda/agenda-submenu";
+import { NovoEventoModal } from "@/components/agenda/novo-evento-modal";
+import { EventoDrawer } from "@/components/agenda/evento-drawer";
 
 export default function AgendaPage() {
+  const [modalAberto, setModalAberto] = React.useState(false);
+  const [drawerAberto, setDrawerAberto] = React.useState(false);
+
   return (
     <div className="flex h-full">
       <AgendaSubmenu />
@@ -28,6 +35,12 @@ export default function AgendaPage() {
 
           {/* Lado direito */}
           <div className="ml-auto flex items-center gap-2">
+            {/* Novo agendamento */}
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setModalAberto(true)}>
+              <Plus className="size-4" />
+              Novo agendamento
+            </Button>
+
             {/* Seletor de visualização */}
             <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground hover:bg-background transition-colors">
               Semana
@@ -44,9 +57,12 @@ export default function AgendaPage() {
 
         {/* Grade semanal */}
         <div className="flex flex-1 flex-col overflow-hidden bg-surface">
-          <WeekGrid />
+          <WeekGrid onEventClick={() => setDrawerAberto(true)} />
         </div>
       </div>
+
+      <NovoEventoModal open={modalAberto} onClose={() => setModalAberto(false)} />
+      <EventoDrawer open={drawerAberto} onClose={() => setDrawerAberto(false)} />
     </div>
   );
 }

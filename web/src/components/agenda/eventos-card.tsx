@@ -17,7 +17,14 @@ import { eventosPeriodo, eventosRows } from "@/lib/mock";
 // Eventos / Sala de espera (spec 05) — estado vazio capturado ("Oops, nada foi encontrado!").
 export function EventosCard() {
   const [modal, setModal] = React.useState(false);
+  const [busca, setBusca] = React.useState("");
+  const [periodoAtivo, setPeriodoAtivo] = React.useState(true);
   const vazio = eventosRows.length === 0;
+
+  function limparFiltros() {
+    setBusca("");
+    setPeriodoAtivo(false);
+  }
 
   return (
     <div className="rounded-[var(--radius-card)] border border-border bg-surface shadow-sm">
@@ -28,15 +35,21 @@ export function EventosCard() {
 
       {/* filtros + busca */}
       <div className="flex flex-wrap items-center gap-2 px-5 py-4">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-background px-3 py-1 text-sm text-foreground">
-          Período: {eventosPeriodo}
-          <X className="size-3.5 text-muted-2" />
-        </span>
+        {periodoAtivo && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-background px-3 py-1 text-sm text-foreground">
+            Período: {eventosPeriodo}
+            <button aria-label="Remover filtro de período" onClick={() => setPeriodoAtivo(false)}>
+              <X className="size-3.5 text-muted-2" />
+            </button>
+          </span>
+        )}
         <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
         <div className="relative ml-auto">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
           <input
             placeholder="Buscar"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
             className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
           />
         </div>
@@ -53,7 +66,7 @@ export function EventosCard() {
             Os filtros selecionados não correspondem a nenhum registro.
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <Button variant="soft">Limpar filtros</Button>
+            <Button variant="soft" onClick={limparFiltros}>Limpar filtros</Button>
             <Button variant="brand" className="gap-1.5" onClick={() => setModal(true)}>
               <Plus className="size-4" /> Novo evento
             </Button>
