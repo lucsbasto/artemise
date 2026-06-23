@@ -526,3 +526,121 @@ export const fichaFinanceiroRows: FichaFinRow[] = [
 
 /* ---------- Usuário / app ---------- */
 export const currentUser = { nome: "Lucas Bastos", iniciais: "LB" };
+
+/* ---------- Agenda / Visão geral (03-agenda-visao-geral.md) ---------- */
+
+export const agendaPeriodo = "21/06/2026 - 27/06/2026";
+
+export type AgendaKpi = { label: string; valor: string; delta?: string; deltaUp?: boolean };
+export const agendaKpis: AgendaKpi[] = [
+  { label: "Total de agendamentos", valor: "1" },
+  { label: "Ociosidade", valor: "98 %", delta: "-2%", deltaUp: false },
+  { label: "Pacientes na lista de espera", valor: "0" },
+];
+
+// "Agendamentos por período" — barras (1 em 22 Jun) + linha de média
+export const agendaPorPeriodo = [
+  { label: "21 Jun", valor: 0 },
+  { label: "22 Jun", valor: 1 },
+  { label: "23 Jun", valor: 0 },
+  { label: "24 Jun", valor: 0 },
+  { label: "25 Jun", valor: 0 },
+  { label: "26 Jun", valor: 0 },
+  { label: "27 Jun", valor: 0 },
+];
+export const agendaMedia = 1;
+
+// status do enum de agendamento — cor + contagem + %
+export type AgendaStatus =
+  | "Agendado"
+  | "Confirmado"
+  | "Não compareceu"
+  | "Concluído"
+  | "Cancelado";
+
+export const agendaPorStatus: { status: AgendaStatus; total: number; pct: number }[] = [
+  { status: "Agendado", total: 0, pct: 0 },
+  { status: "Confirmado", total: 0, pct: 0 },
+  { status: "Não compareceu", total: 0, pct: 0 },
+  { status: "Concluído", total: 1, pct: 100 },
+  { status: "Cancelado", total: 0, pct: 0 },
+];
+
+export type RankItem = { nome: string; total: number; pct: number };
+export const agendaPacientesFreq: RankItem[] = [
+  { nome: "Clara Ribeiro (Paciente de exemplo)", total: 1, pct: 100 },
+];
+export const agendaProcedimentosFreq: RankItem[] = [
+  { nome: "Limpeza de Pele Profunda", total: 1, pct: 100 },
+];
+// ociosidade por sala / profissional → estado vazio
+export const agendaOciosidadeSala: RankItem[] = [];
+export const agendaOciosidadeProf: RankItem[] = [];
+
+// "Dias mais movimentados" — D S T Q Q S S, pico (1) na segunda (2ª col)
+export const agendaDiasMovimentados = [
+  { label: "D", valor: 0 },
+  { label: "S", valor: 1 },
+  { label: "T", valor: 0 },
+  { label: "Q", valor: 0 },
+  { label: "Q", valor: 0 },
+  { label: "S", valor: 0 },
+  { label: "S", valor: 0 },
+];
+// "Horários mais movimentados" — heatmap; só 14h ativo
+export const agendaHorarios = ["14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h", "22h"];
+export const agendaHorarioAtivo = "14h";
+
+/* ---------- Agenda / Relatório de agendamentos (04-...) ---------- */
+
+export type AgendaRow = {
+  procedimento: string;
+  paciente: string;
+  profissional: string;
+  iniciais: string;
+  duracaoMin: number;
+  agendadoPara: string; // DD/MM/AAAA HH:mm
+  status: AgendaStatus;
+};
+
+export const agendaRelatorioRows: AgendaRow[] = [
+  {
+    procedimento: "Limpeza de Pele Profunda",
+    paciente: "Clara Ribeiro (Paciente de exemplo)",
+    profissional: "Lucas Bastos",
+    iniciais: "LB",
+    duracaoMin: 60,
+    agendadoPara: "22/06/2026 14:00",
+    status: "Concluído",
+  },
+];
+
+// abas-resumo (contagem por status + Todos)
+export const agendaStatusTabs: { label: AgendaStatus | "Todos"; total: number }[] = [
+  { label: "Agendado", total: 0 },
+  { label: "Confirmado", total: 0 },
+  { label: "Não compareceu", total: 0 },
+  { label: "Concluído", total: 1 },
+  { label: "Cancelado", total: 0 },
+  { label: "Todos", total: 1 },
+];
+
+/* ---------- Agenda / Eventos — Sala de espera (05-...) ---------- */
+
+export const eventosPeriodo = "23/05/2026 - 22/06/2026";
+// estado capturado: lista vazia ("Oops, nada foi encontrado!")
+export const eventosRows: AgendaRow[] = [];
+
+// Detalhes do evento (drawer — 06-agenda-modais-evento.md)
+export const eventoDetalhe = {
+  tipo: "Agendamento",
+  dataHora: "Seg, 22 de jun de 2026 • 14:00 - 15:00",
+  profissional: "Lucas Bastos",
+  iniciais: "LB",
+  paciente: "Clara Ribeiro (Paciente de exemplo)",
+  status: "Concluído" as AgendaStatus,
+  procedimento: "1x Limpeza de Pele Profunda",
+  valor: 200,
+  recebimento: "Sem previsão de recebimento",
+  observacao: "Esse agendamento é uma consulta de exemplo.",
+};

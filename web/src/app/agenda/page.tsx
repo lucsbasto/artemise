@@ -1,37 +1,12 @@
 import { ChevronLeft, ChevronRight, ChevronDown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekGrid } from "@/components/agenda/week-grid";
-import { cn } from "@/lib/utils";
-
-const subMenuItems = [
-  { label: "Agenda", ativo: true, href: "/agenda" },
-  { label: "Visão geral", ativo: false, href: "/agenda/visao-geral" },
-  { label: "Relatório de agendamentos", ativo: false, href: "/agenda/relatorio" },
-  { label: "Eventos", ativo: false, href: "/agenda/eventos" },
-];
+import { AgendaSubmenu } from "@/components/agenda/agenda-submenu";
 
 export default function AgendaPage() {
   return (
     <div className="flex h-full">
-      {/* Submenu lateral do módulo */}
-      <aside className="w-52 shrink-0 border-r border-border bg-surface py-4">
-        <nav className="flex flex-col gap-0.5 px-2">
-          {subMenuItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                item.ativo
-                  ? "bg-brand-50 text-brand"
-                  : "text-muted hover:bg-background hover:text-foreground"
-              )}
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+      <AgendaSubmenu />
 
       {/* Área principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
