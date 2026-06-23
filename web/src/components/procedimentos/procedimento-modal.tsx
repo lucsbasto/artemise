@@ -12,13 +12,18 @@ import type { Procedimento } from "@/lib/mock";
 interface ProcedimentoModalProps {
   open: boolean;
   onClose: () => void;
+  onSave?: (data: Omit<Procedimento, "id">) => void;
   procedimento?: Procedimento;
 }
 
-export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoModalProps) {
+export function ProcedimentoModal({ open, onClose, onSave, procedimento }: ProcedimentoModalProps) {
   const isEdit = !!procedimento;
 
   const [nome, setNome] = React.useState(procedimento?.nome ?? "");
+  const [valor, setValor] = React.useState(procedimento ? String(procedimento.valor) : "");
+  const [duracao, setDuracao] = React.useState(procedimento ? String(procedimento.duracaoMin) : "");
+  const [categoria, setCategoria] = React.useState(procedimento?.categoria ?? "");
+  const [ativo, setAtivo] = React.useState(procedimento?.ativo ?? true);
   const [cor, setCor] = React.useState("");
   const [nomeError, setNomeError] = React.useState(false);
   const [corError, setCorError] = React.useState(false);
@@ -30,6 +35,13 @@ export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoM
     setNomeError(hasNomeError);
     setCorError(hasCorError);
     if (!hasNomeError && !hasCorError) {
+      onSave?.({
+        nome: nome.trim(),
+        valor: Number(valor) || 0,
+        duracaoMin: Number(duracao) || 0,
+        categoria: categoria || null,
+        ativo,
+      });
       onClose();
     }
   }
@@ -67,7 +79,13 @@ export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoM
         <div className="grid grid-cols-3 gap-4">
           <Field label="Valor de venda">
             <div className="flex gap-1">
-              <Input placeholder="R$ 0,00" className="flex-1" />
+              <Input
+                type="number"
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                placeholder="R$ 0,00"
+                className="flex-1"
+              />
               <Select className="w-24 shrink-0">
                 <option value="fixo">Fixo</option>
                 <option value="variavel">Variável</option>
@@ -111,7 +129,13 @@ export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoM
         <div className="grid grid-cols-3 gap-4">
           <Field label="Duração">
             <div className="flex items-center gap-2">
-              <Input type="number" placeholder="60" className="flex-1" />
+              <Input
+                type="number"
+                value={duracao}
+                onChange={(e) => setDuracao(e.target.value)}
+                placeholder="60"
+                className="flex-1"
+              />
               <span className="shrink-0 text-sm text-muted">minutos</span>
             </div>
           </Field>
@@ -124,7 +148,7 @@ export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoM
           </Field>
 
           <Field label="Categoria">
-            <Select>
+            <Select value={categoria ?? ""} onChange={(e) => setCategoria(e.target.value)}>
               <option value="">Pesquise/Selecione</option>
               {categoriasProcedimento.map((cat) => (
                 <option key={cat} value={cat}>
@@ -138,7 +162,7 @@ export function ProcedimentoModal({ open, onClose, procedimento }: ProcedimentoM
         {/* Toggle Ativo */}
         <Field label="Ativo" hint>
           <div className="flex items-center gap-3">
-            <Toggle defaultOn={procedimento?.ativo ?? true} tone="success" />
+            <Toggle checked={ativo} onChange={setAtivo} tone="success" />
           </div>
         </Field>
 

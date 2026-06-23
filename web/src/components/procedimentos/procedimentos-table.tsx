@@ -1,19 +1,38 @@
 "use client";
-import * as React from "react";
-import { Settings, MoreVertical } from "lucide-react";
+import { Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
 import { Toggle } from "@/components/ui/toggle";
+import { RowActions } from "@/components/ui/row-actions";
+import { useListControls } from "@/lib/use-list-controls";
 import { brl } from "@/lib/utils";
 import type { Procedimento } from "@/lib/mock";
 
 interface ProcedimentosTableProps {
   rows: Procedimento[];
   onEdit?: (p: Procedimento) => void;
+  onDelete?: (p: Procedimento) => void;
+  onToggle?: (p: Procedimento) => void;
 }
 
-export function ProcedimentosTable({ rows, onEdit }: ProcedimentosTableProps) {
+export function ProcedimentosTable({ rows, onEdit, onDelete, onToggle }: ProcedimentosTableProps) {
+  const c = useListControls(rows, { searchFields: ["nome", "categoria"], perPage: 25 });
+
   return (
-    <ListShell title="Procedimentos" count={rows.length} batchActions={false}>
+    <ListShell
+      title="Procedimentos"
+      count={c.total}
+      batchActions={false}
+      query={c.query}
+      onQueryChange={c.setQuery}
+      page={c.page}
+      pageCount={c.pageCount}
+      onPageChange={c.setPage}
+      perPage={c.perPage}
+      onPerPageChange={c.setPerPage}
+      total={c.total}
+      from={c.from}
+      to={c.to}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -29,7 +48,7 @@ export function ProcedimentosTable({ rows, onEdit }: ProcedimentosTableProps) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
+            {c.rows.map((p) => (
               <tr key={p.id} className="border-b border-border last:border-b-0">
                 <td className="px-5 py-3">
                   <button
@@ -44,15 +63,25 @@ export function ProcedimentosTable({ rows, onEdit }: ProcedimentosTableProps) {
                 <td className="py-3 text-foreground">{p.duracaoMin}</td>
                 <td className="py-3 text-foreground">{brl(p.valor)}</td>
                 <td className="py-3">
-                  <Toggle defaultOn={p.ativo} tone="success" />
+                  <Toggle checked={p.ativo} onChange={() => onToggle?.(p)} tone="success" />
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <button type="button" className="text-muted-2 hover:text-foreground">
-                    <MoreVertical className="ml-auto size-4" />
-                  </button>
+                  <RowActions
+                    actions={[
+                      { label: "Editar", onClick: () => onEdit?.(p) },
+                      { label: "Excluir", onClick: () => onDelete?.(p), danger: true },
+                    ]}
+                  />
                 </td>
               </tr>
             ))}
+            {c.rows.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-10 text-center text-sm text-muted-2">
+                  Nenhum registro encontrado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
