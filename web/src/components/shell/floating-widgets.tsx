@@ -22,7 +22,7 @@ export function FloatingWidgets() {
       {/* canto inferior direito */}
       <div className="fixed bottom-5 right-5 z-20 flex flex-col items-center gap-3">
         <button
-          onClick={() => window.dispatchEvent(new CustomEvent("artemise:novo-evento"))}
+          onClick={() => window.dispatchEvent(new CustomEvent("artemise:criar"))}
           className="grid size-12 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600"
           aria-label="Criar"
         >

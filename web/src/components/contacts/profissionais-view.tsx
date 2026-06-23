@@ -10,6 +10,13 @@ export function ProfissionaisView() {
   const { items, toggle, remove, add } = useCollection(profissionaisStore);
   const [modalOpen, setModalOpen] = React.useState(false);
 
+  // FAB global (+) abre o modal de novo profissional.
+  React.useEffect(() => {
+    const onCreate = () => setModalOpen(true);
+    window.addEventListener("artemise:criar", onCreate);
+    return () => window.removeEventListener("artemise:criar", onCreate);
+  }, []);
+
   function handleSave(data: Omit<Contact, "id">) {
     add({ id: nextId("prof"), ...data });
     setModalOpen(false);
@@ -23,15 +30,6 @@ export function ProfissionaisView() {
         onToggle={(c) => toggle(c.id, "ativo")}
         onDelete={(c) => remove(c.id)}
       />
-
-      <button
-        type="button"
-        onClick={() => setModalOpen(true)}
-        aria-label="Novo profissional"
-        className="fixed bottom-6 right-6 z-30 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600 transition-colors"
-      >
-        <span className="text-2xl leading-none">+</span>
-      </button>
 
       <ContactModal
         key={String(modalOpen)}

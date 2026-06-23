@@ -1,7 +1,5 @@
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { Card } from "@/components/ui/card";
-import { PatientsTable } from "@/components/pacientes/patients-table";
-import { patients } from "@/lib/mock";
+import { PacientesView } from "@/components/pacientes/pacientes-view";
 
 export default function PacientesPage() {
   return (
@@ -9,9 +7,7 @@ export default function PacientesPage() {
       <Breadcrumb items={["Contatos", "Pacientes"]} />
 
       <div className="mt-4">
-        <Card className="overflow-hidden">
-          <PatientsTable patients={patients} />
-        </Card>
+        <PacientesView />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { createCollection } from "./create-collection";
 import {
   profissionais,
   fornecedores,
+  patients,
   procedimentos,
   pacotes,
   itensEstoque,
@@ -22,6 +23,7 @@ import {
 
 export const profissionaisStore = createCollection(profissionais);
 export const fornecedoresStore = createCollection(fornecedores);
+export const pacientesStore = createCollection(patients);
 export const procedimentosStore = createCollection(procedimentos);
 export const pacotesStore = createCollection(pacotes);
 export const estoqueStore = createCollection(itensEstoque);

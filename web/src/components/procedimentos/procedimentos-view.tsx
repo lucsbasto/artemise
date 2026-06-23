@@ -15,10 +15,15 @@ export function ProcedimentosView() {
     setEditando(p);
     setModalOpen(true);
   }
-  function handleCreate() {
-    setEditando(undefined);
-    setModalOpen(true);
-  }
+  // FAB global (+) abre o modal de novo procedimento.
+  React.useEffect(() => {
+    const onCreate = () => {
+      setEditando(undefined);
+      setModalOpen(true);
+    };
+    window.addEventListener("artemise:criar", onCreate);
+    return () => window.removeEventListener("artemise:criar", onCreate);
+  }, []);
   function handleSave(data: Omit<Procedimento, "id">) {
     if (editando) update(editando.id, data);
     else add({ id: nextId("proc"), ...data });
@@ -33,15 +38,6 @@ export function ProcedimentosView() {
         onDelete={(p) => remove(p.id)}
         onToggle={(p) => toggle(p.id, "ativo")}
       />
-
-      <button
-        type="button"
-        onClick={handleCreate}
-        aria-label="Novo procedimento"
-        className="fixed bottom-6 right-6 z-30 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600 transition-colors"
-      >
-        <span className="text-2xl leading-none">+</span>
-      </button>
 
       <ProcedimentoModal
         key={`${modalOpen}-${editando?.id ?? "new"}`}

@@ -21,8 +21,8 @@ export default function AgendaPage() {
   // FAB global (canto inferior direito) dispara a criação de evento.
   React.useEffect(() => {
     const onCreate = () => setModalAberto(true);
-    window.addEventListener("artemise:novo-evento", onCreate);
-    return () => window.removeEventListener("artemise:novo-evento", onCreate);
+    window.addEventListener("artemise:criar", onCreate);
+    return () => window.removeEventListener("artemise:criar", onCreate);
   }, []);
 
   return (
