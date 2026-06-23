@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import * as React from "react";
 import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
@@ -13,6 +13,7 @@ import {
   type DescontoTipo,
 } from "@/lib/pacote-calc";
 import { validadesPacote, itensVendaveis } from "@/lib/mock";
+import type { Pacote } from "@/lib/mock";
 
 const itemVazio = (): ItemPacoteDraft => ({
   nome: "",
@@ -22,17 +23,24 @@ const itemVazio = (): ItemPacoteDraft => ({
   descontoTipo: "R$",
 });
 
-export function PacoteModal({
-  open,
-  onClose,
-}: {
+interface PacoteModalProps {
   open: boolean;
   onClose: () => void;
-}) {
+  onSave?: (data: Omit<Pacote, "id">) => void;
+  pacote?: Pacote;
+}
+
+export function PacoteModal({ open, onClose, onSave, pacote }: PacoteModalProps) {
+  const isEdit = !!pacote;
+
+  const [descricao, setDescricao] = React.useState(pacote?.descricao ?? "");
+  const [validade, setValidade] = React.useState(pacote?.validade ?? "Ilimitado");
+  const [ativo, setAtivo] = React.useState(pacote?.ativo ?? true);
+  const [descricaoError, setDescricaoError] = React.useState(false);
+
   const [itens, setItens] = React.useState<ItemPacoteDraft[]>([itemVazio()]);
   const [descontoGlobal, setDescontoGlobal] = React.useState(0);
-  const [descontoGlobalTipo, setDescontoGlobalTipo] =
-    React.useState<DescontoTipo>("R$");
+  const [descontoGlobalTipo, setDescontoGlobalTipo] = React.useState<DescontoTipo>("R$");
   const [descontoExpanded, setDescontoExpanded] = React.useState(false);
 
   function updateItem(index: number, patch: Partial<ItemPacoteDraft>) {
@@ -55,25 +63,50 @@ export function PacoteModal({
   const total = valorTotal(itens, descontoGlobal, descontoGlobalTipo);
   const semDesconto = descontoGlobal === 0;
 
+  function handleSalvar() {
+    const hasDescricaoError = descricao.trim() === "";
+    setDescricaoError(hasDescricaoError);
+    if (!hasDescricaoError) {
+      onSave?.({
+        descricao: descricao.trim(),
+        valorTotal: total,
+        validade,
+        ativo,
+      });
+      onClose();
+    }
+  }
+
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Novo pacote"
+      title={isEdit ? "Editar Pacote" : "Novo pacote"}
       size="lg"
       footer={
-        <Button variant="brand" onClick={onClose}>
+        <Button variant="brand" onClick={handleSalvar}>
           Salvar
         </Button>
       }
     >
-      {/* Linha cabecalho: Descricao, Validade, Ativo */}
+      {/* Linha cabeçalho: Descrição, Validade, Ativo */}
       <div className="grid grid-cols-3 gap-4">
-        <Field label="Descricao" required className="col-span-1">
-          <Input placeholder="Digite" />
+        <Field label="Descrição" required className="col-span-1">
+          <Input
+            value={descricao}
+            onChange={(e) => {
+              setDescricao(e.target.value);
+              if (e.target.value.trim()) setDescricaoError(false);
+            }}
+            placeholder="Digite"
+          />
+          {descricaoError && <span className="text-xs text-danger">Campo obrigatório</span>}
         </Field>
         <Field label="Validade" required className="col-span-1">
-          <Select defaultValue="Ilimitado">
+          <Select
+            value={validade}
+            onChange={(e) => setValidade(e.target.value)}
+          >
             {validadesPacote.map((v) => (
               <option key={v} value={v}>
                 {v}
@@ -83,19 +116,19 @@ export function PacoteModal({
         </Field>
         <Field label="Ativo" hint className="col-span-1">
           <div className="flex h-9 items-center">
-            <Toggle defaultOn tone="success" />
+            <Toggle checked={ativo} onChange={setAtivo} tone="success" />
           </div>
         </Field>
       </div>
 
-      {/* Observacoes */}
+      {/* Observações */}
       <div className="mt-4">
-        <Field label="Observacoes" hint>
+        <Field label="Observações" hint>
           <Input placeholder="Digite" />
         </Field>
       </div>
 
-      {/* Secao Procedimentos/Produtos */}
+      {/* Seção Procedimentos/Produtos */}
       <div className="mt-6">
         <p className="mb-3 text-sm font-semibold text-foreground">
           Procedimentos/Produtos
@@ -195,6 +228,7 @@ export function PacoteModal({
                   </td>
                   <td className="py-2">
                     <button
+                      type="button"
                       onClick={() => removeItem(idx)}
                       className="text-muted-2 hover:text-danger transition-colors"
                       aria-label="Remover item"
@@ -208,6 +242,7 @@ export function PacoteModal({
           </table>
         </div>
         <button
+          type="button"
           onClick={addItem}
           className="mt-2 text-sm font-medium text-brand hover:underline"
         >
@@ -215,9 +250,10 @@ export function PacoteModal({
         </button>
       </div>
 
-      {/* Secao Desconto (recolhivel) */}
+      {/* Seção Desconto (recolhível) */}
       <div className="mt-6 rounded-lg border border-border">
         <button
+          type="button"
           onClick={() => setDescontoExpanded((v) => !v)}
           className="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold text-foreground"
         >

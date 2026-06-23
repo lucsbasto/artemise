@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils";
 export function CategoriaProcModal({
   open,
   onClose,
+  onSave,
 }: {
   open: boolean;
   onClose: () => void;
+  onSave?: (nome: string, ativo: boolean) => void;
 }) {
   const [nome, setNome] = React.useState("");
+  const [ativo, setAtivo] = React.useState(true);
   const [error, setError] = React.useState(false);
 
   function handleCadastrar() {
@@ -22,6 +25,7 @@ export function CategoriaProcModal({
       setError(true);
       return;
     }
+    onSave?.(nome.trim(), ativo);
     onClose();
   }
 
@@ -51,7 +55,7 @@ export function CategoriaProcModal({
           {error && <span className="text-xs text-danger">Campo obrigatório</span>}
         </Field>
         <Field label="Ativo" hint className="shrink-0">
-          <Toggle defaultOn tone="success" />
+          <Toggle checked={ativo} onChange={setAtivo} tone="success" />
         </Field>
       </div>
     </Modal>

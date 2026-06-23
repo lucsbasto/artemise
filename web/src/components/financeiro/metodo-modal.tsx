@@ -8,13 +8,18 @@ import { tiposMetodo, type MetodoPagamento } from "@/lib/mock";
 export function MetodoModal({
   open,
   onClose,
+  onSave,
   metodo,
 }: {
   open: boolean;
   onClose: () => void;
+  onSave?: (data: Omit<MetodoPagamento, "id">) => void;
   metodo?: MetodoPagamento | null;
 }) {
   const [descricao, setDescricao] = React.useState(() => metodo?.descricao ?? "");
+  const [tipo, setTipo] = React.useState(() => metodo?.tipo ?? tiposMetodo[0]);
+  const [marca, setMarca] = React.useState(() => (metodo?.marca === "—" ? "" : metodo?.marca ?? ""));
+  const [ativo, setAtivo] = React.useState(() => metodo?.ativo ?? true);
   const [erro, setErro] = React.useState(false);
 
   const salvar = () => {
@@ -22,6 +27,7 @@ export function MetodoModal({
       setErro(true);
       return;
     }
+    onSave?.({ descricao: descricao.trim(), tipo, marca: marca.trim() || "—", ativo });
     onClose();
   };
 
@@ -43,21 +49,32 @@ export function MetodoModal({
     >
       <div className="flex flex-col gap-4">
         <Field label="Descrição" required>
-          <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: PIX" />
+          <Input
+            value={descricao}
+            onChange={(e) => {
+              setDescricao(e.target.value);
+              if (e.target.value.trim()) setErro(false);
+            }}
+            placeholder="Ex.: PIX"
+          />
           {erro && <span className="text-xs text-danger">Informe a descrição.</span>}
         </Field>
         <Field label="Tipo">
-          <Select defaultValue={metodo?.tipo ?? tiposMetodo[0]}>
+          <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
             {tiposMetodo.map((t) => (
               <option key={t}>{t}</option>
             ))}
           </Select>
         </Field>
         <Field label="Marca/Bandeira">
-          <Input defaultValue={metodo?.marca === "—" ? "" : metodo?.marca ?? ""} placeholder="Ex.: Visa, Master, Outra" />
+          <Input
+            value={marca}
+            onChange={(e) => setMarca(e.target.value)}
+            placeholder="Ex.: Visa, Master, Outra"
+          />
         </Field>
         <div className="flex items-center gap-2">
-          <Toggle defaultOn={metodo?.ativo ?? true} tone="success" />
+          <Toggle checked={ativo} onChange={setAtivo} tone="success" />
           <span className="text-sm font-medium text-foreground">Ativo</span>
         </div>
       </div>

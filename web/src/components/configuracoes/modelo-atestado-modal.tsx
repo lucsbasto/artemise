@@ -23,10 +23,13 @@ import {
   Maximize2,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
-import { Field, Input } from "@/components/ui/field";
+import { Field, Input, Select } from "@/components/ui/field";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { ModeloDocumento } from "@/lib/mock";
+
+const TIPOS_MODELO = ["Atestado", "Prescrição", "Declaração", "Outro"];
 
 /** Chip de variável dinâmica (placeholder lilás) usado no corpo do modelo. */
 function Var({ children }: { children: React.ReactNode }) {
@@ -61,13 +64,33 @@ const TOOLBAR = [
 export function ModeloAtestadoModal({
   open,
   onClose,
+  onSave,
   modelo,
 }: {
   open: boolean;
   onClose: () => void;
+  onSave?: (data: Omit<ModeloDocumento, "id">) => void;
   modelo?: ModeloDocumento;
 }) {
   const isEdit = !!modelo;
+
+  const [nome, setNome] = React.useState(modelo?.nome ?? "");
+  const [tipo, setTipo] = React.useState(modelo?.tipo ?? "");
+  const [ativo, setAtivo] = React.useState(modelo?.ativo ?? true);
+  const [nomeError, setNomeError] = React.useState(false);
+
+  function handleSalvar() {
+    if (!nome.trim()) {
+      setNomeError(true);
+      return;
+    }
+    onSave?.({
+      nome: nome.trim(),
+      tipo: tipo || "Atestado",
+      ativo,
+    });
+    onClose();
+  }
 
   return (
     <Modal
@@ -76,23 +99,40 @@ export function ModeloAtestadoModal({
       title={isEdit ? "Editar modelo de atestado" : "Novo modelo de atestado"}
       size="lg"
       footer={
-        <Button variant="brand" onClick={onClose}>
+        <Button variant="brand" onClick={handleSalvar}>
           {isEdit ? "Salvar" : "Cadastrar"}
         </Button>
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Nome + Ativo */}
+        {/* Nome + Tipo + Ativo */}
         <div className="flex items-start gap-4">
-          <Field label="Nome" className="flex-1">
-            <Input defaultValue={modelo?.nome ?? ""} placeholder="Digite" />
+          <Field label="Nome" required className="flex-1">
+            <Input
+              value={nome}
+              onChange={(e) => {
+                setNome(e.target.value);
+                if (e.target.value.trim()) setNomeError(false);
+              }}
+              placeholder="Digite"
+              className={cn(nomeError && "border-danger focus:border-danger")}
+            />
+            {nomeError && <span className="text-xs text-danger">Campo obrigatório</span>}
+          </Field>
+          <Field label="Tipo" className="w-40 shrink-0">
+            <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+              <option value="">Selecione</option>
+              {TIPOS_MODELO.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </Select>
           </Field>
           <Field label="Ativo" hint className="shrink-0">
-            <Toggle defaultOn={modelo?.ativo ?? true} tone="success" />
+            <Toggle checked={ativo} onChange={setAtivo} tone="success" />
           </Field>
         </div>
 
-        {/* Modelo* (editor) */}
+        {/* Modelo* (editor WYSIWYG mock) */}
         <Field label="Modelo" required>
           <div className="rounded-lg border border-border">
             {/* toolbar */}

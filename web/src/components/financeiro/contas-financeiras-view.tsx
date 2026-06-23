@@ -1,18 +1,23 @@
 "use client";
 import * as React from "react";
-import { Landmark, Wallet, Banknote, MoreVertical, Plus } from "lucide-react";
+import { Landmark, Wallet, Banknote, Plus } from "lucide-react";
 import { brl } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { RowActions } from "@/components/ui/row-actions";
 import { ContaModal } from "@/components/financeiro/conta-modal";
+import { useCollection, nextId } from "@/lib/data/create-collection";
+import { contasFinanceirasStore } from "@/lib/data/stores";
 import { somaSaldos } from "@/lib/financeiro-calc";
 import type { ContaFinanceira } from "@/lib/mock";
 
 const ICONS = { bank: Landmark, cash: Banknote, wallet: Wallet } as const;
 
-export function ContasFinanceirasView({ contas }: { contas: ContaFinanceira[] }) {
+export function ContasFinanceirasView() {
+  const { items, add, update, remove } = useCollection(contasFinanceirasStore);
   const [modal, setModal] = React.useState(false);
   const [editar, setEditar] = React.useState<ContaFinanceira | null>(null);
-  const total = somaSaldos(contas);
+
+  const total = somaSaldos(items);
 
   const abrirNova = () => {
     setEditar(null);
@@ -22,6 +27,12 @@ export function ContasFinanceirasView({ contas }: { contas: ContaFinanceira[] })
     setEditar(c);
     setModal(true);
   };
+
+  function handleSave(data: Omit<ContaFinanceira, "id">) {
+    if (editar) update(editar.id, data);
+    else add({ id: nextId("cta"), ...data });
+    setModal(false);
+  }
 
   return (
     <div className="mx-auto max-w-[1200px] p-5">
@@ -38,7 +49,7 @@ export function ContasFinanceirasView({ contas }: { contas: ContaFinanceira[] })
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {contas.map((c) => {
+        {items.map((c) => {
           const Icon = ICONS[c.icon];
           return (
             <div key={c.id} className="rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-sm">
@@ -50,9 +61,12 @@ export function ContasFinanceirasView({ contas }: { contas: ContaFinanceira[] })
                   <p className="truncate text-sm font-semibold text-foreground">{c.nome}</p>
                   <p className="text-xs text-muted">{c.tipo}</p>
                 </div>
-                <button onClick={() => abrirEditar(c)} className="text-muted-2 hover:text-foreground">
-                  <MoreVertical className="size-4" />
-                </button>
+                <RowActions
+                  actions={[
+                    { label: "Editar", onClick: () => abrirEditar(c) },
+                    { label: "Excluir", onClick: () => remove(c.id), danger: true },
+                  ]}
+                />
               </div>
               <div className="mt-4">
                 <p className="text-xs text-muted">Saldo Atual</p>
@@ -70,7 +84,13 @@ export function ContasFinanceirasView({ contas }: { contas: ContaFinanceira[] })
         </div>
       </div>
 
-      <ContaModal key={`${editar?.id ?? "new"}-${modal}`} open={modal} onClose={() => setModal(false)} conta={editar} />
+      <ContaModal
+        key={`${editar?.id ?? "new"}-${modal}`}
+        open={modal}
+        onClose={() => setModal(false)}
+        onSave={handleSave}
+        conta={editar}
+      />
     </div>
   );
 }

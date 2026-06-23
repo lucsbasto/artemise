@@ -1,104 +1,119 @@
 "use client";
-import * as React from "react";
-import { Settings, MoreVertical } from "lucide-react";
-import { cn, brl } from "@/lib/utils";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Settings } from "lucide-react";
+import { ListShell } from "@/components/ui/list-shell";
+import { RowActions } from "@/components/ui/row-actions";
+import { useListControls } from "@/lib/use-list-controls";
+import { brl, cn } from "@/lib/utils";
 import { estoqueValor, estoqueBaixo } from "@/lib/mock";
 import type { ItemEstoque } from "@/lib/mock";
 
-const HEADERS = [
-  "Nome",
-  "SKU",
-  "Categoria",
-  "Unidade",
-  "Saldo atual",
-  "Estoque mínimo",
-  "Custo",
-  "Valor",
-];
+interface EstoqueTableProps {
+  rows: ItemEstoque[];
+  onEdit?: (item: ItemEstoque) => void;
+  onDelete?: (item: ItemEstoque) => void;
+}
 
-export function EstoqueTable({ rows }: { rows: ItemEstoque[] }) {
-  if (rows.length === 0) {
-    return (
-      <div className="px-5">
-        <EmptyState
-          title="Hmm, está vazio por aqui!"
-          subtitle="Nenhum registro encontrado."
-        />
-      </div>
-    );
-  }
+export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
+  const c = useListControls(rows, {
+    searchFields: ["nome", "sku", "categoria"],
+    perPage: 25,
+  });
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left text-muted-2">
-            <th className="w-10 px-5 py-3">
-              <input type="checkbox" className="size-4 accent-brand" />
-            </th>
-            {HEADERS.map((h) => (
-              <th key={h} className="whitespace-nowrap py-3 pr-4 font-medium">
-                {h}
+    <ListShell
+      title="Controle de estoque"
+      count={c.total}
+      batchActions={false}
+      query={c.query}
+      onQueryChange={c.setQuery}
+      page={c.page}
+      pageCount={c.pageCount}
+      onPageChange={c.setPage}
+      perPage={c.perPage}
+      onPerPageChange={c.setPerPage}
+      total={c.total}
+      from={c.from}
+      to={c.to}
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-y border-border text-left text-muted-2">
+              <th className="px-5 py-3 font-medium">Nome</th>
+              <th className="py-3 font-medium">SKU</th>
+              <th className="py-3 font-medium">Categoria</th>
+              <th className="py-3 font-medium">Unidade</th>
+              <th className="py-3 font-medium">Saldo atual</th>
+              <th className="py-3 font-medium">Estoque mínimo</th>
+              <th className="py-3 font-medium">Custo</th>
+              <th className="py-3 font-medium">Valor</th>
+              <th className="w-10 px-5 py-3 text-right">
+                <Settings className="ml-auto size-4" />
               </th>
-            ))}
-            <th className="w-10 px-2 py-3 text-right">
-              <Settings className="ml-auto size-4" />
-            </th>
-            <th className="w-10 px-2 py-3" />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((item) => {
-            const baixo = estoqueBaixo(item);
-            return (
-              <tr
-                key={item.id}
-                className={cn(
-                  "border-b border-border last:border-b-0",
-                  baixo && "bg-red-50/30"
-                )}
-              >
-                <td
+            </tr>
+          </thead>
+          <tbody>
+            {c.rows.map((item) => {
+              const baixo = estoqueBaixo(item);
+              return (
+                <tr
+                  key={item.id}
                   className={cn(
-                    "px-5 py-3",
-                    baixo
-                      ? "border-l-2 border-l-red-500"
-                      : "border-l-2 border-l-transparent"
+                    "border-b border-border last:border-b-0",
+                    baixo && "bg-red-50/30"
                   )}
                 >
-                  <input type="checkbox" className="size-4 accent-brand" />
-                </td>
-                <td className="py-3 pr-4 font-medium text-foreground">
-                  {item.nome}
-                </td>
-                <td className="py-3 pr-4 text-muted-2">{item.sku}</td>
-                <td className="py-3 pr-4 text-muted-2">{item.categoria}</td>
-                <td className="py-3 pr-4 text-muted-2">{item.unidade}</td>
-                <td
-                  className={cn(
-                    "py-3 pr-4 font-medium",
-                    baixo ? "text-danger" : "text-foreground"
-                  )}
-                >
-                  {item.saldo}
-                </td>
-                <td className="py-3 pr-4 text-muted-2">{item.minimo}</td>
-                <td className="py-3 pr-4 text-muted-2">{brl(item.custo)}</td>
-                <td className="py-3 pr-4 text-foreground">
-                  {brl(estoqueValor(item))}
-                </td>
-                <td className="px-2 py-3" />
-                <td className="px-2 py-3 text-right">
-                  <button className="text-muted-2 hover:text-foreground">
-                    <MoreVertical className="size-4" />
-                  </button>
+                  <td
+                    className={cn(
+                      "px-5 py-3",
+                      baixo
+                        ? "border-l-2 border-l-red-500"
+                        : "border-l-2 border-l-transparent"
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onEdit?.(item)}
+                      className="font-medium text-foreground hover:text-brand hover:underline"
+                    >
+                      {item.nome}
+                    </button>
+                  </td>
+                  <td className="py-3 text-muted-2">{item.sku}</td>
+                  <td className="py-3 text-muted-2">{item.categoria}</td>
+                  <td className="py-3 text-muted-2">{item.unidade}</td>
+                  <td
+                    className={cn(
+                      "py-3 font-medium",
+                      baixo ? "text-danger" : "text-foreground"
+                    )}
+                  >
+                    {item.saldo}
+                  </td>
+                  <td className="py-3 text-muted-2">{item.minimo}</td>
+                  <td className="py-3 text-muted-2">{brl(item.custo)}</td>
+                  <td className="py-3 text-foreground">{brl(estoqueValor(item))}</td>
+                  <td className="px-5 py-3 text-right">
+                    <RowActions
+                      actions={[
+                        { label: "Editar", onClick: () => onEdit?.(item) },
+                        { label: "Excluir", onClick: () => onDelete?.(item), danger: true },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+            {c.rows.length === 0 && (
+              <tr>
+                <td colSpan={9} className="px-5 py-10 text-center text-sm text-muted-2">
+                  Nenhum registro encontrado.
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </ListShell>
   );
 }

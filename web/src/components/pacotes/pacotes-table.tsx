@@ -1,25 +1,43 @@
 "use client";
-import * as React from "react";
-import { Settings, MoreVertical } from "lucide-react";
+import { Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
 import { Toggle } from "@/components/ui/toggle";
+import { RowActions } from "@/components/ui/row-actions";
+import { useListControls } from "@/lib/use-list-controls";
 import { brl } from "@/lib/utils";
 import type { Pacote } from "@/lib/mock";
 
-export function PacotesTable({
-  pacotes,
-  onNovo,
-}: {
-  pacotes: Pacote[];
-  onNovo: () => void;
-}) {
+interface PacotesTableProps {
+  rows: Pacote[];
+  onEdit?: (p: Pacote) => void;
+  onDelete?: (p: Pacote) => void;
+  onToggle?: (p: Pacote) => void;
+}
+
+export function PacotesTable({ rows, onEdit, onDelete, onToggle }: PacotesTableProps) {
+  const c = useListControls(rows, { searchFields: ["descricao"], perPage: 25 });
+
   return (
-    <ListShell title="Pacotes" count={pacotes.length}>
+    <ListShell
+      title="Pacotes"
+      count={c.total}
+      batchActions={false}
+      query={c.query}
+      onQueryChange={c.setQuery}
+      page={c.page}
+      pageCount={c.pageCount}
+      onPageChange={c.setPage}
+      perPage={c.perPage}
+      onPerPageChange={c.setPerPage}
+      total={c.total}
+      from={c.from}
+      to={c.to}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-y border-border text-left text-muted-2">
-              <th className="py-3 pl-5 font-medium">Descrição</th>
+              <th className="px-5 py-3 font-medium">Descrição</th>
               <th className="py-3 font-medium">Valor total</th>
               <th className="py-3 font-medium">Validade</th>
               <th className="py-3 font-medium">Ativo</th>
@@ -29,36 +47,39 @@ export function PacotesTable({
             </tr>
           </thead>
           <tbody>
-            {pacotes.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-10 text-center text-muted-2">
-                  Nenhum pacote cadastrado.{" "}
-                  <button
-                    onClick={onNovo}
-                    className="text-brand hover:underline"
-                  >
-                    + Adicionar
-                  </button>
-                </td>
-              </tr>
-            )}
-            {pacotes.map((p) => (
+            {c.rows.map((p) => (
               <tr key={p.id} className="border-b border-border last:border-b-0">
-                <td className="py-3 pl-5 font-medium text-foreground">
-                  {p.descricao}
+                <td className="px-5 py-3">
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(p)}
+                    className="font-medium text-foreground hover:text-brand hover:underline"
+                  >
+                    {p.descricao}
+                  </button>
                 </td>
                 <td className="py-3 text-foreground">{brl(p.valorTotal)}</td>
                 <td className="py-3 text-muted-2">{p.validade}</td>
                 <td className="py-3">
-                  <Toggle defaultOn={p.ativo} tone="success" />
+                  <Toggle checked={p.ativo} onChange={() => onToggle?.(p)} tone="success" />
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <button className="text-muted-2 hover:text-foreground">
-                    <MoreVertical className="ml-auto size-4" />
-                  </button>
+                  <RowActions
+                    actions={[
+                      { label: "Editar", onClick: () => onEdit?.(p) },
+                      { label: "Excluir", onClick: () => onDelete?.(p), danger: true },
+                    ]}
+                  />
                 </td>
               </tr>
             ))}
+            {c.rows.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-5 py-10 text-center text-sm text-muted-2">
+                  Nenhum registro encontrado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

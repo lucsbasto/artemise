@@ -1,51 +1,54 @@
 "use client";
 import * as React from "react";
-import { ListShell } from "@/components/ui/list-shell";
-import { EstoqueIndicators } from "@/components/estoque/estoque-indicators";
 import { EstoqueTable } from "@/components/estoque/estoque-table";
 import { ItemModal } from "@/components/estoque/item-modal";
-import { estoqueBaixo } from "@/lib/mock";
+import { useCollection, nextId } from "@/lib/data/create-collection";
+import { estoqueStore } from "@/lib/data/stores";
 import type { ItemEstoque } from "@/lib/mock";
 
-type FilterKey = "baixo" | "alto" | "todos";
-
-interface EstoqueViewProps {
-  rows: ItemEstoque[];
-  summary: { baixo: number; alto: number; todos: number };
-}
-
-export function EstoqueView({ rows, summary }: EstoqueViewProps) {
+export function EstoqueView() {
+  const { items, add, update, remove } = useCollection(estoqueStore);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [filter, setFilter] = React.useState<FilterKey>("todos");
+  const [editando, setEditando] = React.useState<ItemEstoque | undefined>(undefined);
 
-  const filtered = React.useMemo(() => {
-    if (filter === "baixo") return rows.filter((r) => estoqueBaixo(r));
-    if (filter === "alto") return rows.filter((r) => !estoqueBaixo(r) && r.saldo > r.minimo);
-    return rows;
-  }, [rows, filter]);
+  function handleEdit(item: ItemEstoque) {
+    setEditando(item);
+    setModalOpen(true);
+  }
+  function handleCreate() {
+    setEditando(undefined);
+    setModalOpen(true);
+  }
+  function handleSave(data: Omit<ItemEstoque, "id">) {
+    if (editando) update(editando.id, data);
+    else add({ id: nextId("est"), ...data });
+    setModalOpen(false);
+  }
 
   return (
     <>
-      <ListShell title="Controle de estoque" count={rows.length}>
-        <EstoqueIndicators
-          summary={summary}
-          active={filter}
-          onFilter={setFilter}
-        />
-        <EstoqueTable rows={filtered} />
-      </ListShell>
+      <EstoqueTable
+        rows={items}
+        onEdit={handleEdit}
+        onDelete={(item) => remove(item.id)}
+      />
 
-      {/* FAB roxo */}
       <button
         type="button"
-        onClick={() => setModalOpen(true)}
+        onClick={handleCreate}
         aria-label="Adicionar novo item"
         className="fixed bottom-6 right-6 z-30 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600 transition-colors"
       >
         <span className="text-2xl leading-none">+</span>
       </button>
 
-      <ItemModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <ItemModal
+        key={`${modalOpen}-${editando?.id ?? "new"}`}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleSave}
+        item={editando}
+      />
     </>
   );
 }
