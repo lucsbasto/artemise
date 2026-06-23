@@ -357,6 +357,31 @@ export const pacotes: Pacote[] = [
   { id: "3", descricao: "Pacote Acne Control", valorTotal: 1200, validade: "90 dias", ativo: false },
 ];
 
+/* ---------- Fichas de atendimentos (35-config-fichas-atendimento.md) ---------- */
+
+export type FichaAtendimento = { id: string; nome: string; ativo: boolean };
+
+export const fichasAtendimento: FichaAtendimento[] = [
+  { id: "1", nome: "Anamnese", ativo: true },
+  { id: "2", nome: "Capilar", ativo: true },
+  { id: "3", nome: "Corporal", ativo: true },
+  { id: "4", nome: "Epilação", ativo: true },
+  { id: "5", nome: "Estética Facial", ativo: true },
+  { id: "6", nome: "Facial", ativo: true },
+  { id: "7", nome: "Fotos e anexos", ativo: true },
+  { id: "8", nome: "Injetáveis", ativo: true },
+  { id: "9", nome: "Orçamento", ativo: true },
+  { id: "10", nome: "Plano de tratamento", ativo: true },
+];
+
+/* ---------- Modelos de atestados e prescrições (36) ---------- */
+
+export type ModeloDocumento = { id: string; nome: string; tipo: string; ativo: boolean };
+
+export const modelosDocumento: ModeloDocumento[] = [
+  { id: "1", nome: "Atestado", tipo: "Atestado", ativo: true },
+];
+
 export const validadesPacote = ["Ilimitado", "30 dias", "60 dias", "90 dias", "180 dias", "365 dias"];
 
 // Opções do dropdown "Nome" no modal de pacote (procedimentos + produtos).

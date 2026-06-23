@@ -20,6 +20,7 @@ export function ListShell({
   showCount = true,
   batchActions = true,
   hideSearch = false,
+  headerAction,
   filtersExtra,
   children,
 }: {
@@ -28,6 +29,8 @@ export function ListShell({
   showCount?: boolean;
   batchActions?: boolean;
   hideSearch?: boolean;
+  /** Substitui os botões padrão (Ações em lote / Exportar) no canto direito do header. */
+  headerAction?: React.ReactNode;
   filtersExtra?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -42,17 +45,21 @@ export function ListShell({
           </span>
         )}
         <div className="ml-auto flex items-center gap-2">
-          {batchActions && (
-            <button
-              disabled
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-background px-3 text-sm font-medium text-muted disabled:opacity-50"
-            >
-              Ações em lote <ChevronDown className="size-4" />
-            </button>
+          {headerAction ?? (
+            <>
+              {batchActions && (
+                <button
+                  disabled
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-background px-3 text-sm font-medium text-muted disabled:opacity-50"
+                >
+                  Ações em lote <ChevronDown className="size-4" />
+                </button>
+              )}
+              <button className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-foreground hover:bg-background">
+                Exportar <ChevronDown className="size-4" />
+              </button>
+            </>
           )}
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-foreground hover:bg-background">
-            Exportar <ChevronDown className="size-4" />
-          </button>
         </div>
       </div>
 
