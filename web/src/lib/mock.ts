@@ -369,6 +369,20 @@ export const itensVendaveis = [
   "Protetor Solar FPS 50",
 ];
 
+/* ---------- Orçamento (09-paciente-orcamento-modais.md) ---------- */
+
+// Catálogo do campo "Nome" do orçamento: procedimentos + produtos com preço de tabela.
+// Selecionar um item preenche "Valor (R$)" com este valor (spec §Procedimentos/Produtos).
+export type ItemVendavel = { nome: string; valor: number };
+export const itensOrcamento: ItemVendavel[] = [
+  { nome: "Limpeza de Pele Profunda", valor: 200 },
+  { nome: "Microagulhamento", valor: 500 },
+  { nome: "Peeling Químico", valor: 300 },
+  { nome: "Tratamento de Acne", valor: 250 },
+  { nome: "Creme Anti-idade", valor: 120 },
+  { nome: "Protetor Solar FPS 50", valor: 90 },
+];
+
 /* ---------- Estoque (24-estoque-itens.md) ---------- */
 
 export type ItemEstoque = {

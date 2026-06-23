@@ -1,6 +1,7 @@
 import { ChevronDown, Search } from "lucide-react";
 import { EmptyFiltered } from "./ficha-empty";
 import { Pagination } from "./pagination";
+import { OrcamentoButton } from "./orcamento-button";
 
 export function AbaOrcamentos() {
   return (
@@ -21,6 +22,7 @@ export function AbaOrcamentos() {
       {/* ações */}
       <div className="flex flex-wrap items-center gap-2 px-5 py-4">
         <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
+        <OrcamentoButton />
         <div className="relative ml-auto">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
           <input
