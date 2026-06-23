@@ -33,7 +33,7 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - **Worktrees:** `../artemise-worktrees/agenda-completa` (lote 6) e `../artemise-financeiro` (lote 7, branch `feat/financeiro-relatorios`). Build NÃO roda em worktree via junction de node_modules (Turbopack rejeita); instalar node_modules local OU buildar no main pós-merge — ver [[build-worktree-turbopack]].
 - **Lote 8A (estoque) concluído em 2026-06-23.** main local @ `300c9b6`, build ✅ lint ✅ tsc ✅ (26 rotas; 3 novas `/estoque/*`). Sem push p/ origin. Worktree `../artemise-worktrees/estoque-completo` (branch `feat/estoque-completo`) com junction node_modules.
 - **Lote 8C (config) concluído em 2026-06-23.** main local @ merge direto, build ✅ lint ✅ tsc ✅ (34 rotas; 5 novas `/configuracoes/*`). code-reviewer APPROVE. Worktree `../artemise-worktrees/config-completo` (branch `feat/config-completo`). (nota: commit de merge diz "36/36" por engano — real **33/36**.)
-- **Próximo (ÚNICA fatia restante):** lote 8B — Comunicação (28 Canais de atendimento, 29 Modelos de mensagens). Módulo novo: criar `comunicacao-submenu` + `app/comunicacao/layout.tsx` + ativar `MessageSquare` no `icon-sidebar` (href `/comunicacao/canais-de-comunicacao`). Tela 28: H1+subtítulo, banner verde WhatsApp, card "Seus canais" + chip `Status: Ativo` + EmptyFilter (10/página). Tela 29: grid de cards `card-modelo-mensagem` (6 reais + badges canal + "Personalizar"), catálogo no mock. → 35/36 (telas 32/34 já feitas lote 3 fecham o resto). 33/36.
+- **Lote 8B (comunicação) concluído em 2026-06-23.** main local @ merge direto (`deb21d9`), build ✅ lint ✅ tsc ✅ (36 rotas; 2 novas `/comunicacao/*`). Branch `feat/comunicacao`. Telas 28+29 entregues: `comunicacao-submenu` (3 itens) + `app/comunicacao/layout`; **Canais de atendimento** (`/comunicacao/canais-de-comunicacao`): H1+subtítulo, banner verde WhatsApp Business, card "Seus canais" + chip `Status: Ativo` + `canais-empty` EmptyFilter + paginação 10/pág "Mostrando 0 a 0 de 0"; **Modelos de mensagens** (`/comunicacao/mensagens/mensagens-do-sistema`): grid responsivo `card-modelo-mensagem` (6 reais exatos + 3 inferidos), ícone outline + badges de canal + Personalizar. `icon-sidebar` MessageSquare ativado. Mock: `modelosMensagens` + tipos `CanalMensagem`/`ModeloMensagem`. **35/36 telas.** Nenhuma tela de spec resta — 36ª é divergência de contagem (telas 32/34 já feitas lote 3); auditar numeração das specs vs. 36 telas.
 - **Deferidos (lote 7):** mover `/contas-a-receber` e `/contas-a-pagar` p/ sob o layout do submenu Financeiro; filtros/busca/exportar/período funcionais; modal "Pagar comissão".
 - Branches locais `feat/ui-core`, `feat/ui-tables`, `feat/cadastros`, `feat/ficha-paciente`, `feat/orcamento-modais`, `feat/agenda-completa` já mergeadas (podem ser deletadas).
 
@@ -53,7 +53,7 @@ Status válidos: `todo` | `wip` | `blocked` | `done`.
 | T4  | todo   |       | Date-range picker funcional | usado em Agenda/Financeiro |
 | T5  | done   |       | Lote 7 — Financeiro relatórios+cadastros (telas 15-23) | 9 telas; `feat/financeiro-relatorios` |
 | T8  | done   |       | Lote 6 — Agenda completa (telas 03-06) | `feat/agenda-completa` |
-| T7  | wip    |       | Lote 8 — restante: **só 8B Comunicação 28-29** | 8A(estoque ✅)/8C(config ✅) done. Falta 8B. |
+| T7  | done   |       | Lote 8 — Comunicação 28-29 (8A/8B/8C todas ✅) | módulo `/comunicacao`; 35/36. |
 | T6  | todo   |       | Backend + RLS | fase futura, sem mock |
 
 ## Preferências
