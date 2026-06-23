@@ -21,18 +21,31 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Ambas no `origin/main` (PR #1 mergeado via hook OMC). build ✅ lint ✅.
 - Feature **cadastros** (lote 3): +3 telas — Procedimentos (32), Pacotes (34), Estoque/Controle (24), cada uma com modal de cadastro/edição. Novos primitives reusáveis: `ListShell`, `Modal`, `Field`/`Input`/`Select`. Helper `lib/pacote-calc.ts` (cálculo de total de pacote, testável). Submenu de Estoque (`app/estoque/layout.tsx`). Rotas reais: `/configuracoes/procedimentos`, `/configuracoes/pacotes`, `/estoque/items`. Sidebar Configurações/Estoque navegáveis. **11/36 telas.** `.specs/features/cadastros/`. build ✅ lint ✅. Branch `feat/cadastros`.
 - Feature **ficha-paciente** (lote 4): +1 tela complexa — Ficha do Paciente (08), master-detail com **6 abas** (Informações, Linha do tempo, Carteira, Pacotes/creditos, Financeiro, Orçamentos). Layout aninhado `app/pacientes/[id]/layout.tsx` (painel lateral persistente via `ficha-sidebar.tsx`) + 6 sub-rotas; `page.tsx` redireciona → informacoes. Novos reusáveis: `ficha-empty.tsx` (EmptyData/EmptyFiltered — 2 variantes de empty state da plataforma), `ficha/pagination.tsx`. Popover de filtro 2 colunas na aba Pacotes. Tabela financeira do paciente (5 KPIs + realce Em atraso). `patients-table` linka nome → ficha. **12/36 telas.** `.specs/features/ficha-paciente/`. build ✅ lint ✅. Branch `feat/ficha-paciente`.
+- Feature **orcamento-modais** (lote 5): +1 tela complexa — Orçamentos (09), modal de criação anexo à ficha (aba Orçamentos → "+ Adicionar novo orçamento"). Toggle interno **Personalizado|Pacote** troca título/campo Pacote/tabela de itens. `ficha/orcamento-modal.tsx` (client): dados básicos (Cliente/Vendedor/Pacote), opções avançadas, tabela Procedimentos/Produtos (Nome→valor, Qtd, Valor, Desconto un R$/%, Total, lixeira), desconto do orçamento, condições de pagamento, Subtotal/Valor total em tempo real. `ficha/orcamento-button.tsx` (client). **Reusa `lib/pacote-calc` (fórmulas §9 idênticas)** + `ui/modal` + `ui/field`. Mock novo: `itensOrcamento`. **13/36 telas.** `.specs/features/orcamento-modais/`. build ✅ lint ✅. Em `origin/main` @ `bff4501` (merge direto). Branch `feat/orcamento-modais`.
 
 ## Sessão / retomada
-- **PAUSADO em 2026-06-22.** Usuário vai retomar em OUTRA sessão.
-- **Estado limpo:** `origin/main` @ `4392e68`, working tree limpo, build ✅ lint ✅.
-- **Retomar com:** `cd web && npm run dev` → http://localhost:3000.
-- **Lote 4 concluído:** Ficha do paciente (08). Próximo: lote 5 — 24 telas restantes (modais de orçamento Telas 23/24, fluxos cruzados, ou nova área).
+- **Lote 5 concluído em 2026-06-22.** `origin/main` @ `bff4501`, build ✅ lint ✅.
+- **Retomar com:** `cd web && npm run dev` → http://localhost:3000/pacientes/10318910/orcamentos.
+- **Worktree do lote 5:** `../artemise-worktrees/orcamento-modais` (pode ser removido: `git worktree remove`).
+- **Próximo:** lote 6 (telas restantes; ver board T5). 13/36.
 - Branches locais `feat/ui-core` e `feat/ui-tables` já mergeadas (podem ser deletadas).
 
-## Pendências / próximos
-- Verificação visual pixel-a-pixel pelo usuário (abrir http://localhost:3000).
-- Ajustar rótulos dia-da-semana em `weekDays` (mock) se divergir do screenshot.
-- Próximas telas (32 restantes), modais/drawers, date-range picker funcional, backend/RLS.
+## Próximos passos (task board multi-agent)
+
+**Protocolo de posse (multi-agent):** antes de começar uma task, agente edita a linha
+e preenche `Owner` com seu id (`@nome` ou session id) e muda `Status` para `wip`.
+Ao terminar, muda `Status` para `done` e limpa `Owner`. Só pegar tasks `todo` com
+`Owner` vazio. Uma task `wip` com Owner preenchido = já tem dono, NÃO pegar.
+Status válidos: `todo` | `wip` | `blocked` | `done`.
+
+| ID  | Status | Owner | Task | Notas |
+|-----|--------|-------|------|-------|
+| T1  | todo   |       | Verificação visual pixel-a-pixel das 13 telas | usuário abre http://localhost:3000 |
+| T2  | todo   |       | Ajustar rótulos dia-da-semana em `weekDays` (mock) se divergir do screenshot | `web/src/lib/mock.ts` |
+| T3  | done   |       | Lote 5 — modal de orçamento (Tela 09) | spec real = 09-paciente-orcamento-modais; 24/estoque já feito no lote 3 |
+| T4  | todo   |       | Date-range picker funcional | usado em Agenda/Financeiro |
+| T5  | todo   |       | Próximas telas (24 restantes das 36) | fatiar em lotes ao planejar |
+| T6  | todo   |       | Backend + RLS | fase futura, sem mock |
 
 ## Preferências
 - Usuário pediu fluxo **tlc-spec-driven**. Artefatos em `.specs/`.
