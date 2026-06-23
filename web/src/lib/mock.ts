@@ -402,5 +402,113 @@ export const estoqueSummary = {
 export const categoriasEstoque = ["Injetáveis", "Material de atendimento", "Revenda"];
 export const unidadesEstoque = ["un", "ml", "g", "cx", "L"];
 
+/* ---------- Ficha do Paciente (08-paciente-ficha.md) ---------- */
+
+export type FichaPaciente = {
+  id: string;
+  nome: string;
+  sexo: string;
+  idade: number;
+  dataNascimento: string;
+  telefone: string;
+  cpf: string;
+  email: string;
+  recebeNotificacoes: boolean;
+  endereco: string[]; // 4 linhas
+  observacoes: string;
+  criadoEm: string;
+  status: "Ativo" | "Inativo";
+  isExemplo: boolean;
+};
+
+export const fichaPaciente: FichaPaciente = {
+  id: "10318910",
+  nome: "Clara Ribeiro (Paciente de exemplo)",
+  sexo: "Feminino",
+  idade: 34,
+  dataNascimento: "02/12/1991",
+  telefone: "+55 (11) 99999-9999",
+  cpf: "315.772.070-84",
+  email: "clara.ribeiro@exemplo.com",
+  recebeNotificacoes: false,
+  endereco: ["Av. Pedro Álvares Cabral, SN", "Vila Mariana, São Paulo, SP", "04094-050", "Brasil"],
+  observacoes: "Esse paciente é um paciente de exemplo.",
+  criadoEm: "22/06/2026 15:00:43",
+  status: "Ativo",
+  isExemplo: true,
+};
+
+// As 6 abas da ficha (slug ≠ label em "Pacotes"→creditos).
+export const fichaAbas = [
+  { label: "Informações", slug: "informacoes" },
+  { label: "Linha do tempo", slug: "linha-do-tempo" },
+  { label: "Carteira", slug: "carteira" },
+  { label: "Pacotes", slug: "creditos" },
+  { label: "Financeiro", slug: "financeiro" },
+  { label: "Orçamentos", slug: "orcamentos" },
+];
+
+// ── Linha do tempo ──────────────────────────────────────────────
+export type TimelineEvent = {
+  id: string;
+  tipo: "agendamento_concluido" | "parcela_recebida" | "titulo_criado";
+  titulo: string;
+  quando: string; // ex "seg. 22/06/2026 15:10"
+  valor?: number;
+};
+
+export const timelineEvents: TimelineEvent[] = [
+  { id: "1", tipo: "agendamento_concluido", titulo: "Agendamento concluído", quando: "seg. 22/06/2026 15:10" },
+  { id: "2", tipo: "parcela_recebida", titulo: "Parcela a receber recebida", quando: "seg. 22/06/2026 15:00" },
+  { id: "3", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 250 },
+  { id: "4", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 1800 },
+  { id: "5", tipo: "parcela_recebida", titulo: "Parcela a receber recebida", quando: "seg. 22/06/2026 15:00" },
+  { id: "6", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 350 },
+  { id: "7", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 400 },
+  { id: "8", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 120 },
+  { id: "9", tipo: "parcela_recebida", titulo: "Parcela a receber recebida", quando: "seg. 22/06/2026 15:00" },
+  { id: "10", tipo: "titulo_criado", titulo: "Título criado", quando: "seg. 22/06/2026 15:00", valor: 180 },
+];
+
+// ── Carteira ────────────────────────────────────────────────────
+export const carteira = {
+  saldo: 0,
+  cashback: 0,
+  total: 0,
+  numeroMascarado: "•••• •••• •••• 0000",
+};
+
+// ── Financeiro do paciente ──────────────────────────────────────
+export type FichaFinKpi = { label: string; valor: number; tone: "success" | "info" | "warning" | "danger"; ativo?: boolean };
+
+export const fichaFinanceiroKpis: FichaFinKpi[] = [
+  { label: "Realizado", valor: 2431, tone: "success" },
+  { label: "A receber", valor: 0, tone: "info" },
+  { label: "Em aberto", valor: -1480, tone: "warning" },
+  { label: "Em atraso", valor: 280, tone: "danger" },
+  { label: "Total do período", valor: 1231, tone: "info", ativo: true },
+];
+
+export type FichaFinRow = {
+  vencimento: string;
+  execucao: string | null;
+  descricao: string;
+  situacao: FinanceStatus;
+  valor: number; // negativo = despesa
+};
+
+export const fichaFinanceiroTotal = 28;
+
+export const fichaFinanceiroRows: FichaFinRow[] = [
+  { vencimento: "17/06", execucao: "17/06", descricao: "Aluguel da Clínica", situacao: "Pago", valor: -1200 },
+  { vencimento: "17/06", execucao: "17/06", descricao: "Material de Escritório", situacao: "Pago", valor: -150 },
+  { vencimento: "17/06", execucao: null, descricao: "Renovação de Licenças", situacao: "Em atraso", valor: -500 },
+  { vencimento: "17/06", execucao: "17/06", descricao: "Massagem Relaxante", situacao: "Recebido", valor: 150 },
+  { vencimento: "17/06", execucao: "17/06", descricao: "Preenchimento Facial", situacao: "Recebido", valor: 1800 },
+  { vencimento: "17/06", execucao: null, descricao: "Venda de Cremes Anti-idade", situacao: "Em atraso", valor: 350 },
+  { vencimento: "18/06", execucao: null, descricao: "Drenagem Linfática", situacao: "Em atraso", valor: 180 },
+  { vencimento: "18/06", execucao: "18/06", descricao: "Microagulhamento", situacao: "Recebido", valor: 600 },
+];
+
 /* ---------- Usuário / app ---------- */
 export const currentUser = { nome: "Lucas Bastos", iniciais: "LB" };

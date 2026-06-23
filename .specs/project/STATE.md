@@ -20,12 +20,13 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Feature **ui-tables**: +4 telas — Profissionais (10), Fornecedores (11), Contas a receber (13), Contas a pagar (14). Componentes reusáveis `ContactsTable`, `FinanceTable`, `StatusBadge`. 8/36 telas.
 - Ambas no `origin/main` (PR #1 mergeado via hook OMC). build ✅ lint ✅.
 - Feature **cadastros** (lote 3): +3 telas — Procedimentos (32), Pacotes (34), Estoque/Controle (24), cada uma com modal de cadastro/edição. Novos primitives reusáveis: `ListShell`, `Modal`, `Field`/`Input`/`Select`. Helper `lib/pacote-calc.ts` (cálculo de total de pacote, testável). Submenu de Estoque (`app/estoque/layout.tsx`). Rotas reais: `/configuracoes/procedimentos`, `/configuracoes/pacotes`, `/estoque/items`. Sidebar Configurações/Estoque navegáveis. **11/36 telas.** `.specs/features/cadastros/`. build ✅ lint ✅. Branch `feat/cadastros`.
+- Feature **ficha-paciente** (lote 4): +1 tela complexa — Ficha do Paciente (08), master-detail com **6 abas** (Informações, Linha do tempo, Carteira, Pacotes/creditos, Financeiro, Orçamentos). Layout aninhado `app/pacientes/[id]/layout.tsx` (painel lateral persistente via `ficha-sidebar.tsx`) + 6 sub-rotas; `page.tsx` redireciona → informacoes. Novos reusáveis: `ficha-empty.tsx` (EmptyData/EmptyFiltered — 2 variantes de empty state da plataforma), `ficha/pagination.tsx`. Popover de filtro 2 colunas na aba Pacotes. Tabela financeira do paciente (5 KPIs + realce Em atraso). `patients-table` linka nome → ficha. **12/36 telas.** `.specs/features/ficha-paciente/`. build ✅ lint ✅. Branch `feat/ficha-paciente`.
 
 ## Sessão / retomada
 - **PAUSADO em 2026-06-22.** Usuário vai retomar em OUTRA sessão.
 - **Estado limpo:** `origin/main` @ `4392e68`, working tree limpo, build ✅ lint ✅.
 - **Retomar com:** `cd web && npm run dev` → http://localhost:3000.
-- **Próximo passo combinado:** lote 3 de telas. Candidatos: Ficha do paciente (spec 08, complexa — abas) OU cadastros (Procedimentos 32, Pacotes 34, Estoque 24).
+- **Lote 4 concluído:** Ficha do paciente (08). Próximo: lote 5 — 24 telas restantes (modais de orçamento Telas 23/24, fluxos cruzados, ou nova área).
 - Branches locais `feat/ui-core` e `feat/ui-tables` já mergeadas (podem ser deletadas).
 
 ## Pendências / próximos
