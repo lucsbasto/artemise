@@ -17,13 +17,17 @@ import {
 export function ListShell({
   title,
   count,
+  showCount = true,
   batchActions = true,
+  hideSearch = false,
   filtersExtra,
   children,
 }: {
   title: string;
   count: number;
+  showCount?: boolean;
   batchActions?: boolean;
+  hideSearch?: boolean;
   filtersExtra?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -32,9 +36,11 @@ export function ListShell({
       {/* header */}
       <div className="flex items-center gap-2 px-5 pt-5">
         <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <span className="text-sm text-muted-2">
-          {count} {count === 1 ? "registro" : "registros"}
-        </span>
+        {showCount && (
+          <span className="text-sm text-muted-2">
+            {count} {count === 1 ? "registro" : "registros"}
+          </span>
+        )}
         <div className="ml-auto flex items-center gap-2">
           {batchActions && (
             <button
@@ -54,13 +60,15 @@ export function ListShell({
       <div className="flex flex-wrap items-center gap-2 px-5 py-4">
         <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
         {filtersExtra}
-        <div className="relative ml-auto">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
-          <input
-            placeholder="Buscar"
-            className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
-          />
-        </div>
+        {!hideSearch && (
+          <div className="relative ml-auto">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
+            <input
+              placeholder="Buscar"
+              className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
+            />
+          </div>
+        )}
       </div>
 
       {/* corpo (tabela ou empty-state) */}
