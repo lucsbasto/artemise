@@ -16,22 +16,8 @@ import {
 import { cn, brl } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { FinanceKpiCards } from "@/components/financeiro/finance-kpi-cards";
 import type { FinanceKpi, FinanceRow } from "@/lib/mock";
-
-const TONE_DOT: Record<FinanceKpi["tone"], string> = {
-  danger: "bg-red-500",
-  warning: "bg-amber-400",
-  info: "bg-blue-500",
-  success: "bg-green-500",
-};
-
-function KpiDot({ tone }: { tone: FinanceKpi["tone"] }) {
-  return (
-    <span
-      className={cn("inline-block size-2 shrink-0 rounded-full", TONE_DOT[tone])}
-    />
-  );
-}
 
 interface FinanceTableProps {
   titulo: string;
@@ -129,31 +115,7 @@ export function FinanceTable({
         </div>
 
         {/* ── KPIs ─────────────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-start gap-0 border-y border-border divide-x divide-border">
-          {kpis.map((kpi) => (
-            <div
-              key={kpi.label}
-              className={cn(
-                "flex min-w-[120px] flex-1 flex-col gap-1 px-5 py-3 cursor-pointer",
-                kpi.ativo && "border-b-2 border-b-brand"
-              )}
-            >
-              <div className="flex items-center gap-1.5">
-                <KpiDot tone={kpi.tone} />
-                <span className="text-xs text-muted">{kpi.label}</span>
-                <Info className="size-3 text-muted-2 shrink-0" />
-              </div>
-              <span
-                className={cn(
-                  "text-base font-semibold",
-                  kpi.ativo ? "text-brand" : "text-foreground"
-                )}
-              >
-                {brl(kpi.valor)}
-              </span>
-            </div>
-          ))}
-        </div>
+        <FinanceKpiCards kpis={kpis} />
 
         {/* ── Tabela ──────────────────────────────────────────────────── */}
         <div className="overflow-x-auto">

@@ -644,3 +644,290 @@ export const eventoDetalhe = {
   recebimento: "Sem previsão de recebimento",
   observacao: "Esse agendamento é uma consulta de exemplo.",
 };
+
+/* ====================================================================== */
+/* Financeiro — Relatórios & Cadastros (lote 7, telas 15-23)             */
+/* ====================================================================== */
+
+/* ---------- 15 — Extrato de movimentação ---------- */
+
+export type MetodoPgto = "pix" | "dinheiro" | "cartao" | "boleto" | "transferencia";
+
+export type ExtratoRow = {
+  vencimento: string;
+  execucao: string | null;
+  descricao: string;
+  categoria: string;
+  metodo: MetodoPgto;
+  situacao: FinanceStatus;
+  valor: number;
+  tipo: "receita" | "despesa";
+  atrasado?: boolean;
+};
+
+export type ExtratoData = {
+  periodo: string;
+  total: number;
+  kpis: FinanceKpi[];
+  rows: ExtratoRow[];
+};
+
+export const extrato: ExtratoData = {
+  periodo: "23/05/2026 - 22/06/2026",
+  total: 30,
+  kpis: [
+    { label: "Receitas em aberto", valor: 2180, tone: "success" },
+    { label: "Receitas realizadas", valor: 6320, tone: "success" },
+    { label: "Despesas em aberto", valor: 3380, tone: "danger" },
+    { label: "Despesas realizadas", valor: 3889, tone: "danger" },
+    { label: "Total do período", valor: 1231, tone: "info", ativo: true },
+  ],
+  rows: [
+    { vencimento: "17/06", execucao: "17/06", descricao: "Aluguel de Clínica", categoria: "Outras des...", metodo: "transferencia", situacao: "Pago", valor: 1200, tipo: "despesa" },
+    { vencimento: "17/06", execucao: "17/06", descricao: "Material de Escritório", categoria: "Outras des...", metodo: "dinheiro", situacao: "Pago", valor: 150, tipo: "despesa" },
+    { vencimento: "17/06", execucao: null, descricao: "Renovação de Licenças", categoria: "Outras des...", metodo: "boleto", situacao: "Em atraso", valor: 500, tipo: "despesa", atrasado: true },
+    { vencimento: "17/06", execucao: "17/06", descricao: "Massagem Relaxante", categoria: "Receitas d...", metodo: "pix", situacao: "Recebido", valor: 150, tipo: "receita" },
+    { vencimento: "17/06", execucao: "17/06", descricao: "Preenchimento Facial", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 1800, tipo: "receita" },
+    { vencimento: "18/06", execucao: null, descricao: "Venda de Cremes Anti-idade", categoria: "Receitas d...", metodo: "pix", situacao: "Em atraso", valor: 350, tipo: "receita", atrasado: true },
+    { vencimento: "18/06", execucao: null, descricao: "Drenagem Linfática", categoria: "Receitas d...", metodo: "pix", situacao: "Em atraso", valor: 180, tipo: "receita", atrasado: true },
+    { vencimento: "18/06", execucao: "18/06", descricao: "Microagulhamento", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 600, tipo: "receita" },
+    { vencimento: "18/06", execucao: "18/06", descricao: "Água", categoria: "Outras des...", metodo: "boleto", situacao: "Pago", valor: 400, tipo: "despesa" },
+    { vencimento: "19/06", execucao: "19/06", descricao: "Manutenção de Equipamentos", categoria: "Outras des...", metodo: "transferencia", situacao: "Pago", valor: 800, tipo: "despesa" },
+    { vencimento: "19/06", execucao: "19/06", descricao: "Limpeza", categoria: "Outras des...", metodo: "dinheiro", situacao: "Pago", valor: 300, tipo: "despesa" },
+    { vencimento: "19/06", execucao: "19/06", descricao: "Limpeza de Pele", categoria: "Receitas d...", metodo: "pix", situacao: "Recebido", valor: 200, tipo: "receita" },
+    { vencimento: "19/06", execucao: "19/06", descricao: "Venda de Produtos Cosméticos", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 120, tipo: "receita" },
+  ],
+};
+
+/* ---------- 16 — Relatório de competência ---------- */
+
+export type CompetenciaRow = {
+  competencia: string;
+  descricao: string;
+  contato: string;
+  bruto: number;
+  liquido: number;
+  tipo: "receita" | "despesa" | "saldo";
+};
+
+export type CompetenciaData = {
+  mes: string;
+  total: number;
+  kpis: FinanceKpi[];
+  rows: CompetenciaRow[];
+};
+
+export const competencia: CompetenciaData = {
+  mes: "Junho de 2026",
+  total: 30,
+  kpis: [
+    { label: "Receitas", valor: 8500, tone: "success" },
+    { label: "Despesas", valor: 7269, tone: "danger" },
+    { label: "Total do período", valor: 1231, tone: "info", ativo: true },
+  ],
+  rows: [
+    { competencia: "22/06", descricao: "Tratamento de Manchas", contato: "Clara Ribeiro (Paciente de ...", bruto: 400, liquido: 400, tipo: "receita" },
+    { competencia: "22/06", descricao: "Bioplastia", contato: "Clara Ribeiro (Paciente de ...", bruto: 1500, liquido: 1500, tipo: "receita" },
+    { competencia: "22/06", descricao: "Laser CO2", contato: "Clara Ribeiro (Paciente de ...", bruto: 900, liquido: 900, tipo: "receita" },
+    { competencia: "22/06", descricao: "Consulta de Avaliações", contato: "Clara Ribeiro (Paciente de ...", bruto: 100, liquido: 100, tipo: "receita" },
+    { competencia: "22/06", descricao: "Toxina Botulínica", contato: "Clara Ribeiro (Paciente de ...", bruto: 1300, liquido: 1300, tipo: "receita" },
+    { competencia: "22/06", descricao: "Peeling Químico", contato: "Clara Ribeiro (Paciente de ...", bruto: 350, liquido: 350, tipo: "receita" },
+    { competencia: "22/06", descricao: "Assessoria Jurídica", contato: "Clara Ribeiro (Paciente de ...", bruto: 980, liquido: -980, tipo: "despesa" },
+    { competencia: "22/06", descricao: "Marketing Digital", contato: "Clara Ribeiro (Paciente de ...", bruto: 1000, liquido: -1000, tipo: "despesa" },
+    { competencia: "22/06", descricao: "Telefone Fixo", contato: "Clara Ribeiro (Paciente de ...", bruto: 150, liquido: -150, tipo: "despesa" },
+    { competencia: "22/06", descricao: "Serviços Contábeis", contato: "Clara Ribeiro (Paciente de ...", bruto: 750, liquido: -750, tipo: "despesa" },
+    { competencia: "22/06", descricao: "Energia Elétrica", contato: "Clara Ribeiro (Paciente de ...", bruto: 500, liquido: -500, tipo: "despesa" },
+    { competencia: "22/06", descricao: "Saldo inicial da conta Banco padrão", contato: "Lucas Bastos", bruto: 0, liquido: 0, tipo: "saldo" },
+    { competencia: "22/06", descricao: "Saldo inicial da conta Caixa", contato: "Lucas Bastos", bruto: 0, liquido: 0, tipo: "saldo" },
+  ],
+};
+
+/* ---------- 17/18 — Fluxo de caixa (linha derivada da tabela) ---------- */
+
+export type FluxoRow = {
+  label: string;
+  saldoInicial: number;
+  entrada: number;
+  saida: number;
+  lucro: number;
+  saldoFinal: number;
+};
+
+// 17 — diário: dias 1-30 Jun; movimento 17-22 somando entrada 6.320 / saída 3.889
+export const fluxoDiarioPoints: CashflowPoint[] = (() => {
+  const movimento: Record<number, { entradas: number; saidas: number }> = {
+    17: { entradas: 1950, saidas: -1850 },
+    18: { entradas: 1130, saidas: -400 },
+    19: { entradas: 320, saidas: -1100 },
+    22: { entradas: 2920, saidas: -539 },
+  };
+  let saldo = 0;
+  return Array.from({ length: 30 }, (_, i) => {
+    const dia = i + 1;
+    const m = movimento[dia] ?? { entradas: 0, saidas: 0 };
+    saldo += m.entradas + m.saidas;
+    return {
+      label: `${dia} Jun`,
+      entradas: m.entradas,
+      entradasPrevistas: 0,
+      saidas: m.saidas,
+      saidasPrevistas: 0,
+      saldo,
+      saldoPrevisto: saldo,
+    };
+  });
+})();
+
+// 18 — mensal: Jan-Dez 2026; só Junho com movimento (entrada 6.320 / saída 3.889)
+export const fluxoMensalPoints: CashflowPoint[] = (() => {
+  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  let saldo = 0;
+  return meses.map((m, i) => {
+    const entradas = i === 5 ? 6320 : 0;
+    const saidas = i === 5 ? -3889 : 0;
+    saldo += entradas + saidas;
+    return {
+      label: `${m} 2026`,
+      entradas,
+      entradasPrevistas: 0,
+      saidas,
+      saidasPrevistas: 0,
+      saldo,
+      saldoPrevisto: saldo,
+    };
+  });
+})();
+
+export const fluxoFiltrosGerais =
+  "Transferência: Sim, Saldo inicial: Sim, Valor padrão: Líquido, Previsão: Não";
+
+/* ---------- 19 — Relatório de categorias ---------- */
+
+export type CategoriaReportNode = {
+  nome: string;
+  valor: number;
+  cor: string;
+  filhos?: { nome: string; valor: number }[];
+};
+
+export const receitasReport: CategoriaReportNode[] = [
+  {
+    nome: "Receitas",
+    valor: 8500,
+    cor: "#84cc16",
+    filhos: [{ nome: "Receitas de serviços", valor: 8500 }],
+  },
+];
+
+export const despesasReport: CategoriaReportNode[] = [
+  {
+    nome: "Outras despesas",
+    valor: 7269,
+    cor: "#f43f5e",
+    filhos: [{ nome: "Outras despesas", valor: 7269 }],
+  },
+];
+
+export const periodoCategorias = "Junho de 2026";
+
+/* ---------- 20 — Contas financeiras ---------- */
+
+export type ContaFinanceira = {
+  id: string;
+  nome: string;
+  tipo: string;
+  saldo: number;
+  icon: "bank" | "cash" | "wallet";
+};
+
+export const contasFinanceirasList: ContaFinanceira[] = [
+  { id: "1", nome: "Banco padrão", tipo: "Conta Corrente", saldo: 2431, icon: "bank" },
+  { id: "2", nome: "Caixa", tipo: "Caixa", saldo: 0, icon: "cash" },
+];
+
+export const tiposConta = ["Caixa", "Conta Corrente", "Carteira"];
+
+/* ---------- 21 — Categorias de contas (árvore) ---------- */
+
+export type CategoriaConta = {
+  id: string;
+  descricao: string;
+  ativo: boolean;
+  filhos?: { id: string; descricao: string; ativo: boolean }[];
+};
+
+export const categoriasContas: CategoriaConta[] = [
+  {
+    id: "1",
+    descricao: "Receitas de serviços",
+    ativo: true,
+    filhos: [
+      { id: "1-1", descricao: "Procedimentos estéticos", ativo: true },
+      { id: "1-2", descricao: "Consultas", ativo: true },
+    ],
+  },
+  {
+    id: "2",
+    descricao: "Vendas de produtos",
+    ativo: true,
+    filhos: [{ id: "2-1", descricao: "Cosméticos", ativo: true }],
+  },
+  {
+    id: "3",
+    descricao: "Aquisições de imobilizados",
+    ativo: true,
+    filhos: [
+      { id: "3-1", descricao: "Equipamentos", ativo: true },
+      { id: "3-2", descricao: "Móveis e utensílios", ativo: false },
+    ],
+  },
+  {
+    id: "4",
+    descricao: "Outras despesas",
+    ativo: true,
+    filhos: [
+      { id: "4-1", descricao: "Aluguel", ativo: true },
+      { id: "4-2", descricao: "Energia elétrica", ativo: true },
+      { id: "4-3", descricao: "Marketing", ativo: true },
+    ],
+  },
+  { id: "5", descricao: "Impostos e taxas", ativo: false, filhos: [] },
+];
+
+/* ---------- 22 — Métodos de pagamento ---------- */
+
+export type MetodoPagamento = {
+  id: string;
+  descricao: string;
+  tipo: string;
+  marca: string;
+  ativo: boolean;
+};
+
+export const metodosPagamento: MetodoPagamento[] = [
+  { id: "1", descricao: "Boleto", tipo: "Boleto", marca: "—", ativo: true },
+  { id: "2", descricao: "Cartão de crédito", tipo: "Cartão", marca: "Outra", ativo: true },
+  { id: "3", descricao: "Cartão de débito", tipo: "Cartão", marca: "Outra", ativo: true },
+  { id: "4", descricao: "Depósito", tipo: "Transferência", marca: "—", ativo: true },
+  { id: "5", descricao: "Dinheiro", tipo: "Dinheiro", marca: "—", ativo: false },
+  { id: "6", descricao: "Máquina de cartão", tipo: "Cartão", marca: "—", ativo: true },
+  { id: "7", descricao: "PIX", tipo: "PIX", marca: "—", ativo: true },
+  { id: "8", descricao: "Transferência", tipo: "Transferência", marca: "—", ativo: true },
+];
+
+export const tiposMetodo = ["Dinheiro", "PIX", "Cartão", "Boleto", "Transferência"];
+
+/* ---------- 23 — Comissões em aberto (vazio nesta fase) ---------- */
+
+export type Comissao = {
+  profissional: string;
+  referencia: string;
+  data: string;
+  base: number;
+  percentual: number;
+  valor: number;
+  status: FinanceStatus;
+};
+
+export const comissoes: Comissao[] = [];
+export const periodoComissoes = "23/05/2026 - 22/06/2026";
