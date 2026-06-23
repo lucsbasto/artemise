@@ -309,5 +309,98 @@ export const categoriasReceita = [
 
 export const periodoFinanceiro = "23/05/2026 - 22/06/2026";
 
+/* ---------- Procedimentos (32-config-procedimentos.md) ---------- */
+
+export type Procedimento = {
+  id: string;
+  nome: string;
+  categoria: string | null;
+  duracaoMin: number;
+  valor: number;
+  ativo: boolean;
+};
+
+export const procedimentos: Procedimento[] = [
+  { id: "1", nome: "Limpeza de Pele Profunda", categoria: null, duracaoMin: 60, valor: 200, ativo: true },
+  { id: "2", nome: "Microagulhamento", categoria: null, duracaoMin: 60, valor: 500, ativo: true },
+  { id: "3", nome: "Peeling Químico", categoria: null, duracaoMin: 60, valor: 300, ativo: true },
+  { id: "4", nome: "Tratamento de Acne", categoria: null, duracaoMin: 60, valor: 250, ativo: true },
+];
+
+// Paleta nomeada do campo "Cor*" do modal de procedimento.
+export type CorOption = { nome: string; hex: string };
+export const coresProcedimento: CorOption[] = [
+  { nome: "Cinza", hex: "#9ca3af" },
+  { nome: "Azul", hex: "#3b82f6" },
+  { nome: "Verde", hex: "#16a34a" },
+  { nome: "Vermelho", hex: "#ef4444" },
+  { nome: "Roxo", hex: "#7c3aed" },
+  { nome: "Laranja", hex: "#f59e0b" },
+];
+
+// Categorias de procedimento (dropdown estático do modal).
+export const categoriasProcedimento = ["Facial", "Corporal", "Estética", "Injetáveis"];
+
+/* ---------- Pacotes (34-config-pacotes.md) ---------- */
+
+export type Pacote = {
+  id: string;
+  descricao: string;
+  valorTotal: number;
+  validade: string;
+  ativo: boolean;
+};
+
+export const pacotes: Pacote[] = [
+  { id: "1", descricao: "Pacote Limpeza 10 sessões", valorTotal: 1800, validade: "Ilimitado", ativo: true },
+  { id: "2", descricao: "Combo Rejuvenescimento Facial", valorTotal: 2700, validade: "180 dias", ativo: true },
+  { id: "3", descricao: "Pacote Acne Control", valorTotal: 1200, validade: "90 dias", ativo: false },
+];
+
+export const validadesPacote = ["Ilimitado", "30 dias", "60 dias", "90 dias", "180 dias", "365 dias"];
+
+// Opções do dropdown "Nome" no modal de pacote (procedimentos + produtos).
+export const itensVendaveis = [
+  "Limpeza de Pele Profunda",
+  "Microagulhamento",
+  "Peeling Químico",
+  "Tratamento de Acne",
+  "Creme Anti-idade",
+  "Protetor Solar FPS 50",
+];
+
+/* ---------- Estoque (24-estoque-itens.md) ---------- */
+
+export type ItemEstoque = {
+  id: string;
+  nome: string;
+  sku: string;
+  categoria: string;
+  unidade: string;
+  saldo: number;
+  minimo: number;
+  custo: number;
+};
+
+export const itensEstoque: ItemEstoque[] = [
+  { id: "1", nome: "Ácido Hialurônico 2ml", sku: "AH-002", categoria: "Injetáveis", unidade: "un", saldo: 12, minimo: 5, custo: 180 },
+  { id: "2", nome: "Agulha 30G", sku: "AG-030", categoria: "Material de atendimento", unidade: "cx", saldo: 3, minimo: 10, custo: 45 },
+  { id: "3", nome: "Creme Anti-idade", sku: "CR-ANT", categoria: "Revenda", unidade: "un", saldo: 28, minimo: 8, custo: 60 },
+  { id: "4", nome: "Gel Condutor 1L", sku: "GC-1L", categoria: "Material de atendimento", unidade: "un", saldo: 2, minimo: 4, custo: 22 },
+  { id: "5", nome: "Protetor Solar FPS 50", sku: "PS-050", categoria: "Revenda", unidade: "un", saldo: 40, minimo: 10, custo: 35 },
+];
+
+export const estoqueValor = (i: ItemEstoque) => i.saldo * i.custo;
+export const estoqueBaixo = (i: ItemEstoque) => i.saldo <= i.minimo;
+
+export const estoqueSummary = {
+  baixo: itensEstoque.filter(estoqueBaixo).length,
+  alto: 0,
+  todos: itensEstoque.length,
+};
+
+export const categoriasEstoque = ["Injetáveis", "Material de atendimento", "Revenda"];
+export const unidadesEstoque = ["un", "ml", "g", "cx", "L"];
+
 /* ---------- Usuário / app ---------- */
 export const currentUser = { nome: "Lucas Bastos", iniciais: "LB" };
