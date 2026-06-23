@@ -17,6 +17,7 @@ import {
   profissionais,
   pacotes,
   itensOrcamento,
+  metodosPagamentoOrcamento,
 } from "@/lib/mock";
 
 type Modo = "personalizado" | "pacote";
@@ -32,7 +33,6 @@ const linhaVazia = (): ItemPacoteDraft => ({
 });
 
 type CondicaoDraft = { metodo: string; valor: number };
-const metodosPagamento = ["Cartão de crédito", "Cartão de débito", "Pix", "Dinheiro", "Boleto"];
 
 export function OrcamentoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [modo, setModo] = React.useState<Modo>("personalizado");
@@ -76,7 +76,7 @@ export function OrcamentoModal({ open, onClose }: { open: boolean; onClose: () =
   const removerLinha = (i: number) => setItens((prev) => prev.filter((_, idx) => idx !== i));
 
   const addCondicao = () =>
-    setCondicoes((prev) => [...prev, { metodo: metodosPagamento[0], valor: 0 }]);
+    setCondicoes((prev) => [...prev, { metodo: metodosPagamentoOrcamento[0], valor: 0 }]);
   const removerCondicao = (i: number) =>
     setCondicoes((prev) => prev.filter((_, idx) => idx !== i));
 
@@ -298,7 +298,7 @@ export function OrcamentoModal({ open, onClose }: { open: boolean; onClose: () =
                   )
                 }
               >
-                {metodosPagamento.map((m) => (
+                {metodosPagamentoOrcamento.map((m) => (
                   <option key={m}>{m}</option>
                 ))}
               </Select>

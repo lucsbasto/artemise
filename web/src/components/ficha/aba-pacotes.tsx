@@ -2,6 +2,7 @@
 import * as React from "react";
 import { ChevronDown, Search, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usoPacoteOpcoes } from "@/lib/mock";
 import { EmptyData } from "./ficha-empty";
 import { Pagination } from "./pagination";
 
@@ -12,8 +13,6 @@ const CATEGORIAS = [
   { label: "Procedimento/Produto", icon: null },
   { label: "Data de compra", icon: <Calendar className="size-4" /> },
 ];
-
-const USO_OPCOES = ["Não utilizados", "Em andamento", "Concluídos"];
 
 export function AbaPacotes() {
   const [open, setOpen] = React.useState(false);
@@ -76,7 +75,7 @@ export function AbaPacotes() {
               </div>
               {cat === "Uso" && (
                 <ul className="mt-2 flex flex-col gap-1">
-                  {USO_OPCOES.map((o) => (
+                  {usoPacoteOpcoes.map((o) => (
                     <li key={o}>
                       <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground hover:bg-background">
                         <input type="checkbox" className="size-4 accent-brand" />

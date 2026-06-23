@@ -1046,3 +1046,38 @@ export const modelosMensagens: ModeloMensagem[] = [
     canais: ["WhatsApp Lite", "E-mail", "SMS"],
   },
 ];
+
+/* ---------- Opções de formulário (selects/filtros) ----------
+   Listas de domínio usadas em <Select>/filtros. Centralizadas aqui para
+   troca trivial pelo backend (substituir o array pela resposta da API). */
+
+// Métodos no select "Condições de pagamento" do modal de orçamento (spec 09).
+export const metodosPagamentoOrcamento = [
+  "Cartão de crédito",
+  "Cartão de débito",
+  "Pix",
+  "Dinheiro",
+  "Boleto",
+];
+
+// Opções de recorrência do modal Novo evento (spec 06).
+export const recorrenciasEvento = [
+  "Não se repete",
+  "Diariamente",
+  "Semanalmente",
+  "Mensalmente",
+  "Anualmente",
+  "Personalizado",
+];
+
+// Status de agendamento/evento da agenda (spec 06/07).
+export const statusEventoOpcoes = [
+  "Agendado",
+  "Confirmado",
+  "Não compareceu",
+  "Concluído",
+  "Cancelado",
+];
+
+// Filtro "Uso" da aba Pacotes da ficha do paciente (spec 08).
+export const usoPacoteOpcoes = ["Não utilizados", "Em andamento", "Concluídos"];

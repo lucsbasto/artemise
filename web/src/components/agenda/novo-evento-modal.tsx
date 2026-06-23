@@ -15,7 +15,12 @@ import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
-import { procedimentos, currentUser } from "@/lib/mock";
+import {
+  procedimentos,
+  currentUser,
+  recorrenciasEvento,
+  statusEventoOpcoes,
+} from "@/lib/mock";
 
 // Modal único compartilhado parametrizado por tipo (spec 06 §Visão geral da arquitetura).
 type TipoEvento = "consultation" | "lock" | "reminder" | "promotion";
@@ -26,16 +31,6 @@ const TIPOS: { key: TipoEvento; label: string; titulo: string }[] = [
   { key: "reminder", label: "Lembrete", titulo: "Novo lembrete" },
   { key: "promotion", label: "Evento", titulo: "Novo evento" },
 ];
-
-const RECORRENCIAS = [
-  "Não se repete",
-  "Diariamente",
-  "Semanalmente",
-  "Mensalmente",
-  "Anualmente",
-  "Personalizado",
-];
-const STATUS_OPCOES = ["Agendado", "Confirmado", "Não compareceu", "Concluído", "Cancelado"];
 
 type ItemLinha = { nome: string; qtd: number };
 
@@ -135,7 +130,7 @@ function FormAgendamento({
         </Field>
         <Field label="Status" required>
           <Select defaultValue="Agendado">
-            {STATUS_OPCOES.map((s) => (
+            {statusEventoOpcoes.map((s) => (
               <option key={s}>{s}</option>
             ))}
           </Select>
@@ -198,7 +193,7 @@ function FormAgendamento({
           <DataField />
           <Field label="Recorrência" required>
             <Select defaultValue="Não se repete">
-              {RECORRENCIAS.map((r) => (
+              {recorrenciasEvento.map((r) => (
                 <option key={r}>{r}</option>
               ))}
             </Select>
@@ -278,7 +273,7 @@ function FormLembrete() {
           <TimeField label="Hora" defaultValue="15:29" />
           <Field label="Recorrência" required>
             <Select defaultValue="Não se repete">
-              {RECORRENCIAS.map((r) => (
+              {recorrenciasEvento.map((r) => (
                 <option key={r}>{r}</option>
               ))}
             </Select>
@@ -408,7 +403,7 @@ function SecaoDataIntervalo({ comDiaInteiro }: { comDiaInteiro?: boolean }) {
         <DataField />
         <Field label="Recorrência" required>
           <Select defaultValue="Não se repete">
-            {RECORRENCIAS.map((r) => (
+            {recorrenciasEvento.map((r) => (
               <option key={r}>{r}</option>
             ))}
           </Select>
