@@ -956,3 +956,93 @@ export type Comissao = {
 
 export const comissoes: Comissao[] = [];
 export const periodoComissoes = "23/05/2026 - 22/06/2026";
+
+/* ---------- 29 — Comunicação / Modelos de mensagens (sistema) ---------- */
+
+export type CanalMensagem = "WhatsApp Lite" | "E-mail" | "SMS" | "WhatsApp Business";
+
+export type ModeloMensagem = {
+  id: string;
+  /** id de ícone lucide resolvido no card */
+  icone: "gift" | "heart" | "calendar-plus" | "calendar" | "calendar-x" | "clipboard-question" | "clock" | "check-circle" | "file-text";
+  titulo: string;
+  descricao: string;
+  canais: CanalMensagem[];
+};
+
+const TODOS_CANAIS: CanalMensagem[] = ["WhatsApp Lite", "E-mail", "SMS", "WhatsApp Business"];
+
+/** Catálogo de mensagens do sistema. 6 primeiros = textos exatos da captura; demais inferidos. */
+export const modelosMensagens: ModeloMensagem[] = [
+  {
+    id: "aniversario",
+    icone: "gift",
+    titulo: "Aniversário",
+    descricao:
+      "Programe o envio de uma mensagem de felicitações no aniversário dos seus pacientes. Escolha um modelo padrão e personalize como preferir.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "boas-vindas",
+    icone: "heart",
+    titulo: "Boas-vindas",
+    descricao:
+      "Envie uma mensagem recepcionando os pacientes após a realização do cadastro e sinalize o canal de comunicação que você usará para enviar notificações.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "agendamento-criado",
+    icone: "calendar-plus",
+    titulo: "Agendamento criado",
+    descricao:
+      "Notifique seu paciente assim que um agendamento for criado na sua agenda, enviando as informações da consulta.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "agendamento-alterado",
+    icone: "calendar",
+    titulo: "Agendamento alterado",
+    descricao:
+      "Notifique os pacientes quando um agendamento tiver data, hora, duração, procedimentos ou profissional alterados.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "agendamento-cancelado",
+    icone: "calendar-x",
+    titulo: "Agendamento cancelado",
+    descricao:
+      'Notifique automaticamente os pacientes quando o status do agendamento for alterado para "Cancelado" ou "Excluido".',
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "formulario-pre-atendimento",
+    icone: "clipboard-question",
+    titulo: "Formulário de pré-atendimento",
+    descricao: "Solicite aos pacientes o preenchimento de formulários de pré atendimento",
+    canais: ["WhatsApp Lite", "E-mail", "SMS"],
+  },
+  {
+    id: "lembrete-agendamento",
+    icone: "clock",
+    titulo: "Lembrete de agendamento",
+    descricao:
+      "Lembre o paciente de um agendamento próximo, definindo a antecedência de envio em horas ou dias.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "confirmacao-agendamento",
+    icone: "check-circle",
+    titulo: "Confirmação de agendamento",
+    descricao:
+      "Solicite ao paciente que confirme a presença na consulta, com resposta direto pela mensagem.",
+    canais: TODOS_CANAIS,
+  },
+  {
+    id: "lembrete-fatura",
+    icone: "file-text",
+    titulo: "Lembrete de fatura",
+    descricao:
+      "Lembre o paciente de uma fatura ou parcela a vencer, informando valor e data de vencimento.",
+    canais: ["WhatsApp Lite", "E-mail", "SMS"],
+  },
+];
