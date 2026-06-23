@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 import { MessageCircle, MoreVertical, Settings, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
@@ -43,9 +44,12 @@ function PatientRow({ patient }: { patient: Patient }) {
         <div className="flex items-center gap-3">
           <PatientAvatar nome={patient.nome} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground leading-snug">
+            <Link
+              href={`/pacientes/${patient.id}/informacoes`}
+              className="truncate block text-sm font-medium text-foreground leading-snug hover:text-brand hover:underline"
+            >
               {patient.nome}
-            </p>
+            </Link>
             <p className="text-xs text-muted">{patient.tipo}</p>
           </div>
         </div>
