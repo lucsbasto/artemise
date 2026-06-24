@@ -7,6 +7,7 @@
 import { createCollection } from "./create-collection";
 import {
   profissionais,
+  profissionaisDetalhe,
   fornecedores,
   patients,
   procedimentos,
@@ -22,6 +23,8 @@ import {
 } from "@/lib/mock";
 
 export const profissionaisStore = createCollection(profissionais);
+// Cadastro rico do profissional (espelha o id da linha de contato).
+export const profissionaisDetalheStore = createCollection(profissionaisDetalhe);
 export const fornecedoresStore = createCollection(fornecedores);
 export const pacientesStore = createCollection(patients);
 export const procedimentosStore = createCollection(procedimentos);

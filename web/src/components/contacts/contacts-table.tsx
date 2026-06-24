@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { MessageCircle, Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
 import { Toggle } from "@/components/ui/toggle";
@@ -10,6 +11,8 @@ import type { Contact } from "@/lib/mock";
 interface ContactsTableProps {
   title: string;
   rows: Contact[];
+  /** Quando definido, o nome vira link p/ `${hrefBase}/${id}` (ficha do contato). */
+  hrefBase?: string;
   onToggle?: (c: Contact) => void;
   onDelete?: (c: Contact) => void;
 }
@@ -34,7 +37,7 @@ function Avatar({ nome, tone }: { nome: string; tone: "brand" | "green" }) {
   );
 }
 
-export function ContactsTable({ title, rows, onToggle, onDelete }: ContactsTableProps) {
+export function ContactsTable({ title, rows, hrefBase, onToggle, onDelete }: ContactsTableProps) {
   const c = useListControls(rows, { searchFields: ["nome", "identificador", "tipo"], perPage: 25 });
 
   return (
@@ -73,7 +76,16 @@ export function ContactsTable({ title, rows, onToggle, onDelete }: ContactsTable
                   <div className="flex items-center gap-3">
                     <Avatar nome={contact.nome} tone={contact.avatarTone} />
                     <div>
-                      <p className="font-medium text-foreground">{contact.nome}</p>
+                      {hrefBase ? (
+                        <Link
+                          href={`${hrefBase}/${contact.id}`}
+                          className="font-medium text-foreground hover:text-brand hover:underline"
+                        >
+                          {contact.nome}
+                        </Link>
+                      ) : (
+                        <p className="font-medium text-foreground">{contact.nome}</p>
+                      )}
                       <p className="text-xs text-muted-2">{contact.tipo}</p>
                     </div>
                   </div>

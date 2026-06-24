@@ -153,6 +153,87 @@ export const profissionais: Contact[] = [
   },
 ];
 
+/* ---------- Profissional (cadastro completo) ---------- */
+
+// Conselhos de classe que atuam em estética no Brasil.
+export type Conselho = "CRM" | "CRO" | "CREFITO" | "COREN" | "CRBM" | "CRF" | "Outro";
+
+export type VinculoTrabalho = "CLT" | "PJ" | "Autônomo" | "Sócio";
+
+// Regra de comissão por procedimento ou geral.
+export type RegraComissao = {
+  procedimentoId: string | null; // null = regra padrão p/ todos
+  tipo: "percentual" | "fixo";
+  valor: number; // % (0-100) ou R$
+};
+
+// Janela de trabalho num dia da semana (0=Dom ... 6=Sáb).
+export type HorarioTrabalho = {
+  diaSemana: number;
+  inicio: string; // "HH:mm"
+  fim: string; // "HH:mm"
+};
+
+export type Profissional = {
+  id: string;
+  // identificação
+  nome: string;
+  avatarTone: "brand" | "green";
+  cpf: string;
+  dataNascimento: string; // DD/MM/AAAA
+  telefone: string;
+  email: string;
+  ativo: boolean;
+  // habilitação
+  conselho: Conselho;
+  registro: string; // nº do conselho
+  ufRegistro: string;
+  especialidade: string;
+  certificacoes: string[];
+  // atuação
+  vinculo: VinculoTrabalho;
+  procedimentoIds: string[]; // procedimentos que executa
+  horarios: HorarioTrabalho[];
+  // financeiro
+  comissoes: RegraComissao[];
+  chavePix: string;
+  // acesso
+  perfilAcesso: "admin" | "recepção" | "profissional";
+};
+
+export const profissionaisDetalhe: Profissional[] = [
+  {
+    id: "1",
+    nome: "Lucas Bastos",
+    avatarTone: "green",
+    cpf: "123.456.789-00",
+    dataNascimento: "15/03/1990",
+    telefone: "+55 (63) 98502-1531",
+    email: "lucsbasto@gmail.com",
+    ativo: false,
+    conselho: "CRBM",
+    registro: "12345",
+    ufRegistro: "TO",
+    especialidade: "Biomedicina Estética",
+    certificacoes: ["Toxina Botulínica", "Preenchimento Facial", "Microagulhamento"],
+    vinculo: "Sócio",
+    procedimentoIds: ["1", "2", "3", "4"],
+    horarios: [
+      { diaSemana: 1, inicio: "08:00", fim: "18:00" },
+      { diaSemana: 2, inicio: "08:00", fim: "18:00" },
+      { diaSemana: 3, inicio: "08:00", fim: "18:00" },
+      { diaSemana: 4, inicio: "08:00", fim: "18:00" },
+      { diaSemana: 5, inicio: "08:00", fim: "12:00" },
+    ],
+    comissoes: [
+      { procedimentoId: null, tipo: "percentual", valor: 40 },
+      { procedimentoId: "2", tipo: "percentual", valor: 50 },
+    ],
+    chavePix: "lucsbasto@gmail.com",
+    perfilAcesso: "admin",
+  },
+];
+
 export const fornecedores: Contact[] = [
   {
     id: "1",
