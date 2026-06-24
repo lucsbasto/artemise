@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MessageCircle, MoreVertical, Settings, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
@@ -28,10 +29,19 @@ function PatientAvatar({ nome }: { nome: string }) {
 // ── Linha da tabela ──────────────────────────────────────────────────────────
 
 function PatientRow({ patient }: { patient: Patient }) {
+  const router = useRouter();
+  const href = `/pacientes/${patient.id}/informacoes`;
+
+  // Linha inteira clicável; elementos interativos param a propagação.
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
   return (
-    <tr className="border-t border-border hover:bg-background/60 transition-colors">
+    <tr
+      onClick={() => router.push(href)}
+      className="cursor-pointer border-t border-border hover:bg-background/60 transition-colors"
+    >
       {/* checkbox */}
-      <td className="w-10 px-3 py-3">
+      <td className="w-10 px-3 py-3" onClick={stop}>
         <input
           type="checkbox"
           aria-label={`Selecionar ${patient.nome}`}
@@ -45,7 +55,8 @@ function PatientRow({ patient }: { patient: Patient }) {
           <PatientAvatar nome={patient.nome} />
           <div className="min-w-0">
             <Link
-              href={`/pacientes/${patient.id}/informacoes`}
+              href={href}
+              onClick={stop}
               className="truncate block text-sm font-medium text-foreground leading-snug hover:text-brand hover:underline"
             >
               {patient.nome}
@@ -78,6 +89,7 @@ function PatientRow({ patient }: { patient: Patient }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Abrir WhatsApp"
+            onClick={stop}
             className="flex shrink-0 items-center text-green-500 hover:text-green-600"
           >
             <MessageCircle className="size-4" />
@@ -86,12 +98,12 @@ function PatientRow({ patient }: { patient: Patient }) {
       </td>
 
       {/* toggle ativo */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3" onClick={stop}>
         <Toggle defaultOn={patient.ativo} tone="success" />
       </td>
 
       {/* menu ⋮ */}
-      <td className="w-10 px-3 py-3 text-right">
+      <td className="w-10 px-3 py-3 text-right" onClick={stop}>
         <button
           aria-label="Ações da linha"
           className="inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-background hover:text-foreground transition-colors"

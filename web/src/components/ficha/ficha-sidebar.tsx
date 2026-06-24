@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { MessageCircle, MoreVertical, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fichaAbas, type FichaPaciente } from "@/lib/mock";
+import { fichaAbas, idadeFrom } from "@/lib/mock";
+import { useCollection } from "@/lib/data/create-collection";
+import { pacientesStore } from "@/lib/data/stores";
 
 function initials(nome: string) {
   const parts = nome.replace(/\(.*?\)/g, "").trim().split(" ").filter(Boolean);
@@ -12,9 +14,23 @@ function initials(nome: string) {
     : (parts[0]?.[0] ?? "?").toUpperCase();
 }
 
-export function FichaSidebar({ paciente }: { paciente: FichaPaciente }) {
+export function FichaSidebar() {
   const pathname = usePathname();
+  const params = useParams<{ id: string }>();
+  const { items } = useCollection(pacientesStore);
+  const paciente = items.find((p) => p.id === params.id) ?? items[0];
+
+  if (!paciente) {
+    return (
+      <aside className="w-72 shrink-0 border-r border-border bg-surface p-6 text-sm text-muted">
+        Paciente não encontrado.
+      </aside>
+    );
+  }
+
   const base = `/pacientes/${paciente.id}`;
+  const idade = idadeFrom(paciente.dataNascimento);
+  const isExemplo = paciente.nome.includes("exemplo");
 
   return (
     <aside className="w-72 shrink-0 border-r border-border bg-surface">
@@ -24,7 +40,7 @@ export function FichaSidebar({ paciente }: { paciente: FichaPaciente }) {
           <span className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-brand-100 to-brand text-xl font-semibold text-white ring-2 ring-brand/30">
             {initials(paciente.nome)}
           </span>
-          {paciente.isExemplo && (
+          {isExemplo && (
             <span className="absolute -top-1 left-1/2 -translate-x-1/2 rounded-full border border-border bg-background px-2 text-[10px] font-semibold uppercase tracking-wide text-muted-2">
               Exemplo
             </span>
@@ -38,9 +54,13 @@ export function FichaSidebar({ paciente }: { paciente: FichaPaciente }) {
           {paciente.nome}
         </h1>
         <div className="text-xs text-muted">
-          <p>{paciente.sexo} • {paciente.idade} anos</p>
-          <p>{paciente.telefone}</p>
-          <p>{paciente.cpf}</p>
+          <p>
+            {[paciente.sexo, idade != null ? `${idade} anos` : null]
+              .filter(Boolean)
+              .join(" • ") || "—"}
+          </p>
+          <p>{paciente.identificador}</p>
+          {paciente.cpf && <p>{paciente.cpf}</p>}
         </div>
         <span className="mt-1 inline-flex items-center rounded-full bg-brand-100/60 px-2.5 py-0.5 text-xs font-medium text-brand">
           Paciente

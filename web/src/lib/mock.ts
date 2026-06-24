@@ -116,6 +116,15 @@ export type Patient = {
   etiquetas: string[];
   identificador: string;
   ativo: boolean;
+  // Informações pessoais (ficha) — opcionais p/ compat com seeds antigos.
+  sexo?: string;
+  dataNascimento?: string;
+  cpf?: string;
+  email?: string;
+  endereco?: string;
+  observacoes?: string;
+  recebeNotificacoes?: boolean;
+  criadoEm?: string;
 };
 
 export const patients: Patient[] = [
@@ -126,8 +135,28 @@ export const patients: Patient[] = [
     etiquetas: [],
     identificador: "+55 (11) 99999-9999",
     ativo: true,
+    sexo: "Feminino",
+    dataNascimento: "02/12/1991",
+    cpf: "315.772.070-84",
+    email: "clara.ribeiro@exemplo.com",
+    endereco: "Av. Pedro Álvares Cabral, SN — Vila Mariana, São Paulo, SP — 04094-050 — Brasil",
+    observacoes: "Esse paciente é um paciente de exemplo.",
+    recebeNotificacoes: false,
+    criadoEm: "22/06/2026 15:00:43",
   },
 ];
+
+/** Idade em anos a partir de "dd/mm/aaaa". Retorna null se inválida. */
+export function idadeFrom(dataNascimento?: string): number | null {
+  if (!dataNascimento) return null;
+  const [d, m, y] = dataNascimento.split("/").map(Number);
+  if (!d || !m || !y) return null;
+  // Data de referência fixa do mock (today = 23/06/2026).
+  const hoje = { d: 23, m: 6, y: 2026 };
+  let idade = hoje.y - y;
+  if (hoje.m < m || (hoje.m === m && hoje.d < d)) idade -= 1;
+  return idade;
+}
 
 /* ---------- Profissionais (10) / Fornecedores (11) — tabela de contatos ---------- */
 
