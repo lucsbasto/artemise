@@ -451,6 +451,30 @@ export const coresProcedimento: CorOption[] = [
 // Categorias de procedimento (dropdown estático do modal).
 export const categoriasProcedimento = ["Facial", "Corporal", "Estética", "Injetáveis"];
 
+/* ---------- Registro de procedimentos por paciente (ficha) ---------- */
+// Procedimento efetivamente lançado na ficha de um paciente (executado/agendado),
+// distinto do catálogo `procedimentos` (tipos disponíveis na clínica).
+export type StatusRegistroProc = "realizado" | "agendado" | "cancelado";
+
+export type RegistroProcedimento = {
+  id: string;
+  pacienteId: string;
+  procedimento: string;
+  profissional: string;
+  data: string; // DD/MM/AAAA
+  status: StatusRegistroProc;
+  valor: number;
+  observacoes: string;
+};
+
+export const registrosProcedimento: RegistroProcedimento[] = [];
+
+export const statusRegistroProcLabel: Record<StatusRegistroProc, string> = {
+  realizado: "Realizado",
+  agendado: "Agendado",
+  cancelado: "Cancelado",
+};
+
 /* ---------- Pacotes (34-config-pacotes.md) ---------- */
 
 export type Pacote = {
@@ -591,6 +615,7 @@ export const fichaPaciente: FichaPaciente = {
 export const fichaAbas = [
   { label: "Informações", slug: "informacoes" },
   { label: "Linha do tempo", slug: "linha-do-tempo" },
+  { label: "Procedimentos", slug: "procedimentos" },
   { label: "Carteira", slug: "carteira" },
   { label: "Pacotes", slug: "creditos" },
   { label: "Financeiro", slug: "financeiro" },

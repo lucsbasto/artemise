@@ -18,6 +18,7 @@ import {
   metodosPagamento,
   fichasAtendimento,
   modelosDocumento,
+  registrosProcedimento,
   weekEvents,
   type WeekEvent,
 } from "@/lib/mock";
@@ -35,6 +36,8 @@ export const categoriasContasStore = createCollection(categoriasContas);
 export const metodosPagamentoStore = createCollection(metodosPagamento);
 export const fichasAtendimentoStore = createCollection(fichasAtendimento);
 export const modelosDocumentoStore = createCollection(modelosDocumento);
+// Procedimentos lançados na ficha de cada paciente (filtrar por pacienteId).
+export const registrosProcedimentoStore = createCollection(registrosProcedimento);
 
 /* ---------- Eventos da agenda (calendário) ---------- */
 export type WeekEventItem = WeekEvent & { id: string };
