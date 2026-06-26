@@ -98,14 +98,14 @@ com os campos já preenchidos, para corrigir dados sem recadastrar.
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| FPD-01 | P1: cards por seção | Execute | Pending |
-| FPD-02 | P1: campos vazios `—` | Execute | Pending |
-| FPD-03 | P1: idade via `idadeFrom` | Execute | Pending |
-| FPD-04 | P1: reuso Card/Linha | Execute | Pending |
-| FPD-05 | P2: histórico futuros/realizados | Execute | Pending |
-| FPD-06 | P2: empty states do histórico | Execute | Pending |
-| FPD-07 | P3: botão Editar abre modal pré-preenchido | Execute | Pending |
-| FPD-08 | P3: update reativo via store | Execute | Pending |
+| FPD-01 | P1: cards por seção | Execute | Verified |
+| FPD-02 | P1: campos vazios `—` | Execute | Verified |
+| FPD-03 | P1: idade via `idadeFrom` | Execute | Verified |
+| FPD-04 | P1: reuso Card/Linha | Execute | Verified |
+| FPD-05 | P2: histórico futuros/realizados | Execute | Verified |
+| FPD-06 | P2: empty states do histórico | Execute | Verified |
+| FPD-07 | P3: botão Editar abre modal pré-preenchido | Execute | Verified |
+| FPD-08 | P3: update reativo via store | Execute | Verified |
 
 **ID format:** `FPD-[NUMBER]`
 **Status values:** Pending → Implementing → Verified
