@@ -2,16 +2,22 @@
 import * as React from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { brl } from "@/lib/utils";
-import { useCollection } from "@/lib/data/create-collection";
-import { orcamentosStore } from "@/lib/data/stores";
+import { useCollection, nextId } from "@/lib/data/create-collection";
+import { orcamentosStore, type Orcamento } from "@/lib/data/stores";
 import { RowActions } from "@/components/ui/row-actions";
 import { EmptyFiltered } from "./ficha-empty";
 import { Pagination } from "./pagination";
 import { OrcamentoButton } from "./orcamento-button";
+import { OrcamentoModal } from "./orcamento-modal";
 
 export function AbaOrcamentos() {
-  const { items, remove } = useCollection(orcamentosStore);
+  const { items, add, remove } = useCollection(orcamentosStore);
   const [query, setQuery] = React.useState("");
+  const [modalOpen, setModalOpen] = React.useState(false);
+
+  function handleSave(data: Omit<Orcamento, "id">) {
+    add({ id: nextId("orc"), ...data });
+  }
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -41,7 +47,7 @@ export function AbaOrcamentos() {
       {/* ações */}
       <div className="flex flex-wrap items-center gap-2 px-5 py-4">
         <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
-        <OrcamentoButton />
+        <OrcamentoButton onClick={() => setModalOpen(true)} />
         <div className="relative ml-auto">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
           <input
@@ -54,7 +60,10 @@ export function AbaOrcamentos() {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyFiltered />
+        <EmptyFiltered
+          onClearFilters={() => setQuery("")}
+          action={{ label: "Adicionar novo orçamento", onClick: () => setModalOpen(true) }}
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -93,6 +102,13 @@ export function AbaOrcamentos() {
       )}
 
       <Pagination perPage={25} />
+
+      <OrcamentoModal
+        key={modalOpen ? "open" : "closed"}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleSave}
+      />
     </div>
   );
 }

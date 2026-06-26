@@ -84,7 +84,10 @@ export function AbaProcedimentos() {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyFiltered />
+        <EmptyFiltered
+          onClearFilters={() => setQuery("")}
+          action={{ label: "Registrar procedimento", onClick: handleNovo }}
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

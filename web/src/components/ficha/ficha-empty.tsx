@@ -13,8 +13,14 @@ export function EmptyData() {
   );
 }
 
-/** Empty state "sem resultados por filtro" — Orçamentos. */
-export function EmptyFiltered() {
+/** Empty state "sem resultados por filtro". CTA opcional via `action`. */
+export function EmptyFiltered({
+  action,
+  onClearFilters,
+}: {
+  action?: { label: string; onClick: () => void };
+  onClearFilters?: () => void;
+}) {
   return (
     <div className="flex flex-col items-center gap-2 py-16 text-center">
       <span className="grid size-12 place-items-center rounded-full bg-brand-100/50 text-brand">
@@ -25,12 +31,20 @@ export function EmptyFiltered() {
         Os filtros selecionados não correspondem a nenhum registro.
       </p>
       <div className="mt-3 flex items-center gap-2">
-        <button className="inline-flex h-9 items-center rounded-lg border border-brand px-4 text-sm font-medium text-brand hover:bg-brand-100/30">
+        <button
+          onClick={onClearFilters}
+          className="inline-flex h-9 items-center rounded-lg border border-brand px-4 text-sm font-medium text-brand hover:bg-brand-100/30"
+        >
           Limpar filtros
         </button>
-        <button className="inline-flex h-9 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white hover:bg-brand/90">
-          + Adicionar novo orçamento
-        </button>
+        {action && (
+          <button
+            onClick={action.onClick}
+            className="inline-flex h-9 items-center rounded-lg bg-brand px-4 text-sm font-medium text-white hover:bg-brand/90"
+          >
+            + {action.label}
+          </button>
+        )}
       </div>
     </div>
   );
