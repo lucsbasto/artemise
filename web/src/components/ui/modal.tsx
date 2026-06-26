@@ -16,7 +16,7 @@ export function Modal({
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
 }) {
   React.useEffect(() => {
     if (!open) return;
@@ -40,7 +40,7 @@ export function Modal({
       <div
         className={cn(
           "my-auto w-full rounded-[var(--radius-card)] bg-surface shadow-xl",
-          size === "lg" ? "max-w-3xl" : "max-w-xl"
+          size === "xl" ? "max-w-5xl" : size === "lg" ? "max-w-3xl" : "max-w-xl"
         )}
         onClick={(e) => e.stopPropagation()}
       >

@@ -1,0 +1,11 @@
+clinica/inicio:
+    quando clico no olho do modal balanço não acontece nada, deveria ocultar as informações e mudar o icone
+    quando clico no modal deve ser redirecionado para a tela de agendamentos com o calendario completo http://localhost:3000/agenda
+    quando clico no item do modal "Agendamentos das próximas 24h" deveria ser redirecionado para o agendamento com o detalhe do agentamento aberto
+aba de agendas:
+    quando eu clico em algum slot do calendario deve ser aberto um modal para adicionar um novo agendamento, a mesma coisa deve acontecer quando clico no simbolo de "+" no canto inferior direito da tela
+contatos:
+    botão de ações não funciona
+profissionais:
+    botão de ações abre o botão pra baixo e tem que scrolar quero que abra pra cima e pra direita
+    botão de adicionar não funciona "+"

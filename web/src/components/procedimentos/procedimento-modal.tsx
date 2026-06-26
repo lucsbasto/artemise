@@ -7,7 +7,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { coresProcedimento, categoriasProcedimento } from "@/lib/mock";
-import type { Procedimento } from "@/lib/mock";
+import type { CategoriaProc, Procedimento } from "@/lib/mock";
 
 interface ProcedimentoModalProps {
   open: boolean;
@@ -35,12 +35,15 @@ export function ProcedimentoModal({ open, onClose, onSave, procedimento }: Proce
     setNomeError(hasNomeError);
     setCorError(hasCorError);
     if (!hasNomeError && !hasCorError) {
+      const cat = (categoria || null) as CategoriaProc | null;
       onSave?.({
         nome: nome.trim(),
         valor: Number(valor) || 0,
         duracaoMin: Number(duracao) || 0,
-        categoria: categoria || null,
+        categoria: cat,
         ativo,
+        // Injetáveis abrem o mapa; demais categorias não.
+        usaMapa: cat === "Injetáveis",
       });
       onClose();
     }
