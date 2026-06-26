@@ -3,10 +3,10 @@ import * as React from "react";
 import { Eye, EyeOff, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { brl } from "@/lib/utils";
-import { balance } from "@/lib/mock";
+import type { Balance } from "@/lib/mock";
 
 /** Card de balanço com botão de olho que oculta/exibe os valores. */
-export function BalancoCard() {
+export function BalancoCard({ balance }: { balance: Balance }) {
   const [oculto, setOculto] = React.useState(false);
   const v = (n: number) => (oculto ? "••••••" : brl(n));
 

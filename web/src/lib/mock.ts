@@ -22,7 +22,17 @@ export const cashflowDaily: CashflowPoint[] = [
   { label: "22 Jun", entradas: 4370, entradasPrevistas: 6200, saidas: -300, saidasPrevistas: -700, saldo: 1831, saldoPrevisto: 781 },
 ];
 
-export const balance = {
+export type Balance = {
+  saldoRealizado: number;
+  saldoPrevisto: number;
+  entradasRealizadas: number;
+  entradasPrevistas: number;
+  saidasRealizadas: number;
+  saidasPrevistas: number;
+  periodo: string;
+};
+
+export const balance: Balance = {
   saldoRealizado: 1831,
   saldoPrevisto: 781,
   entradasRealizadas: 4370,
@@ -46,7 +56,17 @@ export const next24h: Appointment[] = [
   },
 ];
 
-export const reports = {
+export type Reports = {
+  porProfissional: { label: string; total: number }[];
+  diasMovimentados: { dia: string; total: number }[];
+  horarios: string[];
+  heatAtivo: string;
+  statusAgendamento: { total: number; label: string; legenda: string };
+  pacientesPorSexo: { total: number; label: string; legenda: string };
+  faturamentoComparado: { label: string; valor: number }[];
+};
+
+export const reports: Reports = {
   porProfissional: [{ label: "LB", total: 1 }],
   // D S T Q Q S S  — pico (1) numa segunda
   diasMovimentados: [

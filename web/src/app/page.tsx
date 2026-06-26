@@ -9,9 +9,19 @@ import { MiniBars, SingleBar } from "@/components/charts/mini-bars";
 import { Heatmap } from "@/components/charts/heatmap";
 import { BalancoCard } from "@/components/inicio/balanco-card";
 import { Next24hCard } from "@/components/inicio/next24h-card";
-import { cashflowDaily, balance, reports } from "@/lib/mock";
+import { loadServer } from "@/lib/data/server-load";
+import type { Appointment, Balance, CashflowPoint, Reports } from "@/lib/mock";
 
-export default function DashboardPage() {
+type DashboardData = {
+  balance: Balance;
+  cashflowDaily: CashflowPoint[];
+  next24h: Appointment[];
+  reports: Reports;
+};
+
+export default async function DashboardPage() {
+  const { balance, cashflowDaily, next24h, reports } =
+    await loadServer<DashboardData>("/dashboard");
   return (
     <div className="mx-auto max-w-[1200px] p-5">
       <Breadcrumb items={["Clínica", "Início"]} />
@@ -48,13 +58,13 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <BalancoCard />
+          <BalancoCard balance={balance} />
         </div>
       </div>
 
       {/* Meio: agendamentos 24h + aniversariantes */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Next24hCard />
+        <Next24hCard items={next24h} />
 
         <Card>
           <CardHeader>

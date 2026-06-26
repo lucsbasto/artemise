@@ -1,13 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { next24h } from "@/lib/mock";
+import type { Appointment } from "@/lib/mock";
 
 /**
  * Card "Agendamentos das próximas 24h".
  * Clicar no título leva à agenda completa; clicar num item abre o detalhe.
  */
-export function Next24hCard() {
+export function Next24hCard({ items }: { items: Appointment[] }) {
   const router = useRouter();
 
   return (
@@ -20,7 +20,7 @@ export function Next24hCard() {
         </button>
       </CardHeader>
       <CardContent>
-        {next24h.map((a) => (
+        {items.map((a) => (
           <button
             key={a.paciente}
             type="button"
