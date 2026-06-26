@@ -5,13 +5,13 @@ import { ListShell } from "@/components/ui/list-shell";
 import { Toggle } from "@/components/ui/toggle";
 import { RowActions } from "@/components/ui/row-actions";
 import { useListControls } from "@/lib/use-list-controls";
-import { createCollection, useCollection, nextId } from "@/lib/data/create-collection";
+import { createLocalCollection, useCollection, nextId } from "@/lib/data/create-collection";
 import { CategoriaProcModal } from "@/components/configuracoes/categoria-proc-modal";
 
 type CategoriaProc = { id: string; nome: string; ativo: boolean };
 
-/** Store local seedado vazio — não precisa ir no stores.ts central. */
-const categoriasProcStore = createCollection<CategoriaProc>([]);
+/** Store local seedado vazio — não há endpoint de categorias de procedimento. */
+const categoriasProcStore = createLocalCollection<CategoriaProc>();
 
 /** Tela 33 — Categorias de procedimentos (lista + modal, funcional). */
 export function CategoriasProcView() {
