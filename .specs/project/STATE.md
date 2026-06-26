@@ -10,7 +10,7 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - **D3** — Cor de marca roxo `#7c3aed` (token `--brand`). Sem dark mode nesta fase.
 - **D4** — Charts são Client Components (`"use client"`); páginas seguem Server Components.
 - **D5** — Rotas simplificadas: `/`, `/agenda`, `/pacientes`, `/financeiro` (specs reais usam `/clinica/...`).
-- **D6** — Backend: **Supabase (Postgres+Auth) + Drizzle ORM + shared-schema multitenancy via RLS**. Toda tabela de negócio carrega `clinica_id`; isolamento por `private.user_clinica_ids()` (SECURITY DEFINER) lendo `memberships` do `auth.uid()`. Tenant = `clinicas`; user = `profiles` (1:1 auth.users); vínculo = `memberships`+role. Relatórios (dashboard/fluxo caixa/KPIs) = views/agregações, não tabelas.
+- **D6** — Backend: **Go (net/http stdlib, ServeMux 1.22+) + Postgres via Supabase (só driver `pgx/v5`, sem Drizzle, sem Supabase Auth)**. Auth própria em Go: tabela `sessions` + cookie `httpOnly` + hash `argon2id`. Multitenancy shared-schema: toda tabela de negócio carrega `clinica_id`; RLS por request via `SET LOCAL app.clinica_id = '<uuid>'` em transação (sem service-role bypass). Relatórios (dashboard/fluxo caixa/KPIs) = queries computadas, não tabelas. Backend vive em `backend/` paralelo a `web/`. Spec canônica: `.specs/features/backend-go/` (spec+design+tasks). **Revogada a decisão anterior (Drizzle ORM + Supabase Auth + `memberships`/`profiles`); código `web/src/db` + `web/drizzle` apagado em 2026-06-26.**
 
 ## Lições
 - **L1** — Server Component NÃO pode passar função como prop a Client Component (ex.: `tickFormatter`). Usar enum string serializável e resolver a função dentro do client. (Quebrou o build; corrigido em `mini-bars.tsx`.)
@@ -31,25 +31,25 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Feature **ficha-paciente-detalhe** (refino): aba **Informações** da ficha (`/pacientes/[id]/informacoes`) reescrita em cards por seção espelhando `profissional-detalhe`. Novo `ficha/paciente-detalhe.tsx` (client): cards **Informações pessoais** (Nome/Nascimento+idade via `idadeFrom`/Sexo/CPF/Cadastrado em/Observações), **Contato** (Telefone+ícone WhatsApp/Email/Notificações), **Endereço**, + histórico **Próximos agendamentos**/**Procedimentos realizados** preservado (futuros `dayNum>=23` / realizados `<23`, empty states). `Linha` usa `—` em vazio. `aba-informacoes.tsx` removido (órfão). `PacienteModal` ganha prop opcional `paciente` → modo edição pré-preenchido (título "Editar paciente"); "Editar informações" abre e salva via `pacientesStore.update` (reativo); remount por `key={id}-${open}` descarta edições não salvas. FPD-01..08 Verified. `.specs/features/ficha-paciente-detalhe/`. tsc ✅ eslint ✅ build ✅ (36 rotas). Branch `feat/ficha-paciente-detalhe`, merge direto na main.
 - Feature **procedimentos-aba** (mapa): liga a aba Procedimentos da ficha ao `<MapaInjetaveis>`. `mock.ts`: `Procedimento.categoria` tipada (`CategoriaProc`) + `usaMapa`; catálogo seed expandido (14 estéticos comuns, Injetáveis⇒usaMapa); `RegistroProcedimento` ganha `usaMapa?`+`mapa?` (`FichaInjetaveis` serializável: pontos/rastreioPorSub/relatorio); itens injetáveis no estoque em **ui** (toxina/ácido/pdo/bioestimulador). `MapaInjetaveis` agora **controlado** (`value`/`onChange`, fallback não-controlado p/ demo); substâncias derivam do `estoqueStore` (categoria Injetáveis), aviso de saldo insuficiente; regiões faciais seed ampliadas. Novo `mapa-injetaveis-modal.tsx` (`<Modal size="xl">` + rascunho + baseline). `registro-procedimento-modal` deriva `usaMapa` e mostra **"Abrir mapa"**; `aba-procedimentos` tem ação **"Mapa"** no row (só `usaMapa`), persiste via `useCollection` e **baixa estoque por delta de ui** (ajusta na edição). `ui/modal` ganhou size `xl`. **12/12 tasks** (T12 render no browser pendente do usuário). `.specs/features/procedimentos-aba/`. tsc ✅ eslint ✅ build ✅. Branch `feat/procedimentos-aba`, merge direto na main (`c140b07`).
 
-- Feature **backend-db** (fase backend, lote 1): schema multitenant Drizzle+Supabase. **28 tabelas, 111 RLS policies** (4 CRUD/tabela via `tenantPolicies`). Módulos em `web/src/db/schema/`: `_enums`, `_helpers` (timestamps, `isTenant`, `tenantPolicies`, `clinicaFk`), `tenancy` (clinicas/profiles/memberships + policies custom), `cadastros` (pacientes, profissionais+horarios+procedimentos m2m+comissao_regras, fornecedores, procedimentos, categorias_procedimento, pacotes+itens, fichas_atendimento, modelos_documento), `estoque` (itens+movimentos ledger), `agenda` (agendamentos unificado), `ficha` (registros_procedimento c/ mapa jsonb, orcamentos+itens, carteiras), `financeiro` (contas, categorias_conta árvore self-ref, metodos_pagamento, lancamentos ledger receita/despesa, comissoes), `comunicacao` (modelos_mensagem). `client.ts`: `db` admin + `withTenant(claims,cb)` (transação seta role=authenticated + jwt claims → RLS vale). `rls.sql`: `private.user_clinica_ids()` + trigger `handle_new_user` (espelha auth.users→profiles); roda ANTES da migration (`check_function_bodies=off`). Migration `drizzle/0000_init.sql` gerada. Scripts `db:generate|migrate|push|studio`. tsc ✅ eslint ✅ migration-gen ✅. **Nada provisionado ainda** (sem projeto Supabase real, sem seed, sem wiring de auth). README em `web/src/db/README.md`. Branch `feat/backend-db`, merge direto na main (`78996c3`). **Revisão de segurança aplicada (`feat/backend-db-hardening`, merge `08582d7`):** S1 onboarding só via RPC `create_clinica` (SECURITY DEFINER; `clinicas_insert=false`, `memberships_insert` exige `user_is_admin`) → sem autojunção a clínica alheia; S2 gate por role (`user_is_admin`/`user_is_owner`) em membership/clinica; S3 FKs compostas `(clinica_id, pai_id)` nos filhos cascade (bloqueia anexo cross-tenant) — refs opcionais set-null ficam FK simples, validar same-tenant no app; S4 índices em `clinica_id` + secundários (datas/FKs); S5 uniques (carteiras, prof_procedimentos, modelos_mensagem); S6 removido `lancamentos.metodo` redundante. Migration regenerada: 11 FKs compostas, 14 uniques, 18 índices, 111 policies.
+- ~~Feature **backend-db** (Drizzle+Supabase Auth)~~ — **REVOGADA e APAGADA em 2026-06-26.** Decisão mudou para Go puro (D6 atual). Código `web/src/db/*` + `web/drizzle/*` + `drizzle.config.ts` + `.env.example` removidos; deps Drizzle/Supabase (`drizzle-orm`, `drizzle-kit`, `postgres`, `@supabase/ssr`, `@supabase/supabase-js`) e scripts `db:*` retirados do `web/package.json` (lockfile sincronizado). O modelo de domínio daquele schema (28 entidades, multitenant por `clinica_id`, mapa JSONB, ledgers financeiro/estoque, árvore de categorias) foi reaproveitado conceitualmente no spec Go. Nada havia sido provisionado (sem Supabase real/seed/auth), então não há migração de dados a fazer.
 
 ## Sessão / retomada
 
-### Backend (fase nova) — retomar aqui em 2026-06-26
-- **Feito:** schema multitenant completo + revisão de segurança (D6; features `backend-db` + `backend-db-hardening`, na main). 28 tabelas, RLS por `clinica_id`, FKs compostas same-tenant, índices. tsc+eslint+migration-gen ✅.
-- **NADA provisionado:** sem projeto Supabase real, sem `.env`, sem seed, sem auth wiring. Schema é só código + migration.
-- **Próximo = T9 (provisionar). Ordem exata:**
-  1. criar projeto no Supabase → copiar connection string p/ `web/.env` (modelo em `web/.env.example`)
-  2. `cd web && psql "$DATABASE_URL" -f src/db/rls.sql`  ← ANTES da migration (cria funções/RPC; usa `check_function_bodies=off`)
-  3. `npm run db:migrate`  ← cria 28 tabelas + 111 policies
-  4. smoke test RLS: criar 2 usuários, `select create_clinica('A')` / `('B')`, confirmar que user A não lê dados de B.
-- **Depois:** T10 (auth Supabase SSR + onboarding chama `create_clinica`), T11 (seed clínica demo do `mock.ts` + trocar `src/lib/data/*` stores por `withTenant`).
-- **Resíduos da revisão (decidir/implementar):**
-  - **S7** — `atualizado_em` não auto-atualiza (só default no insert). Add trigger `moddatetime` (extensão Supabase) por tabela, OU setar no app no update.
-  - **S8** — sem soft-delete; qualquer membro DELETE em `lancamentos`/`comissoes`. Decidir imutabilidade financeira (restringir delete por role, ou flag `deletado_em`).
-  - **same-tenant das refs opcionais** (agendamento→paciente, lancamento→*, procedimento.categoria_id, registros→procedimento/profissional, orcamento→paciente, categorias_conta.parent) NÃO é forçado no banco (FK simples set-null). App deve validar no write via `withTenant` que o id referenciado pertence ao tenant.
-  - **S9** — `numeric` volta como **string** no postgres-js; data-layer (T11) precisa parsear p/ `number`.
-- **Arquivos-chave:** `web/src/db/schema/*` (modulado), `web/src/db/client.ts` (`db` + `withTenant`), `web/src/db/rls.sql`, `web/src/db/README.md` (ordem de apply detalhada), `web/drizzle/0000_init.sql`.
+### Backend Go (fase nova) — retomar aqui em 2026-06-26
+- **Decisão:** D6 atual = Go puro (`net/http`+`pgx`), Supabase só como Postgres gerenciado, auth própria (`sessions`+cookie+argon2id), RLS por request via `SET LOCAL app.clinica_id`. Trilha Drizzle/Supabase-Auth **revogada e apagada** (ver entrada riscada em Concluído).
+- **Spec canônica PRONTA:** `.specs/features/backend-go/` — `spec.md` (63 RF + 10 RNF + 5 CA), `design.md` (camadas `internal/{http,store,domain,auth,db}`, pgx pool, argon2id, migrations runner, seed do mock), `tasks.md` (board M1–M9, gate `go build ./... && go vet ./...`). Status: pronta p/ implementar.
+- **NADA codado ainda:** sem diretório `backend/`, sem `go.mod`, sem projeto Supabase real, sem `.env`. Só os 3 docs de spec.
+- **Próximo = M1 Bootstrap.** Ordem (tasks.md):
+  1. abrir worktree `feat/backend-go` (ver [[worktree-por-spec]]); criar `backend/` paralelo a `web/`.
+  2. M1: `go mod init` + deps (`pgx/v5`, `x/crypto/argon2`), pool pgx + config env (`backend/.env`), servidor ServeMux + health check.
+  3. M2: runner de migrations + schema núcleo SQL + RLS policies (`SET LOCAL app.clinica_id`) + seed do `web/src/lib/mock.ts`.
+  4. M3 auth → M4 CRUD → M5 sub-recursos → M6 estoque transacional → M7 computados → M8 swap frontend (`api-client.ts`, `create-collection` via fetch) → M9 fecho.
+- **Pontos de atenção herdados (resolver no design Go, já mapeados no spec):**
+  - `numeric` Postgres → garantir serialização como `number` no JSON (não string).
+  - same-tenant de refs opcionais (agendamento→paciente, lancamento→*, etc.) validar no write via query no tenant corrente.
+  - imutabilidade financeira (delete de `lancamentos`/`comissoes`): decidir restrição por perfil ou soft-delete.
+  - `usaMapa` invariante (Injetáveis ⇒ true) validado server-side (RF-18).
+- **Arquivos-chave (a criar):** `backend/cmd/server/main.go`, `backend/cmd/seed/main.go`, `backend/internal/{http,store,domain,auth,db}/`, `backend/migrations/*.sql`, `backend/go.mod`.
 
 
 - **Lote 6 (agenda) + Lote 7 (financeiro) concluídos em 2026-06-23.** main local, build ✅ lint ✅ (23 rotas geradas; 9 novas `/financeiro/*`). Sem push p/ origin.
@@ -79,10 +79,10 @@ Status válidos: `todo` | `wip` | `blocked` | `done`.
 | T5  | done   |       | Lote 7 — Financeiro relatórios+cadastros (telas 15-23) | 9 telas; `feat/financeiro-relatorios` |
 | T8  | done   |       | Lote 6 — Agenda completa (telas 03-06) | `feat/agenda-completa` |
 | T7  | done   |       | Lote 8 — Comunicação 28-29 (8A/8B/8C todas ✅) | módulo `/comunicacao`; 36/36. |
-| T6  | wip    |       | Backend + RLS | schema+RLS ✅ (`feat/backend-db`, 28 tab/111 pol). Falta: T9/T10/T11 |
-| T9  | todo   |       | Provisionar Supabase real + aplicar rls.sql + db:migrate | preencher `.env`; ordem no README |
-| T10 | todo   |       | Wiring de auth (Supabase SSR) + onboarding clínica | login → cria clinica + membership owner |
-| T11 | todo   |       | Seed da clínica demo a partir de `mock.ts` + trocar stores por `withTenant` | data-layer já isola via hooks |
+| T6  | done   |       | ~~Backend Drizzle + RLS~~ REVOGADO | substituído por Go (D6 atual); código apagado |
+| T9  | todo   |       | Backend Go M1–M3: bootstrap + migrations/seed + auth/RLS | `.specs/features/backend-go/tasks.md`; worktree `feat/backend-go`; backend Go puro |
+| T10 | todo   |       | Backend Go M4–M7: CRUD + sub-recursos + estoque transacional + computados | depende de T9 |
+| T11 | todo   |       | Backend Go M8–M9: swap frontend (`api-client`+`create-collection` via fetch) + fecho | remove mock mutável; tsc+lint limpos |
 | T12 | todo   |       | **Responsivo mobile & tablet** (RSP1–RSP10) | `.specs/features/responsive-mobile-tablet/` spec+design+tasks ✅; tablet-first; abrir worktree `feat/responsive-mobile-tablet` antes; RSP1/RSP2/RSP5 paralelizáveis |
 
 ## Preferências

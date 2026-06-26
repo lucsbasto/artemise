@@ -52,7 +52,7 @@ Toda rota deve verificar o perfil da sessão ativa e retornar `403` quando insuf
 
 **RF-01 — Login**
 O sistema deve aceitar `POST /auth/login` com `{ email, senha }`, verificar o hash da senha
-(x/crypto/bcrypt), criar um registro em `sessions` com token UUID e retornar um cookie
+(argon2id via `golang.org/x/crypto/argon2`), criar um registro em `sessions` com token UUID e retornar um cookie
 `session` `httpOnly`; `Secure` em produção.
 _Critério_: login com credenciais válidas retorna `200` e cookie; credenciais inválidas retornam `401`.
 
@@ -480,7 +480,7 @@ _Critério_: procedimento de R$ 1.000 com comissão 40% → `valor = 400`.
 **RNF-01 — Stack travada**
 Go com `net/http` stdlib puro e `ServeMux` 1.22+ (route patterns com método e parâmetros
 nomeados). Zero framework HTTP externo. Dependências externas permitidas: `pgx/v5` (driver
-Postgres), `golang.org/x/crypto` (bcrypt), e apenas outras com justificativa documentada no
+Postgres), `golang.org/x/crypto` (argon2id), e apenas outras com justificativa documentada no
 `backend/go.mod`.
 
 **RNF-02 — Banco de dados**
