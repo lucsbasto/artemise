@@ -1,9 +1,17 @@
 import { AgendaSubmenu } from "@/components/agenda/agenda-submenu";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { RelatorioTable } from "@/components/agenda/relatorio-table";
-import { agendaRelatorioRows, agendaStatusTabs, agendaPeriodo } from "@/lib/mock";
+import { loadServer } from "@/lib/data/server-load";
+import type { AgendaRow, AgendaStatus } from "@/lib/mock";
 
-export default function AgendaRelatorioPage() {
+type AgendaRelatorio = {
+  rows: AgendaRow[];
+  periodo: string;
+  statusTabs: { label: AgendaStatus | "Todos"; total: number }[];
+};
+
+export default async function AgendaRelatorioPage() {
+  const data = await loadServer<AgendaRelatorio>("/agenda/relatorio");
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />
@@ -12,9 +20,9 @@ export default function AgendaRelatorioPage() {
           <Breadcrumb items={["Agenda", "Relatório de agendamentos"]} />
           <div className="mt-4">
             <RelatorioTable
-              rows={agendaRelatorioRows}
-              periodo={agendaPeriodo}
-              statusTabs={agendaStatusTabs}
+              rows={data.rows}
+              periodo={data.periodo}
+              statusTabs={data.statusTabs}
             />
           </div>
         </div>

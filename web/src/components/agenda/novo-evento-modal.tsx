@@ -16,14 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 import {
-  procedimentos,
   currentUser,
   recorrenciasEvento,
   statusEventoOpcoes,
   weekDays,
 } from "@/lib/mock";
 import { useCollection, nextId } from "@/lib/data/create-collection";
-import { eventosStore } from "@/lib/data/stores";
+import { eventosStore, procedimentosStore } from "@/lib/data/stores";
 
 function parseHora(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
@@ -173,6 +172,7 @@ function FormAgendamento({
   horaFim: string;
   setHoraFim: (v: string) => void;
 }) {
+  const { items: procedimentos } = useCollection(procedimentosStore);
   return (
     <>
       <div className="flex items-center justify-between">
@@ -352,6 +352,7 @@ function FormLembrete() {
 
 /* ---------- Evento / promoção ---------- */
 function FormEvento() {
+  const { items: procedimentos } = useCollection(procedimentosStore);
   return (
     <>
       <span className="text-sm font-semibold text-foreground">Dados básicos</span>

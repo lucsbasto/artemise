@@ -5,14 +5,9 @@ import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCollection } from "@/lib/data/create-collection";
-import { profissionaisDetalheStore } from "@/lib/data/stores";
-import { procedimentos } from "@/lib/mock";
+import { profissionaisDetalheStore, procedimentosStore } from "@/lib/data/stores";
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-function procNome(id: string) {
-  return procedimentos.find((p) => p.id === id)?.nome ?? id;
-}
 
 /** Par rótulo/valor numa grade de informações. */
 function Linha({ label, value }: { label: string; value: React.ReactNode }) {
@@ -26,7 +21,10 @@ function Linha({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function ProfissionalDetalhe({ id }: { id: string }) {
   const { items } = useCollection(profissionaisDetalheStore);
+  const { items: procedimentos } = useCollection(procedimentosStore);
   const prof = items.find((p) => p.id === id);
+  const procNome = (pid: string) =>
+    procedimentos.find((p) => p.id === pid)?.nome ?? pid;
 
   if (!prof) {
     return (

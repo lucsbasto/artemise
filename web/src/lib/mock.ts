@@ -13,23 +13,17 @@ export type CashflowPoint = {
   saldoPrevisto: number;
 };
 
-// período 18–22 Jun; saldo sobe terminando alto em 22 Jun
-export const cashflowDaily: CashflowPoint[] = [
-  { label: "18 Jun", entradas: 1200, entradasPrevistas: 1500, saidas: -300, saidasPrevistas: -700, saldo: 900, saldoPrevisto: 800 },
-  { label: "19 Jun", entradas: 900, entradasPrevistas: 1300, saidas: -1100, saidasPrevistas: -1400, saldo: 700, saldoPrevisto: 650 },
-  { label: "20 Jun", entradas: 400, entradasPrevistas: 900, saidas: -200, saidasPrevistas: -800, saldo: 900, saldoPrevisto: 500 },
-  { label: "21 Jun", entradas: 700, entradasPrevistas: 1000, saidas: -639, saidasPrevistas: -900, saldo: 960, saldoPrevisto: 600 },
-  { label: "22 Jun", entradas: 4370, entradasPrevistas: 6200, saidas: -300, saidasPrevistas: -700, saldo: 1831, saldoPrevisto: 781 },
-];
+// Dados do dashboard (cashflowDaily, balance, next24h, reports) vêm de
+// GET /api/dashboard — apenas os tipos permanecem aqui.
 
-export const balance = {
-  saldoRealizado: 1831,
-  saldoPrevisto: 781,
-  entradasRealizadas: 4370,
-  entradasPrevistas: 6200,
-  saidasRealizadas: -2539,
-  saidasPrevistas: -5419,
-  periodo: "18/06/2026 - 22/06/2026",
+export type Balance = {
+  saldoRealizado: number;
+  saldoPrevisto: number;
+  entradasRealizadas: number;
+  entradasPrevistas: number;
+  saidasRealizadas: number;
+  saidasPrevistas: number;
+  periodo: string;
 };
 
 export type Appointment = {
@@ -38,38 +32,14 @@ export type Appointment = {
   horario: string;
 };
 
-export const next24h: Appointment[] = [
-  {
-    paciente: "Clara Ribeiro (Paciente de exemplo)",
-    procedimento: "Limpeza de Pele Profunda",
-    horario: "14:00 - 15:00",
-  },
-];
-
-export const reports = {
-  porProfissional: [{ label: "LB", total: 1 }],
-  // D S T Q Q S S  — pico (1) numa segunda
-  diasMovimentados: [
-    { dia: "D", total: 0 },
-    { dia: "S", total: 1 },
-    { dia: "T", total: 0 },
-    { dia: "Q", total: 0 },
-    { dia: "Q", total: 0 },
-    { dia: "S", total: 0 },
-    { dia: "S", total: 0 },
-  ],
-  // heatmap: faixas 14h..22h; só 14h ocupada
-  horarios: ["14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h", "22h"],
-  heatAtivo: "14h",
-  statusAgendamento: { total: 1, label: "Agendamentos", legenda: "1 agendamentos no período" },
-  pacientesPorSexo: { total: 1, label: "Pacientes", legenda: "1 pacientes no período" },
-  faturamentoComparado: [
-    { label: "18 Jun", valor: 3800 },
-    { label: "19 Jun", valor: 0 },
-    { label: "20 Jun", valor: 0 },
-    { label: "21 Jun", valor: 0 },
-    { label: "22 Jun", valor: 0 },
-  ],
+export type Reports = {
+  porProfissional: { label: string; total: number }[];
+  diasMovimentados: { dia: string; total: number }[];
+  horarios: string[];
+  heatAtivo: string;
+  statusAgendamento: { total: number; label: string; legenda: string };
+  pacientesPorSexo: { total: number; label: string; legenda: string };
+  faturamentoComparado: { label: string; valor: number }[];
 };
 
 /* ---------- Agenda (02-agenda-calendario.md) ---------- */
@@ -127,24 +97,7 @@ export type Patient = {
   criadoEm?: string;
 };
 
-export const patients: Patient[] = [
-  {
-    id: "1",
-    nome: "Clara Ribeiro (Paciente de exemplo)",
-    tipo: "Paciente",
-    etiquetas: [],
-    identificador: "+55 (11) 99999-9999",
-    ativo: true,
-    sexo: "Feminino",
-    dataNascimento: "02/12/1991",
-    cpf: "315.772.070-84",
-    email: "clara.ribeiro@exemplo.com",
-    endereco: "Av. Pedro Álvares Cabral, SN — Vila Mariana, São Paulo, SP — 04094-050 — Brasil",
-    observacoes: "Esse paciente é um paciente de exemplo.",
-    recebeNotificacoes: false,
-    criadoEm: "22/06/2026 15:00:43",
-  },
-];
+// Pacientes vêm de GET /api/pacientes (pacientesStore). Tipo `Patient` mantido.
 
 /** Idade em anos a partir de "dd/mm/aaaa". Retorna null se inválida. */
 export function idadeFrom(dataNascimento?: string): number | null {
@@ -170,17 +123,7 @@ export type Contact = {
   avatarTone: "brand" | "green";
 };
 
-export const profissionais: Contact[] = [
-  {
-    id: "1",
-    nome: "Lucas Bastos",
-    tipo: "Profissional",
-    etiquetas: [],
-    identificador: "+55 (63) 98502-1531",
-    ativo: false,
-    avatarTone: "green",
-  },
-];
+// Profissionais (contato) vêm de GET /api/profissionais (profissionaisStore).
 
 /* ---------- Profissional (cadastro completo) ---------- */
 
@@ -230,50 +173,8 @@ export type Profissional = {
   perfilAcesso: "admin" | "recepção" | "profissional";
 };
 
-export const profissionaisDetalhe: Profissional[] = [
-  {
-    id: "1",
-    nome: "Lucas Bastos",
-    avatarTone: "green",
-    cpf: "123.456.789-00",
-    dataNascimento: "15/03/1990",
-    telefone: "+55 (63) 98502-1531",
-    email: "lucsbasto@gmail.com",
-    ativo: false,
-    conselho: "CRBM",
-    registro: "12345",
-    ufRegistro: "TO",
-    especialidade: "Biomedicina Estética",
-    certificacoes: ["Toxina Botulínica", "Preenchimento Facial", "Microagulhamento"],
-    vinculo: "Sócio",
-    procedimentoIds: ["1", "2", "3", "4"],
-    horarios: [
-      { diaSemana: 1, inicio: "08:00", fim: "18:00" },
-      { diaSemana: 2, inicio: "08:00", fim: "18:00" },
-      { diaSemana: 3, inicio: "08:00", fim: "18:00" },
-      { diaSemana: 4, inicio: "08:00", fim: "18:00" },
-      { diaSemana: 5, inicio: "08:00", fim: "12:00" },
-    ],
-    comissoes: [
-      { procedimentoId: null, tipo: "percentual", valor: 40 },
-      { procedimentoId: "2", tipo: "percentual", valor: 50 },
-    ],
-    chavePix: "lucsbasto@gmail.com",
-    perfilAcesso: "admin",
-  },
-];
-
-export const fornecedores: Contact[] = [
-  {
-    id: "1",
-    nome: "Fornecedor de exemplo",
-    tipo: "Fornecedor",
-    etiquetas: [],
-    identificador: "+55 (11) 98888-7777",
-    ativo: true,
-    avatarTone: "brand",
-  },
-];
+// Detalhe rico vem de GET /api/profissionais/{id} (profissionaisDetalheStore).
+// Fornecedores vêm de GET /api/fornecedores (fornecedoresStore).
 
 /* ---------- Contas a receber (13) / a pagar (14) — tabela financeira ---------- */
 
@@ -291,60 +192,7 @@ export type FinanceRow = {
 
 export type FinanceKpi = { label: string; valor: number; tone: "danger" | "warning" | "info" | "success"; ativo?: boolean };
 
-export const contasReceber = {
-  periodo: "23/05/2026 - 22/06/2026",
-  total: 15,
-  kpis: [
-    { label: "Vencidos", valor: 780, tone: "danger" },
-    { label: "Vencem hoje", valor: 1400, tone: "warning" },
-    { label: "A vencer", valor: 0, tone: "info" },
-    { label: "A receber", valor: 0, tone: "info" },
-    { label: "Recebidos", valor: 6320, tone: "success" },
-    { label: "Total do período", valor: 8500, tone: "info", ativo: true },
-  ] as FinanceKpi[],
-  rows: [
-    { vencimento: "17/06", liquidacao: "17/06", descricao: "Massagem Relaxante", categoria: "Receitas d...", situacao: "Recebido", valor: 150 },
-    { vencimento: "17/06", liquidacao: "17/06", descricao: "Preenchimento Facial", categoria: "Receitas d...", situacao: "Recebido", valor: 1800 },
-    { vencimento: "17/06", liquidacao: "17/06", atrasado: true, descricao: "Venda de Cremes Anti-idade", categoria: "Receitas d...", situacao: "Em atraso", valor: 350 },
-    { vencimento: "18/06", liquidacao: "18/06", atrasado: true, descricao: "Drenagem Linfática", categoria: "Receitas d...", situacao: "Em atraso", valor: 180 },
-    { vencimento: "18/06", liquidacao: "18/06", descricao: "Microagulhamento", categoria: "Receitas d...", situacao: "Recebido", valor: 600 },
-    { vencimento: "19/06", liquidacao: "19/06", descricao: "Limpeza de Pele", categoria: "Receitas d...", situacao: "Recebido", valor: 200 },
-    { vencimento: "19/06", liquidacao: "19/06", descricao: "Venda de Produtos Cosméticos", categoria: "Receitas d...", situacao: "Recebido", valor: 120 },
-    { vencimento: "19/06", liquidacao: "19/06", descricao: "Peeling Físico", categoria: "Receitas d...", situacao: "Recebido", valor: 300 },
-    { vencimento: "19/06", liquidacao: "19/06", atrasado: true, descricao: "Tratamento Acne", categoria: "Receitas d...", situacao: "Em atraso", valor: 250 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Peeling Químico", categoria: "Receitas d...", situacao: "Recebido", valor: 350 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Toxina Botulínica", categoria: "Receitas d...", situacao: "Recebido", valor: 1300 },
-    { vencimento: "22/06", liquidacao: "22/06", atrasado: true, descricao: "Consulta de Avaliações", categoria: "Receitas d...", situacao: "Em aberto", valor: 100 },
-    { vencimento: "22/06", liquidacao: "22/06", atrasado: true, descricao: "Laser CO2", categoria: "Receitas d...", situacao: "Em aberto", valor: 900 },
-  ] as FinanceRow[],
-};
-
-export const contasPagar = {
-  periodo: "23/05/2026 - 22/06/2026",
-  total: 13,
-  kpis: [
-    { label: "Vencidos", valor: 500, tone: "danger" },
-    { label: "Vencem hoje", valor: 2880, tone: "warning" },
-    { label: "A vencer", valor: 0, tone: "info" },
-    { label: "Pagos", valor: 3889, tone: "success" },
-    { label: "Total do período", valor: 7269, tone: "info", ativo: true },
-  ] as FinanceKpi[],
-  rows: [
-    { vencimento: "17/06", liquidacao: "17/06", descricao: "Aluguel da Clínica", categoria: "Outras de...", situacao: "Pago", valor: 1200 },
-    { vencimento: "17/06", liquidacao: "17/06", descricao: "Material de Escritório", categoria: "Outras de...", situacao: "Pago", valor: 150 },
-    { vencimento: "17/06", liquidacao: "17/06", atrasado: true, descricao: "Renovação de Licenças", categoria: "Outras de...", situacao: "Em atraso", valor: 500 },
-    { vencimento: "18/06", liquidacao: "18/06", descricao: "Água", categoria: "Outras de...", situacao: "Pago", valor: 400 },
-    { vencimento: "18/06", liquidacao: "18/06", descricao: "Manutenção de Equipamentos", categoria: "Outras de...", situacao: "Pago", valor: 800 },
-    { vencimento: "18/06", liquidacao: "18/06", descricao: "Limpeza", categoria: "Outras de...", situacao: "Pago", valor: 300 },
-    { vencimento: "20/06", liquidacao: "20/06", descricao: "Software de Gestão", categoria: "Outras de...", situacao: "Pago", valor: 238 },
-    { vencimento: "20/06", liquidacao: "20/06", descricao: "Internet", categoria: "Outras de...", situacao: "Pago", valor: 300 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Energia Elétrica", categoria: "Outras de...", situacao: "Pago", valor: 500 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Serviços Contábeis", categoria: "Outras de...", situacao: "Em aberto", valor: 750 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Telefone Fixo", categoria: "Outras de...", situacao: "Em aberto", valor: 150 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Marketing Digital", categoria: "Outras de...", situacao: "Em aberto", valor: 1000 },
-    { vencimento: "22/06", liquidacao: "22/06", descricao: "Assessoria Jurídica", categoria: "Outras de...", situacao: "Em aberto", valor: 980 },
-  ] as FinanceRow[],
-};
+// contasReceber/contasPagar vêm de GET /api/financeiro/contas-receber|contas-pagar.
 
 /* ---------- Financeiro Visão Geral (12-financeiro-visao-geral.md) ---------- */
 
@@ -433,24 +281,7 @@ export type Procedimento = {
   usaMapa: boolean; // Injetáveis abrem o MapaInjetaveis (marcação por pontos no rosto).
 };
 
-// Catálogo seed — procedimentos estéticos mais comuns (Brasil 2025/26).
-// Regra: categoria "Injetáveis" => usaMapa = true.
-export const procedimentos: Procedimento[] = [
-  { id: "1", nome: "Limpeza de Pele Profunda", categoria: "Facial", duracaoMin: 60, valor: 200, ativo: true, usaMapa: false },
-  { id: "2", nome: "Microagulhamento", categoria: "Facial", duracaoMin: 60, valor: 500, ativo: true, usaMapa: false },
-  { id: "3", nome: "Peeling Químico", categoria: "Facial", duracaoMin: 60, valor: 300, ativo: true, usaMapa: false },
-  { id: "4", nome: "Tratamento de Acne", categoria: "Facial", duracaoMin: 60, valor: 250, ativo: true, usaMapa: false },
-  { id: "5", nome: "Harmonização Facial", categoria: "Injetáveis", duracaoMin: 90, valor: 2500, ativo: true, usaMapa: true },
-  { id: "6", nome: "Toxina Botulínica (Botox)", categoria: "Injetáveis", duracaoMin: 45, valor: 1300, ativo: true, usaMapa: true },
-  { id: "7", nome: "Preenchimento c/ Ácido Hialurônico", categoria: "Injetáveis", duracaoMin: 60, valor: 1800, ativo: true, usaMapa: true },
-  { id: "8", nome: "Bioestimulador de Colágeno", categoria: "Injetáveis", duracaoMin: 60, valor: 1600, ativo: true, usaMapa: true },
-  { id: "9", nome: "Fios de PDO (lifting)", categoria: "Injetáveis", duracaoMin: 60, valor: 2000, ativo: true, usaMapa: true },
-  { id: "10", nome: "Skinbooster", categoria: "Injetáveis", duracaoMin: 45, valor: 900, ativo: true, usaMapa: true },
-  { id: "11", nome: "Radiofrequência Facial", categoria: "Facial", duracaoMin: 50, valor: 400, ativo: true, usaMapa: false },
-  { id: "12", nome: "Laser / Luz Intensa Pulsada (IPL)", categoria: "Facial", duracaoMin: 45, valor: 600, ativo: true, usaMapa: false },
-  { id: "13", nome: "Criolipólise", categoria: "Corporal", duracaoMin: 60, valor: 800, ativo: true, usaMapa: false },
-  { id: "14", nome: "Radiofrequência / Drenagem Corporal", categoria: "Corporal", duracaoMin: 60, valor: 350, ativo: true, usaMapa: false },
-];
+// Procedimentos vêm de GET /api/procedimentos (procedimentosStore).
 
 // Paleta nomeada do campo "Cor*" do modal de procedimento.
 export type CorOption = { nome: string; hex: string };
@@ -519,7 +350,7 @@ export type RegistroProcedimento = {
   mapa?: FichaInjetaveis; // estado do mapa quando injetável
 };
 
-export const registrosProcedimento: RegistroProcedimento[] = [];
+// Registros vêm de GET /api/pacientes/{id}/registros (registrosProcedimentoStore).
 
 export const statusRegistroProcLabel: Record<StatusRegistroProc, string> = {
   realizado: "Realizado",
@@ -537,36 +368,19 @@ export type Pacote = {
   ativo: boolean;
 };
 
-export const pacotes: Pacote[] = [
-  { id: "1", descricao: "Pacote Limpeza 10 sessões", valorTotal: 1800, validade: "Ilimitado", ativo: true },
-  { id: "2", descricao: "Combo Rejuvenescimento Facial", valorTotal: 2700, validade: "180 dias", ativo: true },
-  { id: "3", descricao: "Pacote Acne Control", valorTotal: 1200, validade: "90 dias", ativo: false },
-];
+// Pacotes vêm de GET /api/pacotes (pacotesStore).
 
 /* ---------- Fichas de atendimentos (35-config-fichas-atendimento.md) ---------- */
 
 export type FichaAtendimento = { id: string; nome: string; ativo: boolean };
 
-export const fichasAtendimento: FichaAtendimento[] = [
-  { id: "1", nome: "Anamnese", ativo: true },
-  { id: "2", nome: "Capilar", ativo: true },
-  { id: "3", nome: "Corporal", ativo: true },
-  { id: "4", nome: "Epilação", ativo: true },
-  { id: "5", nome: "Estética Facial", ativo: true },
-  { id: "6", nome: "Facial", ativo: true },
-  { id: "7", nome: "Fotos e anexos", ativo: true },
-  { id: "8", nome: "Injetáveis", ativo: true },
-  { id: "9", nome: "Orçamento", ativo: true },
-  { id: "10", nome: "Plano de tratamento", ativo: true },
-];
+// Fichas vêm de GET /api/fichas-atendimento (fichasAtendimentoStore).
 
 /* ---------- Modelos de atestados e prescrições (36) ---------- */
 
 export type ModeloDocumento = { id: string; nome: string; tipo: string; ativo: boolean };
 
-export const modelosDocumento: ModeloDocumento[] = [
-  { id: "1", nome: "Atestado", tipo: "Atestado", ativo: true },
-];
+// Modelos vêm de GET /api/modelos-documento (modelosDocumentoStore).
 
 export const validadesPacote = ["Ilimitado", "30 dias", "60 dias", "90 dias", "180 dias", "365 dias"];
 
@@ -607,25 +421,10 @@ export type ItemEstoque = {
   custo: number;
 };
 
-export const itensEstoque: ItemEstoque[] = [
-  { id: "1", nome: "Ácido Hialurônico 2ml", sku: "AH-002", categoria: "Injetáveis", unidade: "ui", saldo: 120, minimo: 30, custo: 180 },
-  { id: "2", nome: "Agulha 30G", sku: "AG-030", categoria: "Material de atendimento", unidade: "cx", saldo: 3, minimo: 10, custo: 45 },
-  { id: "3", nome: "Creme Anti-idade", sku: "CR-ANT", categoria: "Revenda", unidade: "un", saldo: 28, minimo: 8, custo: 60 },
-  { id: "4", nome: "Gel Condutor 1L", sku: "GC-1L", categoria: "Material de atendimento", unidade: "un", saldo: 2, minimo: 4, custo: 22 },
-  { id: "5", nome: "Protetor Solar FPS 50", sku: "PS-050", categoria: "Revenda", unidade: "un", saldo: 40, minimo: 10, custo: 35 },
-  { id: "6", nome: "Toxina Botulínica 100ui", sku: "TX-100", categoria: "Injetáveis", unidade: "ui", saldo: 200, minimo: 50, custo: 900 },
-  { id: "7", nome: "Fio de PDO", sku: "PDO-01", categoria: "Injetáveis", unidade: "ui", saldo: 80, minimo: 20, custo: 40 },
-  { id: "8", nome: "Bioestimulador de Colágeno", sku: "BIO-01", categoria: "Injetáveis", unidade: "ui", saldo: 60, minimo: 15, custo: 1200 },
-];
+// Itens de estoque vêm de GET /api/itens-estoque (estoqueStore).
 
 export const estoqueValor = (i: ItemEstoque) => i.saldo * i.custo;
 export const estoqueBaixo = (i: ItemEstoque) => i.saldo <= i.minimo;
-
-export const estoqueSummary = {
-  baixo: itensEstoque.filter(estoqueBaixo).length,
-  alto: 0,
-  todos: itensEstoque.length,
-};
 
 export const categoriasEstoque = ["Injetáveis", "Material de atendimento", "Revenda"];
 export const unidadesEstoque = ["un", "ml", "g", "cx", "L"];
@@ -744,26 +543,10 @@ export const currentUser = { nome: "Lucas Bastos", iniciais: "LB" };
 
 /* ---------- Agenda / Visão geral (03-agenda-visao-geral.md) ---------- */
 
-export const agendaPeriodo = "21/06/2026 - 27/06/2026";
+// Visão geral da agenda vem de GET /api/agenda/visao-geral.
+// Relatório de agendamentos vem de GET /api/agenda/relatorio. Só os tipos ficam aqui.
 
 export type AgendaKpi = { label: string; valor: string; delta?: string; deltaUp?: boolean };
-export const agendaKpis: AgendaKpi[] = [
-  { label: "Total de agendamentos", valor: "1" },
-  { label: "Ociosidade", valor: "98 %", delta: "-2%", deltaUp: false },
-  { label: "Pacientes na lista de espera", valor: "0" },
-];
-
-// "Agendamentos por período" — barras (1 em 22 Jun) + linha de média
-export const agendaPorPeriodo = [
-  { label: "21 Jun", valor: 0 },
-  { label: "22 Jun", valor: 1 },
-  { label: "23 Jun", valor: 0 },
-  { label: "24 Jun", valor: 0 },
-  { label: "25 Jun", valor: 0 },
-  { label: "26 Jun", valor: 0 },
-  { label: "27 Jun", valor: 0 },
-];
-export const agendaMedia = 1;
 
 // status do enum de agendamento — cor + contagem + %
 export type AgendaStatus =
@@ -773,38 +556,7 @@ export type AgendaStatus =
   | "Concluído"
   | "Cancelado";
 
-export const agendaPorStatus: { status: AgendaStatus; total: number; pct: number }[] = [
-  { status: "Agendado", total: 0, pct: 0 },
-  { status: "Confirmado", total: 0, pct: 0 },
-  { status: "Não compareceu", total: 0, pct: 0 },
-  { status: "Concluído", total: 1, pct: 100 },
-  { status: "Cancelado", total: 0, pct: 0 },
-];
-
 export type RankItem = { nome: string; total: number; pct: number };
-export const agendaPacientesFreq: RankItem[] = [
-  { nome: "Clara Ribeiro (Paciente de exemplo)", total: 1, pct: 100 },
-];
-export const agendaProcedimentosFreq: RankItem[] = [
-  { nome: "Limpeza de Pele Profunda", total: 1, pct: 100 },
-];
-// ociosidade por sala / profissional → estado vazio
-export const agendaOciosidadeSala: RankItem[] = [];
-export const agendaOciosidadeProf: RankItem[] = [];
-
-// "Dias mais movimentados" — D S T Q Q S S, pico (1) na segunda (2ª col)
-export const agendaDiasMovimentados = [
-  { label: "D", valor: 0 },
-  { label: "S", valor: 1 },
-  { label: "T", valor: 0 },
-  { label: "Q", valor: 0 },
-  { label: "Q", valor: 0 },
-  { label: "S", valor: 0 },
-  { label: "S", valor: 0 },
-];
-// "Horários mais movimentados" — heatmap; só 14h ativo
-export const agendaHorarios = ["14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h", "22h"];
-export const agendaHorarioAtivo = "14h";
 
 /* ---------- Agenda / Relatório de agendamentos (04-...) ---------- */
 
@@ -818,27 +570,7 @@ export type AgendaRow = {
   status: AgendaStatus;
 };
 
-export const agendaRelatorioRows: AgendaRow[] = [
-  {
-    procedimento: "Limpeza de Pele Profunda",
-    paciente: "Clara Ribeiro (Paciente de exemplo)",
-    profissional: "Lucas Bastos",
-    iniciais: "LB",
-    duracaoMin: 60,
-    agendadoPara: "22/06/2026 14:00",
-    status: "Concluído",
-  },
-];
-
-// abas-resumo (contagem por status + Todos)
-export const agendaStatusTabs: { label: AgendaStatus | "Todos"; total: number }[] = [
-  { label: "Agendado", total: 0 },
-  { label: "Confirmado", total: 0 },
-  { label: "Não compareceu", total: 0 },
-  { label: "Concluído", total: 1 },
-  { label: "Cancelado", total: 0 },
-  { label: "Todos", total: 1 },
-];
+// agendaRelatorioRows/agendaStatusTabs vêm de GET /api/agenda/relatorio.
 
 /* ---------- Agenda / Eventos — Sala de espera (05-...) ---------- */
 
@@ -887,32 +619,7 @@ export type ExtratoData = {
   rows: ExtratoRow[];
 };
 
-export const extrato: ExtratoData = {
-  periodo: "23/05/2026 - 22/06/2026",
-  total: 30,
-  kpis: [
-    { label: "Receitas em aberto", valor: 2180, tone: "success" },
-    { label: "Receitas realizadas", valor: 6320, tone: "success" },
-    { label: "Despesas em aberto", valor: 3380, tone: "danger" },
-    { label: "Despesas realizadas", valor: 3889, tone: "danger" },
-    { label: "Total do período", valor: 1231, tone: "info", ativo: true },
-  ],
-  rows: [
-    { vencimento: "17/06", execucao: "17/06", descricao: "Aluguel de Clínica", categoria: "Outras des...", metodo: "transferencia", situacao: "Pago", valor: 1200, tipo: "despesa" },
-    { vencimento: "17/06", execucao: "17/06", descricao: "Material de Escritório", categoria: "Outras des...", metodo: "dinheiro", situacao: "Pago", valor: 150, tipo: "despesa" },
-    { vencimento: "17/06", execucao: null, descricao: "Renovação de Licenças", categoria: "Outras des...", metodo: "boleto", situacao: "Em atraso", valor: 500, tipo: "despesa", atrasado: true },
-    { vencimento: "17/06", execucao: "17/06", descricao: "Massagem Relaxante", categoria: "Receitas d...", metodo: "pix", situacao: "Recebido", valor: 150, tipo: "receita" },
-    { vencimento: "17/06", execucao: "17/06", descricao: "Preenchimento Facial", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 1800, tipo: "receita" },
-    { vencimento: "18/06", execucao: null, descricao: "Venda de Cremes Anti-idade", categoria: "Receitas d...", metodo: "pix", situacao: "Em atraso", valor: 350, tipo: "receita", atrasado: true },
-    { vencimento: "18/06", execucao: null, descricao: "Drenagem Linfática", categoria: "Receitas d...", metodo: "pix", situacao: "Em atraso", valor: 180, tipo: "receita", atrasado: true },
-    { vencimento: "18/06", execucao: "18/06", descricao: "Microagulhamento", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 600, tipo: "receita" },
-    { vencimento: "18/06", execucao: "18/06", descricao: "Água", categoria: "Outras des...", metodo: "boleto", situacao: "Pago", valor: 400, tipo: "despesa" },
-    { vencimento: "19/06", execucao: "19/06", descricao: "Manutenção de Equipamentos", categoria: "Outras des...", metodo: "transferencia", situacao: "Pago", valor: 800, tipo: "despesa" },
-    { vencimento: "19/06", execucao: "19/06", descricao: "Limpeza", categoria: "Outras des...", metodo: "dinheiro", situacao: "Pago", valor: 300, tipo: "despesa" },
-    { vencimento: "19/06", execucao: "19/06", descricao: "Limpeza de Pele", categoria: "Receitas d...", metodo: "pix", situacao: "Recebido", valor: 200, tipo: "receita" },
-    { vencimento: "19/06", execucao: "19/06", descricao: "Venda de Produtos Cosméticos", categoria: "Receitas d...", metodo: "cartao", situacao: "Recebido", valor: 120, tipo: "receita" },
-  ],
-};
+// extrato vem de GET /api/financeiro/extrato.
 
 /* ---------- 16 — Relatório de competência ---------- */
 
@@ -932,30 +639,7 @@ export type CompetenciaData = {
   rows: CompetenciaRow[];
 };
 
-export const competencia: CompetenciaData = {
-  mes: "Junho de 2026",
-  total: 30,
-  kpis: [
-    { label: "Receitas", valor: 8500, tone: "success" },
-    { label: "Despesas", valor: 7269, tone: "danger" },
-    { label: "Total do período", valor: 1231, tone: "info", ativo: true },
-  ],
-  rows: [
-    { competencia: "22/06", descricao: "Tratamento de Manchas", contato: "Clara Ribeiro (Paciente de ...", bruto: 400, liquido: 400, tipo: "receita" },
-    { competencia: "22/06", descricao: "Bioplastia", contato: "Clara Ribeiro (Paciente de ...", bruto: 1500, liquido: 1500, tipo: "receita" },
-    { competencia: "22/06", descricao: "Laser CO2", contato: "Clara Ribeiro (Paciente de ...", bruto: 900, liquido: 900, tipo: "receita" },
-    { competencia: "22/06", descricao: "Consulta de Avaliações", contato: "Clara Ribeiro (Paciente de ...", bruto: 100, liquido: 100, tipo: "receita" },
-    { competencia: "22/06", descricao: "Toxina Botulínica", contato: "Clara Ribeiro (Paciente de ...", bruto: 1300, liquido: 1300, tipo: "receita" },
-    { competencia: "22/06", descricao: "Peeling Químico", contato: "Clara Ribeiro (Paciente de ...", bruto: 350, liquido: 350, tipo: "receita" },
-    { competencia: "22/06", descricao: "Assessoria Jurídica", contato: "Clara Ribeiro (Paciente de ...", bruto: 980, liquido: -980, tipo: "despesa" },
-    { competencia: "22/06", descricao: "Marketing Digital", contato: "Clara Ribeiro (Paciente de ...", bruto: 1000, liquido: -1000, tipo: "despesa" },
-    { competencia: "22/06", descricao: "Telefone Fixo", contato: "Clara Ribeiro (Paciente de ...", bruto: 150, liquido: -150, tipo: "despesa" },
-    { competencia: "22/06", descricao: "Serviços Contábeis", contato: "Clara Ribeiro (Paciente de ...", bruto: 750, liquido: -750, tipo: "despesa" },
-    { competencia: "22/06", descricao: "Energia Elétrica", contato: "Clara Ribeiro (Paciente de ...", bruto: 500, liquido: -500, tipo: "despesa" },
-    { competencia: "22/06", descricao: "Saldo inicial da conta Banco padrão", contato: "Lucas Bastos", bruto: 0, liquido: 0, tipo: "saldo" },
-    { competencia: "22/06", descricao: "Saldo inicial da conta Caixa", contato: "Lucas Bastos", bruto: 0, liquido: 0, tipo: "saldo" },
-  ],
-};
+// competencia vem de GET /api/financeiro/competencia.
 
 /* ---------- 17/18 — Fluxo de caixa (linha derivada da tabela) ---------- */
 
@@ -968,50 +652,7 @@ export type FluxoRow = {
   saldoFinal: number;
 };
 
-// 17 — diário: dias 1-30 Jun; movimento 17-22 somando entrada 6.320 / saída 3.889
-export const fluxoDiarioPoints: CashflowPoint[] = (() => {
-  const movimento: Record<number, { entradas: number; saidas: number }> = {
-    17: { entradas: 1950, saidas: -1850 },
-    18: { entradas: 1130, saidas: -400 },
-    19: { entradas: 320, saidas: -1100 },
-    22: { entradas: 2920, saidas: -539 },
-  };
-  let saldo = 0;
-  return Array.from({ length: 30 }, (_, i) => {
-    const dia = i + 1;
-    const m = movimento[dia] ?? { entradas: 0, saidas: 0 };
-    saldo += m.entradas + m.saidas;
-    return {
-      label: `${dia} Jun`,
-      entradas: m.entradas,
-      entradasPrevistas: 0,
-      saidas: m.saidas,
-      saidasPrevistas: 0,
-      saldo,
-      saldoPrevisto: saldo,
-    };
-  });
-})();
-
-// 18 — mensal: Jan-Dez 2026; só Junho com movimento (entrada 6.320 / saída 3.889)
-export const fluxoMensalPoints: CashflowPoint[] = (() => {
-  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  let saldo = 0;
-  return meses.map((m, i) => {
-    const entradas = i === 5 ? 6320 : 0;
-    const saidas = i === 5 ? -3889 : 0;
-    saldo += entradas + saidas;
-    return {
-      label: `${m} 2026`,
-      entradas,
-      entradasPrevistas: 0,
-      saidas,
-      saidasPrevistas: 0,
-      saldo,
-      saldoPrevisto: saldo,
-    };
-  });
-})();
+// fluxoDiarioPoints/fluxoMensalPoints vêm de GET /api/financeiro/fluxo?granularidade=dia|mes.
 
 export const fluxoFiltrosGerais =
   "Transferência: Sim, Saldo inicial: Sim, Valor padrão: Líquido, Previsão: Não";
@@ -1025,23 +666,7 @@ export type CategoriaReportNode = {
   filhos?: { nome: string; valor: number }[];
 };
 
-export const receitasReport: CategoriaReportNode[] = [
-  {
-    nome: "Receitas",
-    valor: 8500,
-    cor: "#84cc16",
-    filhos: [{ nome: "Receitas de serviços", valor: 8500 }],
-  },
-];
-
-export const despesasReport: CategoriaReportNode[] = [
-  {
-    nome: "Outras despesas",
-    valor: 7269,
-    cor: "#f43f5e",
-    filhos: [{ nome: "Outras despesas", valor: 7269 }],
-  },
-];
+// receitasReport/despesasReport vêm de GET /api/financeiro/categorias.
 
 export const periodoCategorias = "Junho de 2026";
 
@@ -1055,10 +680,7 @@ export type ContaFinanceira = {
   icon: "bank" | "cash" | "wallet";
 };
 
-export const contasFinanceirasList: ContaFinanceira[] = [
-  { id: "1", nome: "Banco padrão", tipo: "Conta Corrente", saldo: 2431, icon: "bank" },
-  { id: "2", nome: "Caixa", tipo: "Caixa", saldo: 0, icon: "cash" },
-];
+// Contas financeiras vêm de GET /api/contas-financeiras (contasFinanceirasStore).
 
 export const tiposConta = ["Caixa", "Conta Corrente", "Carteira"];
 
@@ -1071,43 +693,7 @@ export type CategoriaConta = {
   filhos?: { id: string; descricao: string; ativo: boolean }[];
 };
 
-export const categoriasContas: CategoriaConta[] = [
-  {
-    id: "1",
-    descricao: "Receitas de serviços",
-    ativo: true,
-    filhos: [
-      { id: "1-1", descricao: "Procedimentos estéticos", ativo: true },
-      { id: "1-2", descricao: "Consultas", ativo: true },
-    ],
-  },
-  {
-    id: "2",
-    descricao: "Vendas de produtos",
-    ativo: true,
-    filhos: [{ id: "2-1", descricao: "Cosméticos", ativo: true }],
-  },
-  {
-    id: "3",
-    descricao: "Aquisições de imobilizados",
-    ativo: true,
-    filhos: [
-      { id: "3-1", descricao: "Equipamentos", ativo: true },
-      { id: "3-2", descricao: "Móveis e utensílios", ativo: false },
-    ],
-  },
-  {
-    id: "4",
-    descricao: "Outras despesas",
-    ativo: true,
-    filhos: [
-      { id: "4-1", descricao: "Aluguel", ativo: true },
-      { id: "4-2", descricao: "Energia elétrica", ativo: true },
-      { id: "4-3", descricao: "Marketing", ativo: true },
-    ],
-  },
-  { id: "5", descricao: "Impostos e taxas", ativo: false, filhos: [] },
-];
+// Categorias de contas vêm de GET /api/categorias-contas (categoriasContasStore).
 
 /* ---------- 22 — Métodos de pagamento ---------- */
 
@@ -1119,16 +705,7 @@ export type MetodoPagamento = {
   ativo: boolean;
 };
 
-export const metodosPagamento: MetodoPagamento[] = [
-  { id: "1", descricao: "Boleto", tipo: "Boleto", marca: "—", ativo: true },
-  { id: "2", descricao: "Cartão de crédito", tipo: "Cartão", marca: "Outra", ativo: true },
-  { id: "3", descricao: "Cartão de débito", tipo: "Cartão", marca: "Outra", ativo: true },
-  { id: "4", descricao: "Depósito", tipo: "Transferência", marca: "—", ativo: true },
-  { id: "5", descricao: "Dinheiro", tipo: "Dinheiro", marca: "—", ativo: false },
-  { id: "6", descricao: "Máquina de cartão", tipo: "Cartão", marca: "—", ativo: true },
-  { id: "7", descricao: "PIX", tipo: "PIX", marca: "—", ativo: true },
-  { id: "8", descricao: "Transferência", tipo: "Transferência", marca: "—", ativo: true },
-];
+// Métodos de pagamento vêm de GET /api/metodos-pagamento (metodosPagamentoStore).
 
 export const tiposMetodo = ["Dinheiro", "PIX", "Cartão", "Boleto", "Transferência"];
 
@@ -1144,8 +721,7 @@ export type Comissao = {
   status: FinanceStatus;
 };
 
-export const comissoes: Comissao[] = [];
-export const periodoComissoes = "23/05/2026 - 22/06/2026";
+// comissoes/periodo vêm de GET /api/financeiro/comissoes.
 
 /* ---------- 29 — Comunicação / Modelos de mensagens (sistema) ---------- */
 

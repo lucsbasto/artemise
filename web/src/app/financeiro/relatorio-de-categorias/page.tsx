@@ -1,11 +1,18 @@
 import { RelatorioCategoriasView } from "@/components/financeiro/relatorio-categorias-view";
-import { receitasReport, despesasReport } from "@/lib/mock";
+import { loadServer } from "@/lib/data/server-load";
+import type { CategoriaReportNode } from "@/lib/mock";
 
-export default function RelatorioCategoriasPage() {
+type CategoriasReport = {
+  receitas: CategoriaReportNode[];
+  despesas: CategoriaReportNode[];
+};
+
+export default async function RelatorioCategoriasPage() {
+  const data = await loadServer<CategoriasReport>("/financeiro/categorias");
   return (
     <RelatorioCategoriasView
-      receitas={receitasReport}
-      despesas={despesasReport}
+      receitas={data.receitas}
+      despesas={data.despesas}
     />
   );
 }

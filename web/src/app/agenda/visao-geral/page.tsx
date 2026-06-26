@@ -9,23 +9,26 @@ import { Heatmap } from "@/components/charts/heatmap";
 import { PeriodChart, PeriodLegend } from "@/components/agenda/period-chart";
 import { statusDot } from "@/components/agenda/status-badge";
 import { cn } from "@/lib/utils";
-import {
-  agendaPeriodo,
-  agendaKpis,
-  agendaPorPeriodo,
-  agendaMedia,
-  agendaPorStatus,
-  agendaPacientesFreq,
-  agendaProcedimentosFreq,
-  agendaOciosidadeSala,
-  agendaOciosidadeProf,
-  agendaDiasMovimentados,
-  agendaHorarios,
-  agendaHorarioAtivo,
-  type RankItem,
-} from "@/lib/mock";
+import { loadServer } from "@/lib/data/server-load";
+import type { AgendaKpi, AgendaStatus, RankItem } from "@/lib/mock";
 
-export default function AgendaVisaoGeralPage() {
+type AgendaVisaoGeral = {
+  periodo: string;
+  kpis: AgendaKpi[];
+  porPeriodo: { label: string; valor: number }[];
+  media: number;
+  porStatus: { status: AgendaStatus; total: number; pct: number }[];
+  pacientesFreq: RankItem[];
+  procedimentosFreq: RankItem[];
+  ociosidadeSala: RankItem[];
+  ociosidadeProf: RankItem[];
+  diasMovimentados: { label: string; valor: number }[];
+  horarios: string[];
+  horarioAtivo: string;
+};
+
+export default async function AgendaVisaoGeralPage() {
+  const data = await loadServer<AgendaVisaoGeral>("/agenda/visao-geral");
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />
@@ -45,7 +48,7 @@ export default function AgendaVisaoGeralPage() {
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-background px-3 py-1 text-sm text-foreground">
-                  Período: {agendaPeriodo}
+                  Período: {data.periodo}
                   <X className="size-3.5 text-muted-2" />
                 </span>
                 <button className="text-sm font-medium text-brand hover:underline">
@@ -57,7 +60,7 @@ export default function AgendaVisaoGeralPage() {
 
           {/* KPIs */}
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {agendaKpis.map((kpi) => (
+            {data.kpis.map((kpi) => (
               <Card key={kpi.label}>
                 <CardContent className="pt-5">
                   <p className="text-sm text-muted">{kpi.label}</p>
@@ -88,7 +91,7 @@ export default function AgendaVisaoGeralPage() {
                 <TextTabs tabs={["Diária", "Semanal", "Mensal", "Anual"]} />
               </CardHeader>
               <CardContent>
-                <PeriodChart data={agendaPorPeriodo} media={agendaMedia} />
+                <PeriodChart data={data.porPeriodo} media={data.media} />
                 <PeriodLegend />
               </CardContent>
             </Card>
@@ -98,7 +101,7 @@ export default function AgendaVisaoGeralPage() {
                 <CardTitle>Agendamentos por status</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                {agendaPorStatus.map((s) => (
+                {data.porStatus.map((s) => (
                   <div key={s.status} className="flex items-center gap-2 text-sm">
                     <span className={cn("size-2.5 shrink-0 rounded-full", statusDot(s.status))} />
                     <span className="text-foreground">{s.status}</span>
@@ -112,10 +115,10 @@ export default function AgendaVisaoGeralPage() {
 
           {/* Rankings */}
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <RankCard title="Pacientes mais frequentes" items={agendaPacientesFreq} />
-            <RankCard title="Ociosidade por sala" items={agendaOciosidadeSala} />
-            <RankCard title="Ociosidade por profissional" items={agendaOciosidadeProf} />
-            <RankCard title="Procedimentos mais frequentes" items={agendaProcedimentosFreq} />
+            <RankCard title="Pacientes mais frequentes" items={data.pacientesFreq} />
+            <RankCard title="Ociosidade por sala" items={data.ociosidadeSala} />
+            <RankCard title="Ociosidade por profissional" items={data.ociosidadeProf} />
+            <RankCard title="Procedimentos mais frequentes" items={data.procedimentosFreq} />
           </div>
 
           {/* Gráficos inferiores */}
@@ -133,7 +136,7 @@ export default function AgendaVisaoGeralPage() {
                 <CardTitle info>Dias mais movimentados</CardTitle>
               </CardHeader>
               <CardContent>
-                <MiniBars data={agendaDiasMovimentados} showY />
+                <MiniBars data={data.diasMovimentados} showY />
               </CardContent>
             </Card>
             <Card>
@@ -141,7 +144,7 @@ export default function AgendaVisaoGeralPage() {
                 <CardTitle info>Horários mais movimentados</CardTitle>
               </CardHeader>
               <CardContent>
-                <Heatmap rows={agendaHorarios} active={agendaHorarioAtivo} />
+                <Heatmap rows={data.horarios} active={data.horarioAtivo} />
               </CardContent>
             </Card>
           </div>

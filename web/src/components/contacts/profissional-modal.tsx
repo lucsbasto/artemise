@@ -3,7 +3,9 @@ import * as React from "react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { procedimentos, type Profissional, type Conselho, type VinculoTrabalho } from "@/lib/mock";
+import { useCollection } from "@/lib/data/create-collection";
+import { procedimentosStore } from "@/lib/data/stores";
+import type { Profissional, Conselho, VinculoTrabalho } from "@/lib/mock";
 
 export type NovoProfissional = Omit<Profissional, "id">;
 
@@ -20,6 +22,7 @@ export function ProfissionalModal({
   onClose: () => void;
   onSave: (data: NovoProfissional) => void;
 }) {
+  const { items: procedimentos } = useCollection(procedimentosStore);
   // identificação
   const [nome, setNome] = React.useState("");
   const [cpf, setCpf] = React.useState("");

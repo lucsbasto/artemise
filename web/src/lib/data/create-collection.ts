@@ -1,28 +1,109 @@
 "use client";
 import * as React from "react";
+import { apiFetch } from "@/lib/api-client";
 
 /**
- * Store de coleção em memória (sessão) — seed a partir do mock.
- * Camada de troca p/ backend: hoje muta um array local; amanhã cada método
- * vira uma chamada de API. Os componentes só dependem do hook, não do array.
+ * Store de coleção ligado à API Go.
  *
- * Reset no reload é esperado (decisão: "memória da sessão").
+ * A interface pública (`Collection<T>`, `useCollection`, `nextId`) é a mesma do
+ * store em memória que existia antes — os componentes de UI não mudam. O que
+ * troca é a implementação: cada método agora fala HTTP com o backend.
+ *
+ * Modelo: `getSnapshot()` devolve um cache local; o primeiro `subscribe`
+ * dispara `revalidate()` (GET da lista), que preenche o cache e notifica. Cada
+ * mutação (`add/update/remove/toggle`) chama a API e revalida em seguida.
+ *
+ * Para sub-recursos sem endpoint de listagem plano (detalhe rico do
+ * profissional, registros por paciente, eventos da agenda — cujo shape difere
+ * do contrato REST), use {@link createLocalCollection}: mesma interface, porém
+ * memória de sessão (a integração desses recursos é faseada — design §8.6).
  */
 export type WithId = { id: string };
 
 export type Collection<T extends WithId> = {
   getSnapshot: () => T[];
   subscribe: (cb: () => void) => () => void;
-  add: (item: T) => void;
-  update: (id: string, patch: Partial<T>) => void;
-  remove: (id: string) => void;
+  /** Mutações podem ser assíncronas (HTTP). Os consumidores não precisam aguardar. */
+  add: (item: T) => void | Promise<void>;
+  update: (id: string, patch: Partial<T>) => void | Promise<void>;
+  remove: (id: string) => void | Promise<void>;
   /** Inverte um campo booleano (ex.: `ativo`). */
-  toggle: (id: string, key: keyof T) => void;
-  /** Substitui a coleção inteira (útil p/ reordenar/importar). */
-  set: (next: T[]) => void;
+  toggle: (id: string, key: keyof T) => void | Promise<void>;
+  /** Substitui a coleção inteira no cache local (útil p/ reordenar/importar). */
+  set: (next: T[]) => void | Promise<void>;
 };
 
-export function createCollection<T extends WithId>(seed: T[]): Collection<T> {
+/** Envelope padrão das rotas de listagem (design §5.1). */
+type ListEnvelope<T> = { items: T[] };
+
+/**
+ * Cria uma coleção ligada a um recurso REST.
+ * @param endpoint path do recurso sob `/api` (ex.: `"/pacientes"`).
+ * @param seed hidratação inicial (SSR); o cache é revalidado no client.
+ */
+export function createCollection<T extends WithId>(
+  endpoint: string,
+  seed: T[] = []
+): Collection<T> {
+  let cache: T[] = seed;
+  const subs = new Set<() => void>();
+  const emit = () => subs.forEach((f) => f());
+
+  // Recarrega a lista do backend e notifica os assinantes. Erros (incl.
+  // AuthError) mantêm o último cache — o tratamento de sessão fica nas páginas.
+  async function revalidate(): Promise<void> {
+    try {
+      const { items } = await apiFetch<ListEnvelope<T>>(endpoint);
+      cache = items;
+      emit();
+    } catch {
+      // mantém o cache atual; runtime/erro tratado na camada de página
+    }
+  }
+
+  return {
+    getSnapshot: () => cache,
+    subscribe: (cb) => {
+      subs.add(cb);
+      void revalidate();
+      return () => subs.delete(cb);
+    },
+    add: async (item) => {
+      await apiFetch(endpoint, { method: "POST", body: JSON.stringify(item) });
+      await revalidate();
+    },
+    update: async (id, patch) => {
+      await apiFetch(`${endpoint}/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      });
+      await revalidate();
+    },
+    remove: async (id) => {
+      await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
+      await revalidate();
+    },
+    toggle: async (id, key) => {
+      await apiFetch(`${endpoint}/${id}/toggle`, {
+        method: "PATCH",
+        body: JSON.stringify({ key }),
+      });
+      await revalidate();
+    },
+    set: (next) => {
+      cache = next;
+      emit();
+    },
+  };
+}
+
+/**
+ * Coleção em memória de sessão (sem rede), com a mesma interface de
+ * {@link Collection}. Para recursos cujo swap p/ API ainda é faseado.
+ */
+export function createLocalCollection<T extends WithId>(
+  seed: T[] = []
+): Collection<T> {
   let data: T[] = [...seed];
   const subs = new Set<() => void>();
   const emit = () => subs.forEach((f) => f());
@@ -56,7 +137,7 @@ export function createCollection<T extends WithId>(seed: T[]): Collection<T> {
   };
 }
 
-/** Gera id único na sessão (substituível pelo id do backend). */
+/** Gera id único na sessão (placeholder; o backend gera o id definitivo). */
 let _seq = 0;
 export function nextId(prefix = "tmp"): string {
   _seq += 1;

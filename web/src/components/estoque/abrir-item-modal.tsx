@@ -3,7 +3,8 @@ import { Calendar, Clock } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { itensEstoque } from "@/lib/mock";
+import { useCollection } from "@/lib/data/create-collection";
+import { estoqueStore } from "@/lib/data/stores";
 
 /** Tela 27 — modal "Abrir item". */
 export function AbrirItemModal({
@@ -13,6 +14,7 @@ export function AbrirItemModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const { items: itensEstoque } = useCollection(estoqueStore);
   return (
     <Modal
       open={open}

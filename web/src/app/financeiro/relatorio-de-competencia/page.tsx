@@ -1,6 +1,8 @@
 import { CompetenciaView } from "@/components/financeiro/competencia-view";
-import { competencia } from "@/lib/mock";
+import { loadServer } from "@/lib/data/server-load";
+import type { CompetenciaData } from "@/lib/mock";
 
-export default function CompetenciaPage() {
-  return <CompetenciaView data={competencia} />;
+export default async function CompetenciaPage() {
+  const data = await loadServer<CompetenciaData>("/financeiro/competencia");
+  return <CompetenciaView data={data} />;
 }
