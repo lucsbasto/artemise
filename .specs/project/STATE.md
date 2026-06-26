@@ -34,6 +34,24 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 - Feature **backend-db** (fase backend, lote 1): schema multitenant Drizzle+Supabase. **28 tabelas, 111 RLS policies** (4 CRUD/tabela via `tenantPolicies`). Módulos em `web/src/db/schema/`: `_enums`, `_helpers` (timestamps, `isTenant`, `tenantPolicies`, `clinicaFk`), `tenancy` (clinicas/profiles/memberships + policies custom), `cadastros` (pacientes, profissionais+horarios+procedimentos m2m+comissao_regras, fornecedores, procedimentos, categorias_procedimento, pacotes+itens, fichas_atendimento, modelos_documento), `estoque` (itens+movimentos ledger), `agenda` (agendamentos unificado), `ficha` (registros_procedimento c/ mapa jsonb, orcamentos+itens, carteiras), `financeiro` (contas, categorias_conta árvore self-ref, metodos_pagamento, lancamentos ledger receita/despesa, comissoes), `comunicacao` (modelos_mensagem). `client.ts`: `db` admin + `withTenant(claims,cb)` (transação seta role=authenticated + jwt claims → RLS vale). `rls.sql`: `private.user_clinica_ids()` + trigger `handle_new_user` (espelha auth.users→profiles); roda ANTES da migration (`check_function_bodies=off`). Migration `drizzle/0000_init.sql` gerada. Scripts `db:generate|migrate|push|studio`. tsc ✅ eslint ✅ migration-gen ✅. **Nada provisionado ainda** (sem projeto Supabase real, sem seed, sem wiring de auth). README em `web/src/db/README.md`. Branch `feat/backend-db`, merge direto na main (`78996c3`). **Revisão de segurança aplicada (`feat/backend-db-hardening`, merge `08582d7`):** S1 onboarding só via RPC `create_clinica` (SECURITY DEFINER; `clinicas_insert=false`, `memberships_insert` exige `user_is_admin`) → sem autojunção a clínica alheia; S2 gate por role (`user_is_admin`/`user_is_owner`) em membership/clinica; S3 FKs compostas `(clinica_id, pai_id)` nos filhos cascade (bloqueia anexo cross-tenant) — refs opcionais set-null ficam FK simples, validar same-tenant no app; S4 índices em `clinica_id` + secundários (datas/FKs); S5 uniques (carteiras, prof_procedimentos, modelos_mensagem); S6 removido `lancamentos.metodo` redundante. Migration regenerada: 11 FKs compostas, 14 uniques, 18 índices, 111 policies.
 
 ## Sessão / retomada
+
+### Backend (fase nova) — retomar aqui em 2026-06-26
+- **Feito:** schema multitenant completo + revisão de segurança (D6; features `backend-db` + `backend-db-hardening`, na main). 28 tabelas, RLS por `clinica_id`, FKs compostas same-tenant, índices. tsc+eslint+migration-gen ✅.
+- **NADA provisionado:** sem projeto Supabase real, sem `.env`, sem seed, sem auth wiring. Schema é só código + migration.
+- **Próximo = T9 (provisionar). Ordem exata:**
+  1. criar projeto no Supabase → copiar connection string p/ `web/.env` (modelo em `web/.env.example`)
+  2. `cd web && psql "$DATABASE_URL" -f src/db/rls.sql`  ← ANTES da migration (cria funções/RPC; usa `check_function_bodies=off`)
+  3. `npm run db:migrate`  ← cria 28 tabelas + 111 policies
+  4. smoke test RLS: criar 2 usuários, `select create_clinica('A')` / `('B')`, confirmar que user A não lê dados de B.
+- **Depois:** T10 (auth Supabase SSR + onboarding chama `create_clinica`), T11 (seed clínica demo do `mock.ts` + trocar `src/lib/data/*` stores por `withTenant`).
+- **Resíduos da revisão (decidir/implementar):**
+  - **S7** — `atualizado_em` não auto-atualiza (só default no insert). Add trigger `moddatetime` (extensão Supabase) por tabela, OU setar no app no update.
+  - **S8** — sem soft-delete; qualquer membro DELETE em `lancamentos`/`comissoes`. Decidir imutabilidade financeira (restringir delete por role, ou flag `deletado_em`).
+  - **same-tenant das refs opcionais** (agendamento→paciente, lancamento→*, procedimento.categoria_id, registros→procedimento/profissional, orcamento→paciente, categorias_conta.parent) NÃO é forçado no banco (FK simples set-null). App deve validar no write via `withTenant` que o id referenciado pertence ao tenant.
+  - **S9** — `numeric` volta como **string** no postgres-js; data-layer (T11) precisa parsear p/ `number`.
+- **Arquivos-chave:** `web/src/db/schema/*` (modulado), `web/src/db/client.ts` (`db` + `withTenant`), `web/src/db/rls.sql`, `web/src/db/README.md` (ordem de apply detalhada), `web/drizzle/0000_init.sql`.
+
+
 - **Lote 6 (agenda) + Lote 7 (financeiro) concluídos em 2026-06-23.** main local, build ✅ lint ✅ (23 rotas geradas; 9 novas `/financeiro/*`). Sem push p/ origin.
 - **Retomar com:** `cd web && npm run dev` → http://localhost:3000/financeiro/extrato-de-movimentacao (ou /agenda/visao-geral).
 - **Worktrees:** `../artemise-worktrees/agenda-completa` (lote 6) e `../artemise-financeiro` (lote 7, branch `feat/financeiro-relatorios`). Build NÃO roda em worktree via junction de node_modules (Turbopack rejeita); instalar node_modules local OU buildar no main pós-merge — ver [[build-worktree-turbopack]].
