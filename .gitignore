@@ -14,3 +14,9 @@ node_modules/
 # Env
 .env
 .env.*
+
+# Secrets — storage state de login (NUNCA commitar)
+auth.json
+
+# Playwright CLI — artefatos de automação (snapshots, console logs)
+.playwright-cli/
