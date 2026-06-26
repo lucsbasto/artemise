@@ -34,9 +34,16 @@ em `docs/paginas/` + 58 screenshots em `images/`. App web em `web/`.
 
 - ~~Feature **backend-db** (Drizzle+Supabase Auth)~~ — **REVOGADA e APAGADA em 2026-06-26.** Decisão mudou para Go puro (D6 atual). Código `web/src/db/*` + `web/drizzle/*` + `drizzle.config.ts` + `.env.example` removidos; deps Drizzle/Supabase (`drizzle-orm`, `drizzle-kit`, `postgres`, `@supabase/ssr`, `@supabase/supabase-js`) e scripts `db:*` retirados do `web/package.json` (lockfile sincronizado). O modelo de domínio daquele schema (28 entidades, multitenant por `clinica_id`, mapa JSONB, ledgers financeiro/estoque, árvore de categorias) foi reaproveitado conceitualmente no spec Go. Nada havia sido provisionado (sem Supabase real/seed/auth), então não há migração de dados a fazer.
 
+- Feature **backend-go** (T9–T11) — **IMPLEMENTADO em 2026-06-26.** API HTTP Go (`net/http` stdlib + `pgx/v5`, zero framework) em `backend/`, paralela a `web/`. Stack: argon2id + sessões (cookie httpOnly) para auth; Postgres com **RLS por request** (`SET LOCAL app.clinica_id` em transação, role `app_role` não-superusuário + `FORCE ROW LEVEL SECURITY`); 24 tabelas, migrations próprias (`cmd/migrate up/down`, `schema_migrations`), seed do mock (admin `lucsbasto@gmail.com`/`senha123`, Clara Ribeiro, procedimentos, estoque, 8 métodos pgto, categorias, fichas). Endpoints: auth, CRUD de todos os cadastros (pacientes/profissionais/fornecedores/procedimentos/pacotes/estoque/financeiro/fichas/modelos), sub-recursos (detalhe rico, registros+mapa JSONB, orçamentos c/ total calculado), **baixa de estoque transacional por delta** (estorno/ajuste, 409 saldo insuficiente), e computados (dashboard, agenda visão-geral/relatório, financeiro extrato/competência/fluxo/categorias/contas-receber-pagar/comissões — cálculos portados de `financeiro-calc.ts`/`pacote-calc.ts` p/ `internal/domain`). **Frontend swapado** (M8): `web/src/lib/api-client.ts` (+ variante server), `create-collection.ts` reescrito p/ fetch (mesma interface `Collection<T>`), Server Components consomem `/api/*`, `mock.ts` sem dados mutáveis (só tipos + constantes de UI + catálogos out-of-scope tipo `modelosMensagens`). Orquestração: 1 branch por fase, merge direto na main (sem PR), 6 subagents em worktrees paralelos. Gates: `go build/vet/test` ✅, `tsc --noEmit` ✅, `eslint` ✅, `next build` ✅. `.specs/features/backend-go/`. **Pendente de verificação:** smoke contra DB real (`backend/scripts/smoke.sh`) — Docker não estava instalado na sessão; migrations/login/RLS/baixa-estoque validados por código, não por runtime.
+
 ## Sessão / retomada
 
-### Backend Go (fase nova) — retomar aqui em 2026-06-26
+### Backend Go — implementado em 2026-06-26; falta só smoke DB
+- **Feito:** todo o backend Go + swap do frontend mergeados na main (ver entrada em Concluído). Toolchain Go 1.26 instalado via winget. `docker-compose.yml` + `backend/docker/init/01-app-role.sql` prontos na raiz.
+- **Retomar aqui:** subir Docker Desktop → `docker compose up -d db` → `bash backend/scripts/smoke.sh` (migrate up + login + me + pacientes + dashboard). Depois verificar no browser com `DATABASE_URL=... go run ./cmd/server` + `cd web && npm run dev` apontando `NEXT_PUBLIC_API_URL=http://localhost:8080`.
+- **Riscos a checar no smoke:** (1) RLS realmente isola (criar 2ª clínica e confirmar); (2) baixa de estoque 5→2 e 409; (3) contratos JSON batem com os tipos TS (camelCase) ao renderizar as telas.
+
+### Backend Go (fase nova) — histórico (planejamento) 2026-06-26
 - **Decisão:** D6 atual = Go puro (`net/http`+`pgx`), Supabase só como Postgres gerenciado, auth própria (`sessions`+cookie+argon2id), RLS por request via `SET LOCAL app.clinica_id`. Trilha Drizzle/Supabase-Auth **revogada e apagada** (ver entrada riscada em Concluído).
 - **Spec canônica PRONTA:** `.specs/features/backend-go/` — `spec.md` (63 RF + 10 RNF + 5 CA), `design.md` (camadas `internal/{http,store,domain,auth,db}`, pgx pool, argon2id, migrations runner, seed do mock), `tasks.md` (board M1–M9, gate `go build ./... && go vet ./...`). Status: pronta p/ implementar.
 - **NADA codado ainda:** sem diretório `backend/`, sem `go.mod`, sem projeto Supabase real, sem `.env`. Só os 3 docs de spec.
@@ -81,9 +88,9 @@ Status válidos: `todo` | `wip` | `blocked` | `done`.
 | T8  | done   |       | Lote 6 — Agenda completa (telas 03-06) | `feat/agenda-completa` |
 | T7  | done   |       | Lote 8 — Comunicação 28-29 (8A/8B/8C todas ✅) | módulo `/comunicacao`; 36/36. |
 | T6  | done   |       | ~~Backend Drizzle + RLS~~ REVOGADO | substituído por Go (D6 atual); código apagado |
-| T9  | todo   |       | Backend Go M1–M3: bootstrap + migrations/seed + auth/RLS | `.specs/features/backend-go/tasks.md`; worktree `feat/backend-go`; backend Go puro |
-| T10 | todo   |       | Backend Go M4–M7: CRUD + sub-recursos + estoque transacional + computados | depende de T9 |
-| T11 | todo   |       | Backend Go M8–M9: swap frontend (`api-client`+`create-collection` via fetch) + fecho | remove mock mutável; tsc+lint limpos |
+| T9  | done   |       | Backend Go M1–M3: bootstrap + migrations/seed + auth/RLS | `feat/backend-foundation` mergeado; go build/vet/test ✅ |
+| T10 | done   |       | Backend Go M4–M7: CRUD + sub-recursos + estoque transacional + computados | branches cadastros/subrecursos/computados/estoque-tx mergeados; go build/vet/test ✅ |
+| T11 | done   |       | Backend Go M8–M9: swap frontend (`api-client`+`create-collection` via fetch) + fecho | `feat/frontend-swap` mergeado; tsc+lint+build ✅. **Pendente:** smoke DB (`backend/scripts/smoke.sh`) aguarda Docker |
 | T12 | done   |       | **Responsivo mobile & tablet** (RSP1–RSP9 ✅) | mergeado na main `feat/responsive-mobile-tablet` (`29cf89f`); tsc+lint+build ✅ (36 rotas). RSP10 = QA visual manual pendente (browser @375/@820) |
 
 ## Preferências
