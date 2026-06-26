@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/lucsb/artemise/backend/internal/app"
 	"github.com/lucsb/artemise/backend/internal/domain"
 	"github.com/lucsb/artemise/backend/internal/respond"
@@ -72,9 +74,14 @@ func createRegistro(a *app.App) http.HandlerFunc {
 			return
 		}
 
-		// M6: baixa de estoque — BK-22 debita itens_estoque pelos pontos do mapa
-		// (injetavel_id/quantidade_usada) dentro desta mesma tx, com aviso 409 de
-		// saldo insuficiente. Seam único: nenhuma outra escrita de estoque aqui.
+		// M6 (BK-22 / RF-38): baixa de estoque na MESMA tx. Debita o saldo das
+		// substâncias do novo mapa (delta = novo − ∅); saldo insuficiente aborta
+		// o registro recém-inserido via rollback explícito + 409.
+		if reg.UsaMapa && reg.Mapa != nil {
+			if !baixaEstoque(w, r, tx, domain.CalcularDelta(nil, reg.Mapa)) {
+				return
+			}
+		}
 
 		respond.JSON(w, http.StatusCreated, reg)
 	}
@@ -118,8 +125,12 @@ func patchRegistro(a *app.App) http.HandlerFunc {
 			return
 		}
 
-		// M6: baixa de estoque — BK-22 ajusta saldo pelo delta (nova-anterior
-		// quantidade) nesta tx; crédito quando delta < 0, débito com aviso quando > 0.
+		// M6 (BK-22 / RF-40): ajuste por delta nesta tx. delta = novo − anterior
+		// por substância: positivo debita (com aviso 409), negativo estorna. Cobre
+		// também a troca de procedimento (estorno do mapa antigo + baixa do novo).
+		if !baixaEstoque(w, r, tx, domain.CalcularDelta(existente.Mapa, reg.Mapa)) {
+			return
+		}
 
 		respond.JSON(w, http.StatusOK, reg)
 	}
@@ -128,7 +139,22 @@ func patchRegistro(a *app.App) http.HandlerFunc {
 func deleteRegistro(a *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tx := app.TxFrom(r.Context())
-		ok, err := store.DeleteRegistro(r.Context(), tx, r.PathValue("id"), r.PathValue("rid"))
+		pacienteID := r.PathValue("id")
+		rid := r.PathValue("rid")
+
+		// Lê o registro antes de remover para estornar o mapa na mesma tx.
+		existente, found, err := store.GetRegistro(r.Context(), tx, pacienteID, rid)
+		if err != nil {
+			slog.Error("registros: get pré-delete", "err", err)
+			respond.Error(w, http.StatusInternalServerError, "erro interno", "INTERNAL")
+			return
+		}
+		if !found {
+			respond.Error(w, http.StatusNotFound, "registro não encontrado", "NOT_FOUND")
+			return
+		}
+
+		ok, err := store.DeleteRegistro(r.Context(), tx, pacienteID, rid)
 		if err != nil {
 			slog.Error("registros: delete", "err", err)
 			respond.Error(w, http.StatusInternalServerError, "erro interno", "INTERNAL")
@@ -138,8 +164,43 @@ func deleteRegistro(a *app.App) http.HandlerFunc {
 			respond.Error(w, http.StatusNotFound, "registro não encontrado", "NOT_FOUND")
 			return
 		}
+
+		// M6 (BK-22 / RF-39): estorno — credita de volta todas as unidades do mapa
+		// (delta = ∅ − anterior, sempre ≤ 0, nunca barrado por saldo).
+		if existente.Mapa != nil {
+			if _, err := store.AplicarDelta(r.Context(), tx, domain.CalcularDelta(existente.Mapa, nil)); err != nil {
+				slog.Error("registros: estorno estoque", "err", err)
+				respond.Error(w, http.StatusInternalServerError, "erro interno", "INTERNAL")
+				return
+			}
+		}
+
 		respond.NoContent(w)
 	}
+}
+
+// baixaEstoque aplica um delta de estoque na transação do request. Em saldo
+// insuficiente (débito), dá rollback explícito — o middleware WithTx só reverte
+// sozinho em status >= 500, então o 409 precisa desfazer as escritas à mão — e
+// responde 409 com o item barrado. Retorna false quando o caller deve abortar.
+func baixaEstoque(w http.ResponseWriter, r *http.Request, tx pgx.Tx, delta domain.DeltaEstoque) bool {
+	falta, err := store.AplicarDelta(r.Context(), tx, delta)
+	if err != nil {
+		slog.Error("registros: baixa estoque", "err", err)
+		respond.Error(w, http.StatusInternalServerError, "erro interno", "INTERNAL")
+		return false
+	}
+	if falta != nil {
+		_ = tx.Rollback(r.Context())
+		respond.JSON(w, http.StatusConflict, map[string]any{
+			"error":      "saldo_insuficiente",
+			"code":       "INSUFFICIENT_STOCK",
+			"itemId":     falta.ItemID,
+			"saldoAtual": falta.Saldo,
+		})
+		return false
+	}
+	return true
 }
 
 // validaMapa garante que, quando presente, o mapa de injetáveis casa a estrutura

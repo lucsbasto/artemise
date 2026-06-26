@@ -2,6 +2,9 @@ package store
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/lucsb/artemise/backend/internal/domain"
 )
@@ -68,4 +71,60 @@ func UpdateEstoque(ctx context.Context, db Queryer, cols []string, vals []any, i
 	}
 	computeEstoque(&it)
 	return it, nil
+}
+
+// SaldoInsuficiente reporta qual item barrou um débito de estoque e o saldo
+// atualmente disponível, para compor o aviso 409 (BK-22 / RF-39).
+type SaldoInsuficiente struct {
+	ItemID string  `json:"itemId"`
+	Saldo  float64 `json:"saldoAtual"`
+}
+
+// AjustarSaldo aplica `delta` ao saldo de um item dentro da transação RLS do
+// request (delta > 0 debita, delta < 0 credita/estorna). Usa UPDATE guardado:
+// a cláusula `saldo >= delta` impede saldo negativo de forma atômica — quando o
+// débito excederia o saldo, 0 linhas são afetadas (ok=false) sem alterar nada e
+// o saldo atual é lido para o aviso. Créditos (delta < 0) nunca são barrados
+// pela guarda. Item inexistente ⇒ ok=false com saldo 0.
+func AjustarSaldo(ctx context.Context, tx pgx.Tx, itemID string, delta float64) (saldo float64, ok bool, err error) {
+	err = tx.QueryRow(ctx, `
+		UPDATE itens_estoque SET saldo = saldo - $2
+		WHERE id = $1 AND saldo >= $2
+		RETURNING saldo`, itemID, delta).Scan(&saldo)
+	if err == nil {
+		return saldo, true, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return 0, false, err
+	}
+	// 0 linhas: saldo insuficiente ou item inexistente. Lê o saldo atual para o
+	// aviso; ausência (item removido) é tratada como saldo 0.
+	if err = tx.QueryRow(ctx, `SELECT saldo FROM itens_estoque WHERE id = $1`, itemID).Scan(&saldo); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, false, nil
+		}
+		return 0, false, err
+	}
+	return saldo, false, nil
+}
+
+// AplicarDelta aplica cada variação de DeltaEstoque na transação. Débitos
+// (delta > 0) são guardados: se algum exceder o saldo, retorna o item barrado
+// (falta != nil) sem tentar os demais — o caller deve dar rollback e responder
+// 409. Créditos (delta < 0, estorno) sempre se aplicam, mesmo que o item tenha
+// sido removido (no-op silencioso).
+func AplicarDelta(ctx context.Context, tx pgx.Tx, delta domain.DeltaEstoque) (*SaldoInsuficiente, error) {
+	for sub, d := range delta {
+		if d == 0 {
+			continue
+		}
+		saldo, ok, err := AjustarSaldo(ctx, tx, sub, d)
+		if err != nil {
+			return nil, err
+		}
+		if !ok && d > 0 {
+			return &SaldoInsuficiente{ItemID: sub, Saldo: saldo}, nil
+		}
+	}
+	return nil, nil
 }
