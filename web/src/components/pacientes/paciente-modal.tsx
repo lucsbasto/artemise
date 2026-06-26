@@ -7,34 +7,44 @@ import type { Patient } from "@/lib/mock";
 
 export type NovoPaciente = Omit<Patient, "id">;
 
-/** Modal de cadastro de paciente com informações pessoais. */
+/** Modal de cadastro/edição de paciente com informações pessoais. */
 export function PacienteModal({
   open,
   onClose,
   onSave,
+  paciente,
 }: {
   open: boolean;
   onClose: () => void;
   onSave: (data: NovoPaciente) => void;
+  /** Quando presente, o modal abre em modo edição pré-preenchido. */
+  paciente?: Patient;
 }) {
-  const [nome, setNome] = React.useState("");
-  const [telefone, setTelefone] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [cpf, setCpf] = React.useState("");
-  const [sexo, setSexo] = React.useState("");
-  const [dataNascimento, setDataNascimento] = React.useState("");
-  const [endereco, setEndereco] = React.useState("");
-  const [observacoes, setObservacoes] = React.useState("");
-  const [recebeNotificacoes, setRecebeNotificacoes] = React.useState(false);
+  const editando = Boolean(paciente);
+  const [nome, setNome] = React.useState(paciente?.nome ?? "");
+  const [telefone, setTelefone] = React.useState(paciente?.identificador ?? "");
+  const [email, setEmail] = React.useState(paciente?.email ?? "");
+  const [cpf, setCpf] = React.useState(paciente?.cpf ?? "");
+  const [sexo, setSexo] = React.useState(paciente?.sexo ?? "");
+  const [dataNascimento, setDataNascimento] = React.useState(paciente?.dataNascimento ?? "");
+  const [endereco, setEndereco] = React.useState(paciente?.endereco ?? "");
+  const [observacoes, setObservacoes] = React.useState(paciente?.observacoes ?? "");
+  const [recebeNotificacoes, setRecebeNotificacoes] = React.useState(
+    paciente?.recebeNotificacoes ?? false
+  );
+
+  // Os campos são semeados via inicializadores de useState. Para resincronizar ao
+  // (re)abrir descartando edições não salvas, o pai remonta o modal com `key`.
 
   function salvar() {
     if (!nome.trim()) return;
     onSave({
+      // Em edição preserva campos não-editáveis (etiquetas, criadoEm…); em criação aplica defaults.
+      ...(paciente
+        ? { tipo: paciente.tipo, etiquetas: paciente.etiquetas, ativo: paciente.ativo, criadoEm: paciente.criadoEm }
+        : { tipo: "Paciente", etiquetas: [], ativo: true }),
       nome: nome.trim(),
-      tipo: "Paciente",
-      etiquetas: [],
       identificador: telefone.trim() || "-",
-      ativo: true,
       sexo: sexo || undefined,
       dataNascimento: dataNascimento.trim() || undefined,
       cpf: cpf.trim() || undefined,
@@ -49,7 +59,7 @@ export function PacienteModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Novo paciente"
+      title={editando ? "Editar paciente" : "Novo paciente"}
       size="lg"
       footer={
         <Button variant="brand" className="px-8" onClick={salvar}>
