@@ -4,20 +4,17 @@ import {
   boolean,
   date,
   foreignKey,
+  index,
   numeric,
   pgTable,
   text,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { timestamps, tenantPolicies } from "./_helpers";
 import { clinicaFk } from "./tenancy";
 import { pacientes, profissionais } from "./cadastros";
-import {
-  contaIconEnum,
-  financeStatusEnum,
-  financeTipoEnum,
-  metodoPgtoEnum,
-} from "./_enums";
+import { contaIconEnum, financeStatusEnum, financeTipoEnum } from "./_enums";
 
 /* ---------- Contas financeiras (spec 20) ---------- */
 export const contasFinanceiras = pgTable(
@@ -26,12 +23,15 @@ export const contasFinanceiras = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
     nome: text().notNull(),
-    tipo: text().notNull(), // Caixa | Conta Corrente | Carteira
+    tipo: text().notNull(),
     saldoInicial: numeric("saldo_inicial", { precision: 14, scale: 2 }).notNull().default("0"),
     icon: contaIconEnum().notNull().default("bank"),
     ...timestamps,
   },
-  () => tenantPolicies("contas_financeiras")
+  (t) => [
+    unique("contas_financeiras_clinica_id_id_uq").on(t.clinicaId, t.id),
+    ...tenantPolicies("contas_financeiras"),
+  ]
 );
 
 /* ---------- Categorias de contas (árvore self-ref — spec 21) ---------- */
@@ -46,6 +46,8 @@ export const categoriasConta = pgTable(
     ...timestamps,
   },
   (t) => [
+    unique("categorias_conta_clinica_id_id_uq").on(t.clinicaId, t.id),
+    // self-ref cascade simples (mesmo tenant por construção; cascade = clinica-safe).
     foreignKey({
       columns: [t.parentId],
       foreignColumns: [t.id],
@@ -62,29 +64,32 @@ export const metodosPagamento = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
     descricao: text().notNull(),
-    tipo: text().notNull(), // Dinheiro | PIX | Cartão | Boleto | Transferência
+    tipo: text().notNull(),
     marca: text(),
     ativo: boolean().notNull().default(true),
     ...timestamps,
   },
-  () => tenantPolicies("metodos_pagamento")
+  (t) => [
+    unique("metodos_pagamento_clinica_id_id_uq").on(t.clinicaId, t.id),
+    ...tenantPolicies("metodos_pagamento"),
+  ]
 );
 
 /* ---------- Lançamentos (títulos a receber/pagar — specs 13-18) ----------
    Ledger único: contas a receber (13), a pagar (14), extrato (15),
-   competência (16), fluxo de caixa (17/18) são views/agregações sobre esta tabela. */
+   competência (16), fluxo de caixa (17/18) são views/agregações sobre esta tabela.
+   Refs opcionais = FK simples set-null (cascade-safe); same-tenant validado no app. */
 export const lancamentos = pgTable(
   "lancamentos",
   {
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
     descricao: text().notNull(),
-    tipo: financeTipoEnum().notNull(), // receita | despesa
+    tipo: financeTipoEnum().notNull(),
     situacao: financeStatusEnum().notNull().default("Em aberto"),
     valor: numeric({ precision: 14, scale: 2 }).notNull(),
     vencimento: date().notNull(),
-    execucao: date(), // liquidação (recebimento/pagamento); null = não liquidado
-    metodo: metodoPgtoEnum(),
+    execucao: date(), // liquidação; null = não liquidado
     categoriaContaId: uuid("categoria_conta_id").references(() => categoriasConta.id, {
       onDelete: "set null",
     }),
@@ -100,7 +105,12 @@ export const lancamentos = pgTable(
     }),
     ...timestamps,
   },
-  () => tenantPolicies("lancamentos")
+  (t) => [
+    index("lancamentos_clinica_id_idx").on(t.clinicaId),
+    index("lancamentos_clinica_vencimento_idx").on(t.clinicaId, t.vencimento),
+    index("lancamentos_paciente_id_idx").on(t.pacienteId),
+    ...tenantPolicies("lancamentos"),
+  ]
 );
 
 /* ---------- Comissões (spec 23) ---------- */
@@ -109,10 +119,8 @@ export const comissoes = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
-    profissionalId: uuid("profissional_id")
-      .notNull()
-      .references(() => profissionais.id, { onDelete: "cascade" }),
-    referencia: text().notNull(), // procedimento/título de origem
+    profissionalId: uuid("profissional_id").notNull(),
+    referencia: text().notNull(),
     data: date().notNull(),
     base: numeric({ precision: 14, scale: 2 }).notNull(),
     percentual: numeric({ precision: 5, scale: 2 }),
@@ -120,5 +128,13 @@ export const comissoes = pgTable(
     situacao: financeStatusEnum().notNull().default("Em aberto"),
     ...timestamps,
   },
-  () => tenantPolicies("comissoes")
+  (t) => [
+    foreignKey({
+      columns: [t.clinicaId, t.profissionalId],
+      foreignColumns: [profissionais.clinicaId, profissionais.id],
+      name: "comissoes_profissional_fk",
+    }).onDelete("cascade"),
+    index("comissoes_clinica_id_idx").on(t.clinicaId),
+    ...tenantPolicies("comissoes"),
+  ]
 );

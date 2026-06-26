@@ -3,11 +3,14 @@
 import {
   boolean,
   date,
+  foreignKey,
+  index,
   integer,
   jsonb,
   numeric,
   pgTable,
   text,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { timestamps, tenantPolicies } from "./_helpers";
@@ -21,16 +24,15 @@ export const registrosProcedimento = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
-    pacienteId: uuid("paciente_id")
-      .notNull()
-      .references(() => pacientes.id, { onDelete: "cascade" }),
+    pacienteId: uuid("paciente_id").notNull(),
+    // refs ao catálogo são opcionais (snapshot do nome preserva histórico) → set-null simples.
     procedimentoId: uuid("procedimento_id").references(() => procedimentos.id, {
       onDelete: "set null",
     }),
     profissionalId: uuid("profissional_id").references(() => profissionais.id, {
       onDelete: "set null",
     }),
-    procedimentoNome: text("procedimento_nome").notNull(), // snapshot do nome
+    procedimentoNome: text("procedimento_nome").notNull(),
     profissionalNome: text("profissional_nome"),
     data: date().notNull(),
     status: statusRegistroProcEnum().notNull().default("agendado"),
@@ -40,7 +42,16 @@ export const registrosProcedimento = pgTable(
     mapa: jsonb(), // FichaInjetaveis serializável (pontos/rastreio/relatorio)
     ...timestamps,
   },
-  () => tenantPolicies("registros_procedimento")
+  (t) => [
+    // registro pertence ao paciente (same-tenant garantido pela composta cascade).
+    foreignKey({
+      columns: [t.clinicaId, t.pacienteId],
+      foreignColumns: [pacientes.clinicaId, pacientes.id],
+      name: "registros_procedimento_paciente_fk",
+    }).onDelete("cascade"),
+    index("registros_procedimento_paciente_id_idx").on(t.pacienteId),
+    ...tenantPolicies("registros_procedimento"),
+  ]
 );
 
 /* ---------- Orçamentos (spec 09) ---------- */
@@ -58,7 +69,11 @@ export const orcamentos = pgTable(
     data: date().notNull(),
     ...timestamps,
   },
-  () => tenantPolicies("orcamentos")
+  (t) => [
+    unique("orcamentos_clinica_id_id_uq").on(t.clinicaId, t.id),
+    index("orcamentos_clinica_id_idx").on(t.clinicaId),
+    ...tenantPolicies("orcamentos"),
+  ]
 );
 
 /** Linhas do orçamento (procedimentos/produtos). */
@@ -67,9 +82,7 @@ export const orcamentoItens = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
-    orcamentoId: uuid("orcamento_id")
-      .notNull()
-      .references(() => orcamentos.id, { onDelete: "cascade" }),
+    orcamentoId: uuid("orcamento_id").notNull(),
     nome: text().notNull(),
     quantidade: integer().notNull().default(1),
     valorUnitario: numeric("valor_unitario", { precision: 12, scale: 2 }).notNull().default("0"),
@@ -78,21 +91,35 @@ export const orcamentoItens = pgTable(
     total: numeric({ precision: 14, scale: 2 }).notNull().default("0"),
     ...timestamps,
   },
-  () => tenantPolicies("orcamento_itens")
+  (t) => [
+    foreignKey({
+      columns: [t.clinicaId, t.orcamentoId],
+      foreignColumns: [orcamentos.clinicaId, orcamentos.id],
+      name: "orcamento_itens_orcamento_fk",
+    }).onDelete("cascade"),
+    index("orcamento_itens_clinica_id_idx").on(t.clinicaId),
+    ...tenantPolicies("orcamento_itens"),
+  ]
 );
 
-/* ---------- Carteira do paciente (saldo/cashback) ---------- */
+/* ---------- Carteira do paciente (saldo/cashback) — 1:1 ---------- */
 export const carteiras = pgTable(
   "carteiras",
   {
     id: uuid().primaryKey().defaultRandom(),
     clinicaId: clinicaFk(),
-    pacienteId: uuid("paciente_id")
-      .notNull()
-      .references(() => pacientes.id, { onDelete: "cascade" }),
+    pacienteId: uuid("paciente_id").notNull(),
     saldo: numeric({ precision: 14, scale: 2 }).notNull().default("0"),
     cashback: numeric({ precision: 14, scale: 2 }).notNull().default("0"),
     ...timestamps,
   },
-  () => tenantPolicies("carteiras")
+  (t) => [
+    foreignKey({
+      columns: [t.clinicaId, t.pacienteId],
+      foreignColumns: [pacientes.clinicaId, pacientes.id],
+      name: "carteiras_paciente_fk",
+    }).onDelete("cascade"),
+    unique("carteiras_paciente_uq").on(t.clinicaId, t.pacienteId),
+    ...tenantPolicies("carteiras"),
+  ]
 );

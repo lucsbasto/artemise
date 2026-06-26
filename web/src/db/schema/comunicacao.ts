@@ -1,5 +1,5 @@
 // Comunicação: modelos de mensagens do sistema (spec 29).
-import { boolean, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 import { timestamps, tenantPolicies } from "./_helpers";
 import { clinicaFk } from "./tenancy";
 
@@ -13,9 +13,13 @@ export const modelosMensagem = pgTable(
     titulo: text().notNull(),
     descricao: text(),
     canais: jsonb().notNull().default([]), // CanalMensagem[]
-    corpo: text(), // conteúdo personalizado
+    corpo: text(),
     ativo: boolean().notNull().default(true),
     ...timestamps,
   },
-  () => tenantPolicies("modelos_mensagem")
+  (t) => [
+    // 1 modelo por chave por clínica (a unique já indexa o clinica_id na coluna líder).
+    unique("modelos_mensagem_clinica_chave_uq").on(t.clinicaId, t.chave),
+    ...tenantPolicies("modelos_mensagem"),
+  ]
 );

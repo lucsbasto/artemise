@@ -1,6 +1,10 @@
 // Agenda: agendamentos (calendário + relatório + eventos/sala de espera unificados).
 // Specs 02-06.
-import { integer, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+//
+// Os FKs paciente/profissional/procedimento são simples set-null (refs opcionais —
+// um Bloqueio não tem paciente). Same-tenant não é forçado no banco nesses (FK composta
+// exigiria cascade, indesejado p/ histórico); validar no app no write via withTenant.
+import { index, integer, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { timestamps, tenantPolicies } from "./_helpers";
 import { clinicaFk } from "./tenancy";
 import { pacientes, procedimentos, profissionais } from "./cadastros";
@@ -13,7 +17,6 @@ export const agendamentos = pgTable(
     clinicaId: clinicaFk(),
     tipo: agendaTipoEnum().notNull().default("Agendamento"),
     status: agendaStatusEnum().notNull().default("Agendado"),
-    // relacionamentos (nulos p/ bloqueio/lembrete/evento)
     pacienteId: uuid("paciente_id").references(() => pacientes.id, { onDelete: "set null" }),
     profissionalId: uuid("profissional_id").references(() => profissionais.id, {
       onDelete: "set null",
@@ -29,5 +32,10 @@ export const agendamentos = pgTable(
     observacao: text(),
     ...timestamps,
   },
-  () => tenantPolicies("agendamentos")
+  (t) => [
+    index("agendamentos_clinica_id_idx").on(t.clinicaId),
+    index("agendamentos_clinica_inicio_idx").on(t.clinicaId, t.inicio),
+    index("agendamentos_paciente_id_idx").on(t.pacienteId),
+    ...tenantPolicies("agendamentos"),
+  ]
 );
