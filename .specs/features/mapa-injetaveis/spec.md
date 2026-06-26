@@ -47,7 +47,7 @@ Asset CC0 (domínio público) já no projeto:
 | Mapa **corporal** | Esta fase é só facial; corporal vira spec própria depois. |
 | **Vistas de perfil** (perfil E/D) | MVP é só vista **frontal**. Perfis ficam para V2 (precisam de novos assets de imagem). |
 | Backend/persistência real | App é mock client-side (`useCollection` + stores); estado fica no store mock. |
-| Cálculo de baixa de estoque por ui | Integração com módulo Estoque é fase posterior; aqui só registra unidades. |
+| ~~Estoque~~ — agora EM escopo (ver P6) | Substâncias vêm do catálogo de Estoque e baixam por ui. |
 | Importar imagem facial custom do paciente (foto real) | V2; nesta fase usa ilustração padrão por vista. |
 | IA de sugestão de pontos | Fora de escopo. |
 
@@ -177,8 +177,27 @@ para adaptar o mapa ao protocolo da minha clínica.
    âncora** clicando na imagem do rosto (captura x,y relativos).
 3. WHEN salvo uma região THEN ela SHALL aparecer no modo Selecionável das fichas daquela vista.
 4. WHEN desativo uma região THEN ela SHALL sumir do mapa de novas fichas (pontos históricos preservados).
-5. The system SHALL vir com um **conjunto-semente** de regiões faciais comuns (testa, glabela,
-   pés-de-galinha E/D, malar E/D, sulco nasolabial E/D, mento, código de barras) que a clínica pode editar.
+5. The system SHALL vir com um **conjunto-semente** de regiões faciais comuns, editável pela clínica.
+   Baseado nas principais áreas de aplicação (pesquisa clínica):
+
+   **Toxina botulínica (terço superior + mandíbula):**
+   - Testa (linhas frontais)
+   - Glabela (rugas da braveza — corrugadores/prócero)
+   - Pés-de-galinha E/D (periorbital/canthal)
+   - Cauda da sobrancelha E/D (browlift)
+   - Bunny lines (dorso nasal)
+   - Masseter E/D (bruxismo/contorno mandibular)
+   - DAO E/D (abaixador do ângulo da boca — cantos caídos)
+   - Sorriso gengival (lábio superior)
+   - Mento (queixo — aspecto de casca de laranja)
+
+   **Preenchimento / ácido hialurônico (terço médio/inferior):**
+   - Malar E/D (maçã do rosto)
+   - Sulco nasolabial E/D
+   - Lábios / código de barras (perioral)
+   - Olheiras E/D (sulco lágrima)
+
+   Cada região tem âncora (x,y relativos) na vista frontal; a clínica pode adicionar/editar/desativar.
 
 **Independent Test**: Criar região "Bigode chinês E" na vista frontal, marcar âncora na imagem, salvar →
 abrir ficha em modo Selecionável e ver a nova região clicável.
@@ -218,6 +237,30 @@ para foto e uma vista com dados para o registro.
 
 > **V2 (fora do MVP):** seletor de vistas frontal/perfil-E/perfil-D, com `vista` por ponto/região
 > (o modelo de dados já prevê `VistaFacial`). Requer novos assets de perfil.
+
+---
+
+### P6: Substâncias do catálogo de Estoque + baixa por unidade
+
+**User Story**: Como clínica, quero que as substâncias do mapa venham do catálogo de **Estoque** e que
+cada aplicação **dê baixa** no estoque pela quantidade aplicada (ui), para controlar consumo e custo.
+
+**Why P6**: Decisão do usuário — integrar ao Estoque (não usar substâncias fixas em código).
+
+**Acceptance Criteria**:
+1. WHEN abro o mapa THEN a legenda de substâncias SHALL vir de itens do **Estoque** marcados como injetáveis
+   (categoria "Injetáveis"), com nome, cor/ícone e unidade.
+2. The system SHALL mapear cada substância a um **item de estoque** (`itemEstoqueId`) com lote/validade
+   herdados do item quando disponíveis.
+3. WHEN salvo a ficha de injetáveis com N unidades de uma substância THEN o sistema SHALL **baixar N**
+   do saldo do item de estoque correspondente.
+4. WHEN edito/removo pontos e re-salvo THEN o sistema SHALL **ajustar a baixa** (diferença) no estoque.
+5. IF o item de estoque não tem saldo suficiente THEN o sistema SHALL avisar (mas não bloquear o registro clínico).
+
+**Independent Test**: Aplicar 4 ui de "Toxina (item estoque)" → salvar → saldo do item cai 4; remover 1 ui e re-salvar → saldo sobe 1.
+
+> **Modelo:** `SubstanciaInjetavel.itemEstoqueId` liga substância ao item de Estoque. A baixa usa o store
+> de estoque existente (`estoqueStore`). O rastreio (marca/lote/validade) por substância pode herdar do item.
 
 ---
 
