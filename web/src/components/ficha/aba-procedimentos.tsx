@@ -4,9 +4,10 @@ import { useParams } from "next/navigation";
 import { Plus, Search } from "lucide-react";
 import { brl, cn } from "@/lib/utils";
 import { useCollection, nextId } from "@/lib/data/create-collection";
-import { registrosProcedimentoStore } from "@/lib/data/stores";
+import { registrosProcedimentoStore, estoqueStore } from "@/lib/data/stores";
 import {
   statusRegistroProcLabel,
+  type FichaInjetaveis,
   type RegistroProcedimento,
   type StatusRegistroProc,
 } from "@/lib/mock";
@@ -14,6 +15,27 @@ import { RowActions } from "@/components/ui/row-actions";
 import { EmptyFiltered } from "./ficha-empty";
 import { Pagination } from "./pagination";
 import { RegistroProcedimentoModal } from "./registro-procedimento-modal";
+import { MapaInjetaveisModal } from "./mapa-injetaveis-modal";
+
+/** ui aplicadas por substância (= item de estoque) numa ficha de mapa. */
+function totaisPorSub(f?: FichaInjetaveis): Record<string, number> {
+  const acc: Record<string, number> = {};
+  for (const p of f?.pontos ?? []) acc[p.substanciaId] = (acc[p.substanciaId] ?? 0) + p.unidades;
+  return acc;
+}
+
+/** Baixa no estoque o delta de ui entre o estado salvo e o novo (ajusta na edição). */
+function aplicarBaixaEstoque(anterior: FichaInjetaveis | undefined, novo: FichaInjetaveis | undefined) {
+  const antes = totaisPorSub(anterior);
+  const depois = totaisPorSub(novo);
+  const itens = estoqueStore.getSnapshot();
+  for (const id of new Set([...Object.keys(antes), ...Object.keys(depois)])) {
+    const delta = (depois[id] ?? 0) - (antes[id] ?? 0);
+    if (!delta) continue;
+    const item = itens.find((i) => i.id === id);
+    if (item) estoqueStore.update(id, { saldo: item.saldo - delta });
+  }
+}
 
 const statusClass: Record<StatusRegistroProc, string> = {
   realizado: "bg-green-50 text-green-600",
@@ -28,6 +50,7 @@ export function AbaProcedimentos() {
   const [query, setQuery] = React.useState("");
   const [modalOpen, setModalOpen] = React.useState(false);
   const [editando, setEditando] = React.useState<RegistroProcedimento | undefined>(undefined);
+  const [mapaRegistro, setMapaRegistro] = React.useState<RegistroProcedimento | null>(null);
 
   const doPaciente = React.useMemo(
     () => items.filter((r) => r.pacienteId === pacienteId),
@@ -55,8 +78,19 @@ export function AbaProcedimentos() {
   }
 
   function handleSave(data: Omit<RegistroProcedimento, "id" | "pacienteId">) {
+    aplicarBaixaEstoque(editando?.mapa, data.mapa);
     if (editando) update(editando.id, data);
     else add({ id: nextId("rproc"), pacienteId, ...data });
+  }
+
+  function handleAbrirMapa(r: RegistroProcedimento) {
+    setMapaRegistro(r);
+  }
+
+  function handleSaveMapa(ficha: FichaInjetaveis) {
+    if (!mapaRegistro) return;
+    aplicarBaixaEstoque(mapaRegistro.mapa, ficha);
+    update(mapaRegistro.id, { mapa: ficha, usaMapa: true });
   }
 
   return (
@@ -123,6 +157,9 @@ export function AbaProcedimentos() {
                   <td className="py-3 pr-4">
                     <RowActions
                       actions={[
+                        ...(r.usaMapa
+                          ? [{ label: "Mapa", onClick: () => handleAbrirMapa(r) }]
+                          : []),
                         { label: "Editar", onClick: () => handleEdit(r) },
                         { label: "Excluir", danger: true, onClick: () => remove(r.id) },
                       ]}
@@ -144,6 +181,17 @@ export function AbaProcedimentos() {
         onSave={handleSave}
         registro={editando}
       />
+
+      {mapaRegistro && (
+        <MapaInjetaveisModal
+          key={`mapa-${mapaRegistro.id}`}
+          open={!!mapaRegistro}
+          onClose={() => setMapaRegistro(null)}
+          titulo={`Mapa de injetáveis — ${mapaRegistro.procedimento}`}
+          valor={mapaRegistro.mapa}
+          onSave={handleSaveMapa}
+        />
+      )}
     </div>
   );
 }

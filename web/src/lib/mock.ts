@@ -421,20 +421,35 @@ export const periodoFinanceiro = "23/05/2026 - 22/06/2026";
 
 /* ---------- Procedimentos (32-config-procedimentos.md) ---------- */
 
+export type CategoriaProc = "Facial" | "Corporal" | "Injetáveis" | "Estética";
+
 export type Procedimento = {
   id: string;
   nome: string;
-  categoria: string | null;
+  categoria: CategoriaProc | null;
   duracaoMin: number;
   valor: number;
   ativo: boolean;
+  usaMapa: boolean; // Injetáveis abrem o MapaInjetaveis (marcação por pontos no rosto).
 };
 
+// Catálogo seed — procedimentos estéticos mais comuns (Brasil 2025/26).
+// Regra: categoria "Injetáveis" => usaMapa = true.
 export const procedimentos: Procedimento[] = [
-  { id: "1", nome: "Limpeza de Pele Profunda", categoria: null, duracaoMin: 60, valor: 200, ativo: true },
-  { id: "2", nome: "Microagulhamento", categoria: null, duracaoMin: 60, valor: 500, ativo: true },
-  { id: "3", nome: "Peeling Químico", categoria: null, duracaoMin: 60, valor: 300, ativo: true },
-  { id: "4", nome: "Tratamento de Acne", categoria: null, duracaoMin: 60, valor: 250, ativo: true },
+  { id: "1", nome: "Limpeza de Pele Profunda", categoria: "Facial", duracaoMin: 60, valor: 200, ativo: true, usaMapa: false },
+  { id: "2", nome: "Microagulhamento", categoria: "Facial", duracaoMin: 60, valor: 500, ativo: true, usaMapa: false },
+  { id: "3", nome: "Peeling Químico", categoria: "Facial", duracaoMin: 60, valor: 300, ativo: true, usaMapa: false },
+  { id: "4", nome: "Tratamento de Acne", categoria: "Facial", duracaoMin: 60, valor: 250, ativo: true, usaMapa: false },
+  { id: "5", nome: "Harmonização Facial", categoria: "Injetáveis", duracaoMin: 90, valor: 2500, ativo: true, usaMapa: true },
+  { id: "6", nome: "Toxina Botulínica (Botox)", categoria: "Injetáveis", duracaoMin: 45, valor: 1300, ativo: true, usaMapa: true },
+  { id: "7", nome: "Preenchimento c/ Ácido Hialurônico", categoria: "Injetáveis", duracaoMin: 60, valor: 1800, ativo: true, usaMapa: true },
+  { id: "8", nome: "Bioestimulador de Colágeno", categoria: "Injetáveis", duracaoMin: 60, valor: 1600, ativo: true, usaMapa: true },
+  { id: "9", nome: "Fios de PDO (lifting)", categoria: "Injetáveis", duracaoMin: 60, valor: 2000, ativo: true, usaMapa: true },
+  { id: "10", nome: "Skinbooster", categoria: "Injetáveis", duracaoMin: 45, valor: 900, ativo: true, usaMapa: true },
+  { id: "11", nome: "Radiofrequência Facial", categoria: "Facial", duracaoMin: 50, valor: 400, ativo: true, usaMapa: false },
+  { id: "12", nome: "Laser / Luz Intensa Pulsada (IPL)", categoria: "Facial", duracaoMin: 45, valor: 600, ativo: true, usaMapa: false },
+  { id: "13", nome: "Criolipólise", categoria: "Corporal", duracaoMin: 60, valor: 800, ativo: true, usaMapa: false },
+  { id: "14", nome: "Radiofrequência / Drenagem Corporal", categoria: "Corporal", duracaoMin: 60, valor: 350, ativo: true, usaMapa: false },
 ];
 
 // Paleta nomeada do campo "Cor*" do modal de procedimento.
@@ -451,6 +466,41 @@ export const coresProcedimento: CorOption[] = [
 // Categorias de procedimento (dropdown estático do modal).
 export const categoriasProcedimento = ["Facial", "Corporal", "Estética", "Injetáveis"];
 
+/* ---------- Mapa de injetáveis (estado serializável da ficha) ---------- */
+// Tipos do estado controlado de <MapaInjetaveis>. Persistidos no registro do
+// paciente quando o procedimento é injetável (usaMapa). Spec: features/mapa-injetaveis.
+export type ModoMapa = "mao-livre" | "selecionavel";
+
+export type PontoInjetavel = {
+  id: string;
+  substanciaId: string; // = id do item de Estoque (categoria "Injetáveis")
+  modo: ModoMapa;
+  x: number; // 0..1 relativo ao viewBox da imagem
+  y: number; // 0..1
+  regiaoId?: string;
+  unidades: number; // "ui" aplicadas
+};
+
+export type RastreioInjetavel = {
+  marca: string;
+  numeroLote: string;
+  dataDiluicao: string;
+  volumeDiluicao: string;
+  dataValidade: string;
+};
+
+export type FichaInjetaveis = {
+  pontos: PontoInjetavel[];
+  rastreioPorSub: Record<string, RastreioInjetavel>;
+  relatorio: string;
+};
+
+export const fichaInjetaveisVazia = (): FichaInjetaveis => ({
+  pontos: [],
+  rastreioPorSub: {},
+  relatorio: "",
+});
+
 /* ---------- Registro de procedimentos por paciente (ficha) ---------- */
 // Procedimento efetivamente lançado na ficha de um paciente (executado/agendado),
 // distinto do catálogo `procedimentos` (tipos disponíveis na clínica).
@@ -465,6 +515,8 @@ export type RegistroProcedimento = {
   status: StatusRegistroProc;
   valor: number;
   observacoes: string;
+  usaMapa?: boolean; // derivado do catálogo no momento do registro
+  mapa?: FichaInjetaveis; // estado do mapa quando injetável
 };
 
 export const registrosProcedimento: RegistroProcedimento[] = [];
@@ -556,11 +608,14 @@ export type ItemEstoque = {
 };
 
 export const itensEstoque: ItemEstoque[] = [
-  { id: "1", nome: "Ácido Hialurônico 2ml", sku: "AH-002", categoria: "Injetáveis", unidade: "un", saldo: 12, minimo: 5, custo: 180 },
+  { id: "1", nome: "Ácido Hialurônico 2ml", sku: "AH-002", categoria: "Injetáveis", unidade: "ui", saldo: 120, minimo: 30, custo: 180 },
   { id: "2", nome: "Agulha 30G", sku: "AG-030", categoria: "Material de atendimento", unidade: "cx", saldo: 3, minimo: 10, custo: 45 },
   { id: "3", nome: "Creme Anti-idade", sku: "CR-ANT", categoria: "Revenda", unidade: "un", saldo: 28, minimo: 8, custo: 60 },
   { id: "4", nome: "Gel Condutor 1L", sku: "GC-1L", categoria: "Material de atendimento", unidade: "un", saldo: 2, minimo: 4, custo: 22 },
   { id: "5", nome: "Protetor Solar FPS 50", sku: "PS-050", categoria: "Revenda", unidade: "un", saldo: 40, minimo: 10, custo: 35 },
+  { id: "6", nome: "Toxina Botulínica 100ui", sku: "TX-100", categoria: "Injetáveis", unidade: "ui", saldo: 200, minimo: 50, custo: 900 },
+  { id: "7", nome: "Fio de PDO", sku: "PDO-01", categoria: "Injetáveis", unidade: "ui", saldo: 80, minimo: 20, custo: 40 },
+  { id: "8", nome: "Bioestimulador de Colágeno", sku: "BIO-01", categoria: "Injetáveis", unidade: "ui", saldo: 60, minimo: 15, custo: 1200 },
 ];
 
 export const estoqueValor = (i: ItemEstoque) => i.saldo * i.custo;

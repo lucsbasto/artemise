@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { MapPin } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,11 @@ import { useCollection } from "@/lib/data/create-collection";
 import { procedimentosStore, profissionaisDetalheStore } from "@/lib/data/stores";
 import {
   statusRegistroProcLabel,
+  type FichaInjetaveis,
   type RegistroProcedimento,
   type StatusRegistroProc,
 } from "@/lib/mock";
+import { MapaInjetaveisModal } from "./mapa-injetaveis-modal";
 
 type RegistroData = Omit<RegistroProcedimento, "id" | "pacienteId">;
 
@@ -36,6 +39,11 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
   const [valor, setValor] = React.useState(registro ? String(registro.valor) : "");
   const [observacoes, setObservacoes] = React.useState(registro?.observacoes ?? "");
   const [procError, setProcError] = React.useState(false);
+  const [mapa, setMapa] = React.useState<FichaInjetaveis | undefined>(registro?.mapa);
+  const [mapaOpen, setMapaOpen] = React.useState(false);
+
+  // Procedimento injetável (catálogo) → habilita o caminho do mapa.
+  const usaMapa = !!ativos.find((p) => p.nome === procedimento)?.usaMapa;
 
   // Ao escolher procedimento do catálogo, sugere o valor de venda.
   function handleProcedimento(nome: string) {
@@ -56,6 +64,8 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
       status,
       valor: Number(valor) || 0,
       observacoes: observacoes.trim(),
+      usaMapa,
+      mapa: usaMapa ? mapa : undefined,
     });
     onClose();
   }
@@ -88,6 +98,22 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
           </Select>
           {procError && <span className="text-xs text-danger">Campo obrigatório</span>}
         </Field>
+
+        {usaMapa && (
+          <div className="flex items-center justify-between rounded-lg border border-brand/30 bg-brand-50/50 px-4 py-3">
+            <div className="text-sm">
+              <p className="font-medium text-foreground">Mapa de injetáveis</p>
+              <p className="text-xs text-muted-2">
+                {mapa?.pontos.length
+                  ? `${mapa.pontos.length} aplicação(ões) marcada(s).`
+                  : "Marque produto e local da aplicação no rosto."}
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => setMapaOpen(true)}>
+              <MapPin className="size-4" /> Abrir mapa
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Profissional">
@@ -143,6 +169,17 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
             className="w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
           />
         </Field>
+
+        {usaMapa && mapaOpen && (
+          <MapaInjetaveisModal
+            key={`mapa-${registro?.id ?? "new"}`}
+            open={mapaOpen}
+            onClose={() => setMapaOpen(false)}
+            titulo={`Mapa de injetáveis — ${procedimento || "Novo procedimento"}`}
+            valor={mapa}
+            onSave={setMapa}
+          />
+        )}
       </div>
     </Modal>
   );
