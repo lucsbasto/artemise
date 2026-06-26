@@ -14,12 +14,15 @@ import {
 import {
   fichaPaciente,
   currentUser,
-  profissionais,
-  pacotes,
   itensOrcamento,
   metodosPagamentoOrcamento,
 } from "@/lib/mock";
-import type { Orcamento } from "@/lib/data/stores";
+import { useCollection } from "@/lib/data/create-collection";
+import {
+  pacotesStore,
+  profissionaisStore,
+  type Orcamento,
+} from "@/lib/data/stores";
 
 type Modo = "personalizado" | "pacote";
 // Desconto do orçamento: "none" = "Sem desconto ou uso de saldo" (spec §Desconto).
@@ -44,6 +47,8 @@ export function OrcamentoModal({
   onClose: () => void;
   onSave?: (o: Omit<Orcamento, "id">) => void;
 }) {
+  const { items: pacotes } = useCollection(pacotesStore);
+  const { items: profissionais } = useCollection(profissionaisStore);
   const [modo, setModo] = React.useState<Modo>("personalizado");
   const [cliente, setCliente] = React.useState(fichaPaciente.nome);
   const [vendedor, setVendedor] = React.useState(currentUser.nome);
@@ -61,7 +66,7 @@ export function OrcamentoModal({
     const p = pacotes.find((x) => x.id === pacoteId);
     if (!p) return [];
     return [{ nome: p.descricao, qtd: 1, valor: p.valorTotal, descontoUn: 0, descontoTipo: "R$" }];
-  }, [modo, pacoteId]);
+  }, [modo, pacoteId, pacotes]);
 
   const itensSomaveis = modo === "pacote" ? [...itemPacote, ...itens] : itens;
   const descTipoCalc: DescontoTipo = descTipo === "%" ? "%" : "R$";

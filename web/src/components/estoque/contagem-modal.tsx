@@ -13,7 +13,8 @@ import { Modal } from "@/components/ui/modal";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { EmptyNoData, EmptyFilter } from "@/components/estoque/estoque-empty";
-import { itensEstoque } from "@/lib/mock";
+import { useCollection } from "@/lib/data/create-collection";
+import { estoqueStore } from "@/lib/data/stores";
 import { cn } from "@/lib/utils";
 
 type Variante = "parcial" | "geral";
@@ -68,6 +69,7 @@ export function ContagemModal({
 }
 
 function Parcial() {
+  const { items: itensEstoque } = useCollection(estoqueStore);
   return (
     <div className="flex flex-col gap-4">
       {/* linha de adição */}
