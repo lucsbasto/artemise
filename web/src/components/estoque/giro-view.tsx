@@ -30,7 +30,7 @@ export function GiroView() {
       }
     >
       {/* cards-resumo / abas */}
-      <div className="grid grid-cols-3 gap-3 px-5 pb-2">
+      <div className="grid grid-cols-1 gap-3 px-5 pb-2 sm:grid-cols-3">
         {CARDS.map((c) => {
           const active = tipo === c.key;
           return (

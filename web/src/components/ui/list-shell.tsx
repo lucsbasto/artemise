@@ -76,7 +76,7 @@ export function ListShell({
             {count} {count === 1 ? "registro" : "registros"}
           </span>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           {headerAction ?? (
             <>
               {batchActions && (
@@ -100,13 +100,13 @@ export function ListShell({
         <button className="text-sm font-medium text-brand hover:underline">+ Adicionar filtro</button>
         {filtersExtra}
         {!hideSearch && (
-          <div className="relative ml-auto">
+          <div className="relative ml-auto w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-2" />
             <input
               placeholder={searchPlaceholder}
               value={onQueryChange ? query ?? "" : undefined}
               onChange={onQueryChange ? (e) => onQueryChange(e.target.value) : undefined}
-              className="h-9 w-64 rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand"
+              className="h-9 w-full rounded-lg border border-border bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted-2 focus:border-brand sm:w-64"
             />
           </div>
         )}
@@ -116,7 +116,7 @@ export function ListShell({
       {children}
 
       {/* rodapé paginação */}
-      <div className="flex items-center justify-between px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-5 py-4">
         {controlled && onPerPageChange ? (
           <div className="relative">
             <select

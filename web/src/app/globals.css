@@ -71,3 +71,51 @@ body {
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ResponsiveTable (DEC-1): tabela vira cards rótulo→valor no celular (< md) */
+@media (max-width: 767px) {
+  .rtable table,
+  .rtable thead,
+  .rtable tbody,
+  .rtable th,
+  .rtable td,
+  .rtable tr {
+    display: block;
+  }
+  .rtable thead {
+    display: none; /* cabeçalho some; rótulo vem do data-label */
+  }
+  .rtable tr {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.75rem;
+  }
+  .rtable td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 0;
+    padding: 0.5rem 0.25rem;
+    max-width: none; /* anula max-w-* das células no modo card */
+    text-align: left;
+    white-space: normal;
+  }
+  .rtable td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  /* células de ação/checkbox (data-label vazio): sem rótulo, alinhadas à direita */
+  .rtable td[data-label=""]::before {
+    content: none;
+  }
+  .rtable td[data-label=""] {
+    justify-content: flex-end;
+  }
+}

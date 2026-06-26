@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { MessageCircle, Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { Toggle } from "@/components/ui/toggle";
 import { RowActions } from "@/components/ui/row-actions";
 import { useListControls } from "@/lib/use-list-controls";
@@ -56,7 +57,7 @@ export function ContactsTable({ title, rows, hrefBase, onToggle, onDelete }: Con
       from={c.from}
       to={c.to}
     >
-      <div className="overflow-x-auto">
+      <ResponsiveTable>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-y border-border text-left text-muted-2">
@@ -72,7 +73,7 @@ export function ContactsTable({ title, rows, hrefBase, onToggle, onDelete }: Con
           <tbody>
             {c.rows.map((contact) => (
               <tr key={contact.id} className="border-b border-border last:border-b-0">
-                <td className="px-5 py-3">
+                <td className="px-5 py-3" data-label="Nome">
                   <div className="flex items-center gap-3">
                     <Avatar nome={contact.nome} tone={contact.avatarTone} />
                     <div>
@@ -90,19 +91,19 @@ export function ContactsTable({ title, rows, hrefBase, onToggle, onDelete }: Con
                     </div>
                   </div>
                 </td>
-                <td className="py-3 text-muted-2">
+                <td className="py-3 text-muted-2" data-label="Etiquetas">
                   {contact.etiquetas.length > 0 ? contact.etiquetas.join(", ") : "-"}
                 </td>
-                <td className="py-3">
+                <td className="py-3" data-label="Identificador">
                   <span className="flex items-center gap-1.5 text-foreground">
                     {contact.identificador}
                     <MessageCircle className="size-4 text-green-500" />
                   </span>
                 </td>
-                <td className="py-3">
+                <td className="py-3" data-label="Ativo">
                   <Toggle checked={contact.ativo} onChange={() => onToggle?.(contact)} tone="success" />
                 </td>
-                <td className="px-5 py-3 text-right">
+                <td className="px-5 py-3 text-right" data-label="">
                   <RowActions
                     actions={[
                       { label: "Excluir", onClick: () => onDelete?.(contact), danger: true },
@@ -120,7 +121,7 @@ export function ContactsTable({ title, rows, hrefBase, onToggle, onDelete }: Con
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </ListShell>
   );
 }

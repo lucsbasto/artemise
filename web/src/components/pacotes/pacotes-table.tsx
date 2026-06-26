@@ -3,6 +3,7 @@ import { Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
 import { Toggle } from "@/components/ui/toggle";
 import { RowActions } from "@/components/ui/row-actions";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { useListControls } from "@/lib/use-list-controls";
 import { brl } from "@/lib/utils";
 import type { Pacote } from "@/lib/mock";
@@ -33,7 +34,7 @@ export function PacotesTable({ rows, onEdit, onDelete, onToggle }: PacotesTableP
       from={c.from}
       to={c.to}
     >
-      <div className="overflow-x-auto">
+      <ResponsiveTable>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-y border-border text-left text-muted-2">
@@ -49,7 +50,7 @@ export function PacotesTable({ rows, onEdit, onDelete, onToggle }: PacotesTableP
           <tbody>
             {c.rows.map((p) => (
               <tr key={p.id} className="border-b border-border last:border-b-0">
-                <td className="px-5 py-3">
+                <td data-label="Descrição" className="px-5 py-3">
                   <button
                     type="button"
                     onClick={() => onEdit?.(p)}
@@ -58,12 +59,12 @@ export function PacotesTable({ rows, onEdit, onDelete, onToggle }: PacotesTableP
                     {p.descricao}
                   </button>
                 </td>
-                <td className="py-3 text-foreground">{brl(p.valorTotal)}</td>
-                <td className="py-3 text-muted-2">{p.validade}</td>
-                <td className="py-3">
+                <td data-label="Valor total" className="py-3 text-foreground">{brl(p.valorTotal)}</td>
+                <td data-label="Validade" className="py-3 text-muted-2">{p.validade}</td>
+                <td data-label="Ativo" className="py-3">
                   <Toggle checked={p.ativo} onChange={() => onToggle?.(p)} tone="success" />
                 </td>
-                <td className="px-5 py-3 text-right">
+                <td data-label="" className="px-5 py-3 text-right">
                   <RowActions
                     actions={[
                       { label: "Editar", onClick: () => onEdit?.(p) },
@@ -82,7 +83,7 @@ export function PacotesTable({ rows, onEdit, onDelete, onToggle }: PacotesTableP
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </ListShell>
   );
 }

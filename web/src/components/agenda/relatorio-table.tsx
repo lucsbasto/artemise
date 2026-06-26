@@ -16,6 +16,7 @@ import { AgendaStatusBadge, statusDot } from "@/components/agenda/status-badge";
 import { EventoDrawer } from "@/components/agenda/evento-drawer";
 import { useListControls } from "@/lib/use-list-controls";
 import type { AgendaRow, AgendaStatus } from "@/lib/mock";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 
 const COLUNAS = [
   "Procedimentos",
@@ -124,7 +125,7 @@ export function RelatorioTable({
       </div>
 
       {/* tabela */}
-      <div className="overflow-x-auto">
+      <ResponsiveTable>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-2">
@@ -156,29 +157,29 @@ export function RelatorioTable({
                   onClick={() => setDrawer(true)}
                   className="cursor-pointer border-b border-border last:border-0 hover:bg-background"
                 >
-                  <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                  <td data-label="" className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" className="size-4 rounded border-border" />
                   </td>
-                  <td className="px-3 py-3 text-foreground">{r.procedimento}</td>
-                  <td className="px-3 py-3">
+                  <td data-label="Procedimentos" className="px-3 py-3 text-foreground">{r.procedimento}</td>
+                  <td data-label="Paciente" className="px-3 py-3">
                     <span className="flex items-center gap-2">
                       <Avatar />
                       <span className="max-w-[180px] truncate text-foreground">{r.paciente}</span>
                     </span>
                   </td>
-                  <td className="px-3 py-3">
+                  <td data-label="Profissional" className="px-3 py-3">
                     <span className="flex items-center gap-2">
                       <Avatar iniciais={r.iniciais} />
                       <span className="text-foreground">{r.profissional}</span>
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-muted">{r.duracaoMin} min</td>
-                  <td className="px-3 py-3 text-muted">{r.agendadoPara}</td>
-                  <td className="px-3 py-3">
+                  <td data-label="Duração" className="px-3 py-3 text-muted">{r.duracaoMin} min</td>
+                  <td data-label="Agendado para" className="px-3 py-3 text-muted">{r.agendadoPara}</td>
+                  <td data-label="Status" className="px-3 py-3">
                     <AgendaStatusBadge status={r.status} />
                   </td>
-                  <td className="px-3 py-3" />
-                  <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                  <td data-label="" className="px-3 py-3" />
+                  <td data-label="" className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                     <button className="grid size-7 place-items-center rounded-lg text-muted-2 hover:bg-background">
                       <MoreVertical className="size-4" />
                     </button>
@@ -188,7 +189,7 @@ export function RelatorioTable({
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {/* rodapé paginação */}
       <div className="flex items-center justify-between px-5 py-4">

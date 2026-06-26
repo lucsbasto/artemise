@@ -19,6 +19,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { FinanceKpiCards } from "@/components/financeiro/finance-kpi-cards";
 import { useListControls } from "@/lib/use-list-controls";
 import type { FinanceKpi, FinanceRow } from "@/lib/mock";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 
 interface FinanceTableProps {
   titulo: string;
@@ -140,7 +141,7 @@ export function FinanceTable({
         <FinanceKpiCards kpis={kpis} />
 
         {/* ── Tabela ──────────────────────────────────────────────────── */}
-        <div className="overflow-x-auto">
+        <ResponsiveTable>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-muted-2">
@@ -185,6 +186,7 @@ export function FinanceTable({
                 >
                   {/* Barra vermelha: left-border on first cell */}
                   <td
+                    data-label=""
                     className={cn(
                       "px-5 py-3",
                       row.atrasado
@@ -199,10 +201,10 @@ export function FinanceTable({
                       className="size-4 accent-brand"
                     />
                   </td>
-                  <td className="py-3 pr-4 text-foreground whitespace-nowrap">
+                  <td data-label="Vencimento" className="py-3 pr-4 text-foreground whitespace-nowrap">
                     {row.vencimento}
                   </td>
-                  <td className="py-3 pr-4 whitespace-nowrap">
+                  <td data-label={liquidacaoLabel} className="py-3 pr-4 whitespace-nowrap">
                     <span className="inline-flex items-center gap-1 text-foreground">
                       {row.liquidacao}
                       {row.atrasado && (
@@ -210,24 +212,24 @@ export function FinanceTable({
                       )}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-foreground max-w-[200px] truncate">
+                  <td data-label="Descrição" className="py-3 pr-4 text-foreground max-w-[200px] truncate">
                     {row.descricao}
                   </td>
-                  <td className="py-3 pr-4 text-muted max-w-[100px] truncate" title={row.categoria}>
+                  <td data-label="Categoria" className="py-3 pr-4 text-muted max-w-[100px] truncate" title={row.categoria}>
                     {row.categoria}
                   </td>
-                  <td className="py-3 pr-4">
+                  <td data-label="" className="py-3 pr-4">
                     <CreditCard className="size-4 text-muted-2" />
                   </td>
-                  <td className="py-3 pr-4">
+                  <td data-label="Situação" className="py-3 pr-4">
                     <StatusBadge status={row.situacao} />
                   </td>
-                  <td className="py-3 pr-4 text-right font-medium text-foreground tabular-nums whitespace-nowrap">
+                  <td data-label="Valor líquido (R$)" className="py-3 pr-4 text-right font-medium text-foreground tabular-nums whitespace-nowrap">
                     {/* Strip currency prefix */}
                     {brl(row.valor).replace(/R\$ ?/, "")}
                   </td>
-                  <td className="px-2 py-3" />
-                  <td className="px-2 py-3">
+                  <td data-label="" className="px-2 py-3" />
+                  <td data-label="" className="px-2 py-3">
                     <button className="text-muted-2 hover:text-foreground">
                       <MoreVertical className="size-4" />
                     </button>
@@ -243,7 +245,7 @@ export function FinanceTable({
               )}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTable>
 
         {/* ── Rodapé paginação ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-5 py-4">

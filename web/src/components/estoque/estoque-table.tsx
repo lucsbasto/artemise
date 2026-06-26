@@ -2,6 +2,7 @@
 import { Settings } from "lucide-react";
 import { ListShell } from "@/components/ui/list-shell";
 import { RowActions } from "@/components/ui/row-actions";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { useListControls } from "@/lib/use-list-controls";
 import { brl, cn } from "@/lib/utils";
 import { estoqueValor, estoqueBaixo } from "@/lib/mock";
@@ -35,7 +36,7 @@ export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
       from={c.from}
       to={c.to}
     >
-      <div className="overflow-x-auto">
+      <ResponsiveTable>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-y border-border text-left text-muted-2">
@@ -64,6 +65,7 @@ export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
                   )}
                 >
                   <td
+                    data-label="Nome"
                     className={cn(
                       "px-5 py-3",
                       baixo
@@ -79,10 +81,11 @@ export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
                       {item.nome}
                     </button>
                   </td>
-                  <td className="py-3 text-muted-2">{item.sku}</td>
-                  <td className="py-3 text-muted-2">{item.categoria}</td>
-                  <td className="py-3 text-muted-2">{item.unidade}</td>
+                  <td data-label="SKU" className="py-3 text-muted-2">{item.sku}</td>
+                  <td data-label="Categoria" className="py-3 text-muted-2">{item.categoria}</td>
+                  <td data-label="Unidade" className="py-3 text-muted-2">{item.unidade}</td>
                   <td
+                    data-label="Saldo atual"
                     className={cn(
                       "py-3 font-medium",
                       baixo ? "text-danger" : "text-foreground"
@@ -90,10 +93,10 @@ export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
                   >
                     {item.saldo}
                   </td>
-                  <td className="py-3 text-muted-2">{item.minimo}</td>
-                  <td className="py-3 text-muted-2">{brl(item.custo)}</td>
-                  <td className="py-3 text-foreground">{brl(estoqueValor(item))}</td>
-                  <td className="px-5 py-3 text-right">
+                  <td data-label="Estoque mínimo" className="py-3 text-muted-2">{item.minimo}</td>
+                  <td data-label="Custo" className="py-3 text-muted-2">{brl(item.custo)}</td>
+                  <td data-label="Valor" className="py-3 text-foreground">{brl(estoqueValor(item))}</td>
+                  <td data-label="" className="px-5 py-3 text-right">
                     <RowActions
                       actions={[
                         { label: "Editar", onClick: () => onEdit?.(item) },
@@ -113,7 +116,7 @@ export function EstoqueTable({ rows, onEdit, onDelete }: EstoqueTableProps) {
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </ListShell>
   );
 }
