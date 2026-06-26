@@ -14,7 +14,21 @@ Cada tabela de negócio (`pacientes`, `agendamentos`, `lancamentos`, …) carreg
 `clinica_id in (select private.user_clinica_ids())`.
 
 `private.user_clinica_ids()` é `SECURITY DEFINER` (ignora RLS de `memberships`, sem
-recursão) e lê os vínculos ativos do `auth.uid()` logado.
+recursão) e lê os vínculos ativos do `auth.uid()` logado. `user_is_admin(clinica)` /
+`user_is_owner(clinica)` fazem o gate por role.
+
+### Hardening (revisão de segurança)
+
+- **Onboarding** — criar clínica é **só** via `select create_clinica(nome, pessoa_tipo, documento)`
+  (RPC `SECURITY DEFINER` que cria a clínica + membership `owner` atômico). `clinicas_insert`
+  no RLS é `false` e `memberships_insert` exige `user_is_admin` → ninguém se autojunta a
+  uma clínica alheia.
+- **Gate por role** — gerenciar membros e editar/deletar a clínica exige admin/owner.
+- **FKs compostas same-tenant** — filhos (itens, sub-registros) referenciam o pai por
+  `(clinica_id, pai_id)`, impedindo anexar a um pai de outro tenant. Refs opcionais
+  (set-null) ficam FK simples → validar same-tenant no app no write.
+- **Índices** — `clinica_id` indexado em toda tabela (via unique `(clinica_id, id)` nos
+  pais ou índice próprio nos filhos) + secundários quentes (datas, FKs de join).
 
 ## Aplicar (ordem importa)
 

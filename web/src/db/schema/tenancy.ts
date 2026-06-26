@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
+  index,
   jsonb,
   pgPolicy,
   pgTable,
@@ -32,7 +33,7 @@ export const clinicas = pgTable(
     ...timestamps,
   },
   () => [
-    // Só vê/edita clínicas das quais é membro; qualquer autenticado pode criar (vira owner).
+    // Vê clínicas das quais é membro. Criar só via RPC create_clinica (insert=false).
     pgPolicy("clinicas_select", {
       for: "select",
       to: authenticatedRole,
@@ -41,18 +42,19 @@ export const clinicas = pgTable(
     pgPolicy("clinicas_insert", {
       for: "insert",
       to: authenticatedRole,
-      withCheck: sql`true`,
+      withCheck: sql`false`,
     }),
+    // Editar config: só admin/owner. Deletar: só owner (cascade apaga tudo).
     pgPolicy("clinicas_update", {
       for: "update",
       to: authenticatedRole,
-      using: sql`id in (select private.user_clinica_ids())`,
-      withCheck: sql`id in (select private.user_clinica_ids())`,
+      using: sql`(select private.user_is_admin(id))`,
+      withCheck: sql`(select private.user_is_admin(id))`,
     }),
     pgPolicy("clinicas_delete", {
       for: "delete",
       to: authenticatedRole,
-      using: sql`id in (select private.user_clinica_ids())`,
+      using: sql`(select private.user_is_owner(id))`,
     }),
   ]
 );
@@ -109,28 +111,30 @@ export const memberships = pgTable(
   },
   (t) => [
     unique("memberships_profile_clinica_uq").on(t.profileId, t.clinicaId),
+    index("memberships_clinica_id_idx").on(t.clinicaId),
     // Vê o próprio vínculo ou vínculos de clínicas das quais participa.
     pgPolicy("memberships_select", {
       for: "select",
       to: authenticatedRole,
       using: sql`profile_id = (select auth.uid()) or clinica_id in (select private.user_clinica_ids())`,
     }),
-    // Cria vínculo para si (onboarding) ou em clínica que já administra.
+    // Gerenciar membros: só admin/owner. Onboarding (1º owner) é via RPC create_clinica
+    // (SECURITY DEFINER), que contorna estas policies. Sem self-insert aqui → sem join arbitrário.
     pgPolicy("memberships_insert", {
       for: "insert",
       to: authenticatedRole,
-      withCheck: sql`profile_id = (select auth.uid()) or clinica_id in (select private.user_clinica_ids())`,
+      withCheck: sql`(select private.user_is_admin(clinica_id))`,
     }),
     pgPolicy("memberships_update", {
       for: "update",
       to: authenticatedRole,
-      using: sql`clinica_id in (select private.user_clinica_ids())`,
-      withCheck: sql`clinica_id in (select private.user_clinica_ids())`,
+      using: sql`(select private.user_is_admin(clinica_id))`,
+      withCheck: sql`(select private.user_is_admin(clinica_id))`,
     }),
     pgPolicy("memberships_delete", {
       for: "delete",
       to: authenticatedRole,
-      using: sql`clinica_id in (select private.user_clinica_ids())`,
+      using: sql`(select private.user_is_admin(clinica_id))`,
     }),
   ]
 );

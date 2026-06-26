@@ -57,7 +57,8 @@ CREATE TABLE "categorias_procedimento" (
 	"nome" text NOT NULL,
 	"ativo" boolean DEFAULT true NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "categorias_procedimento_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "categorias_procedimento" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -126,7 +127,8 @@ CREATE TABLE "pacientes" (
 	"recebe_notificacoes" boolean DEFAULT false NOT NULL,
 	"ativo" boolean DEFAULT true NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "pacientes_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "pacientes" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -150,7 +152,8 @@ CREATE TABLE "pacotes" (
 	"validade" text DEFAULT 'Ilimitado' NOT NULL,
 	"ativo" boolean DEFAULT true NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "pacotes_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "pacotes" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -166,7 +169,8 @@ CREATE TABLE "procedimentos" (
 	"ativo" boolean DEFAULT true NOT NULL,
 	"usa_mapa" boolean DEFAULT false NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "procedimentos_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "procedimentos" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -189,7 +193,8 @@ CREATE TABLE "profissionais" (
 	"chave_pix" text,
 	"perfil_acesso" "perfil_acesso" DEFAULT 'profissional' NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "profissionais_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "profissionais" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -211,7 +216,8 @@ CREATE TABLE "profissional_procedimentos" (
 	"profissional_id" uuid NOT NULL,
 	"procedimento_id" uuid NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "profissional_procedimentos_uq" UNIQUE("profissional_id","procedimento_id")
 );
 --> statement-breakpoint
 ALTER TABLE "profissional_procedimentos" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -226,7 +232,8 @@ CREATE TABLE "estoque_itens" (
 	"minimo" numeric(14, 3) DEFAULT '0' NOT NULL,
 	"custo" numeric(12, 2) DEFAULT '0' NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "estoque_itens_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "estoque_itens" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -269,7 +276,8 @@ CREATE TABLE "categorias_conta" (
 	"ativo" boolean DEFAULT true NOT NULL,
 	"parent_id" uuid,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "categorias_conta_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "categorias_conta" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -296,7 +304,8 @@ CREATE TABLE "contas_financeiras" (
 	"saldo_inicial" numeric(14, 2) DEFAULT '0' NOT NULL,
 	"icon" "conta_icon" DEFAULT 'bank' NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "contas_financeiras_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "contas_financeiras" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -309,7 +318,6 @@ CREATE TABLE "lancamentos" (
 	"valor" numeric(14, 2) NOT NULL,
 	"vencimento" date NOT NULL,
 	"execucao" date,
-	"metodo" "metodo_pgto",
 	"categoria_conta_id" uuid,
 	"conta_financeira_id" uuid,
 	"metodo_pagamento_id" uuid,
@@ -328,7 +336,8 @@ CREATE TABLE "metodos_pagamento" (
 	"marca" text,
 	"ativo" boolean DEFAULT true NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "metodos_pagamento_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "metodos_pagamento" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -339,7 +348,8 @@ CREATE TABLE "carteiras" (
 	"saldo" numeric(14, 2) DEFAULT '0' NOT NULL,
 	"cashback" numeric(14, 2) DEFAULT '0' NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "carteiras_paciente_uq" UNIQUE("clinica_id","paciente_id")
 );
 --> statement-breakpoint
 ALTER TABLE "carteiras" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -369,7 +379,8 @@ CREATE TABLE "orcamentos" (
 	"condicoes_pagamento" text,
 	"data" date NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "orcamentos_clinica_id_id_uq" UNIQUE("clinica_id","id")
 );
 --> statement-breakpoint
 ALTER TABLE "orcamentos" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -403,7 +414,8 @@ CREATE TABLE "modelos_mensagem" (
 	"corpo" text,
 	"ativo" boolean DEFAULT true NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
-	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL
+	"atualizado_em" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "modelos_mensagem_clinica_chave_uq" UNIQUE("clinica_id","chave")
 );
 --> statement-breakpoint
 ALTER TABLE "modelos_mensagem" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
@@ -412,27 +424,27 @@ ALTER TABLE "memberships" ADD CONSTRAINT "memberships_clinica_id_clinicas_id_fk"
 ALTER TABLE "profiles" ADD CONSTRAINT "profiles_id_fk" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "categorias_procedimento" ADD CONSTRAINT "categorias_procedimento_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comissao_regras" ADD CONSTRAINT "comissao_regras_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "comissao_regras" ADD CONSTRAINT "comissao_regras_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "comissao_regras" ADD CONSTRAINT "comissao_regras_procedimento_id_procedimentos_id_fk" FOREIGN KEY ("procedimento_id") REFERENCES "public"."procedimentos"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "comissao_regras" ADD CONSTRAINT "comissao_regras_profissional_fk" FOREIGN KEY ("clinica_id","profissional_id") REFERENCES "public"."profissionais"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "comissao_regras" ADD CONSTRAINT "comissao_regras_procedimento_fk" FOREIGN KEY ("clinica_id","procedimento_id") REFERENCES "public"."procedimentos"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "fichas_atendimento" ADD CONSTRAINT "fichas_atendimento_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "fornecedores" ADD CONSTRAINT "fornecedores_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "modelos_documento" ADD CONSTRAINT "modelos_documento_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pacientes" ADD CONSTRAINT "pacientes_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pacote_itens" ADD CONSTRAINT "pacote_itens_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pacote_itens" ADD CONSTRAINT "pacote_itens_pacote_id_pacotes_id_fk" FOREIGN KEY ("pacote_id") REFERENCES "public"."pacotes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pacote_itens" ADD CONSTRAINT "pacote_itens_pacote_fk" FOREIGN KEY ("clinica_id","pacote_id") REFERENCES "public"."pacotes"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pacotes" ADD CONSTRAINT "pacotes_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "procedimentos" ADD CONSTRAINT "procedimentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "procedimentos" ADD CONSTRAINT "procedimentos_categoria_id_categorias_procedimento_id_fk" FOREIGN KEY ("categoria_id") REFERENCES "public"."categorias_procedimento"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profissionais" ADD CONSTRAINT "profissionais_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profissionais" ADD CONSTRAINT "profissionais_profile_id_profiles_id_fk" FOREIGN KEY ("profile_id") REFERENCES "public"."profiles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profissional_horarios" ADD CONSTRAINT "profissional_horarios_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "profissional_horarios" ADD CONSTRAINT "profissional_horarios_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "profissional_horarios" ADD CONSTRAINT "profissional_horarios_profissional_fk" FOREIGN KEY ("clinica_id","profissional_id") REFERENCES "public"."profissionais"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profissional_procedimentos" ADD CONSTRAINT "profissional_procedimentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "profissional_procedimentos" ADD CONSTRAINT "profissional_procedimentos_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "profissional_procedimentos" ADD CONSTRAINT "profissional_procedimentos_procedimento_id_procedimentos_id_fk" FOREIGN KEY ("procedimento_id") REFERENCES "public"."procedimentos"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "profissional_procedimentos" ADD CONSTRAINT "profissional_procedimentos_profissional_fk" FOREIGN KEY ("clinica_id","profissional_id") REFERENCES "public"."profissionais"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "profissional_procedimentos" ADD CONSTRAINT "profissional_procedimentos_procedimento_fk" FOREIGN KEY ("clinica_id","procedimento_id") REFERENCES "public"."procedimentos"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "estoque_itens" ADD CONSTRAINT "estoque_itens_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "estoque_movimentos" ADD CONSTRAINT "estoque_movimentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "estoque_movimentos" ADD CONSTRAINT "estoque_movimentos_item_id_estoque_itens_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."estoque_itens"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "estoque_movimentos" ADD CONSTRAINT "estoque_movimentos_item_fk" FOREIGN KEY ("clinica_id","item_id") REFERENCES "public"."estoque_itens"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agendamentos" ADD CONSTRAINT "agendamentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agendamentos" ADD CONSTRAINT "agendamentos_paciente_id_pacientes_id_fk" FOREIGN KEY ("paciente_id") REFERENCES "public"."pacientes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agendamentos" ADD CONSTRAINT "agendamentos_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -440,7 +452,7 @@ ALTER TABLE "agendamentos" ADD CONSTRAINT "agendamentos_procedimento_id_procedim
 ALTER TABLE "categorias_conta" ADD CONSTRAINT "categorias_conta_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "categorias_conta" ADD CONSTRAINT "categorias_conta_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."categorias_conta"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comissoes" ADD CONSTRAINT "comissoes_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "comissoes" ADD CONSTRAINT "comissoes_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "comissoes" ADD CONSTRAINT "comissoes_profissional_fk" FOREIGN KEY ("clinica_id","profissional_id") REFERENCES "public"."profissionais"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "contas_financeiras" ADD CONSTRAINT "contas_financeiras_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lancamentos" ADD CONSTRAINT "lancamentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lancamentos" ADD CONSTRAINT "lancamentos_categoria_conta_id_categorias_conta_id_fk" FOREIGN KEY ("categoria_conta_id") REFERENCES "public"."categorias_conta"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -450,24 +462,42 @@ ALTER TABLE "lancamentos" ADD CONSTRAINT "lancamentos_paciente_id_pacientes_id_f
 ALTER TABLE "lancamentos" ADD CONSTRAINT "lancamentos_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "metodos_pagamento" ADD CONSTRAINT "metodos_pagamento_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "carteiras" ADD CONSTRAINT "carteiras_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "carteiras" ADD CONSTRAINT "carteiras_paciente_id_pacientes_id_fk" FOREIGN KEY ("paciente_id") REFERENCES "public"."pacientes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "carteiras" ADD CONSTRAINT "carteiras_paciente_fk" FOREIGN KEY ("clinica_id","paciente_id") REFERENCES "public"."pacientes"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orcamento_itens" ADD CONSTRAINT "orcamento_itens_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orcamento_itens" ADD CONSTRAINT "orcamento_itens_orcamento_id_orcamentos_id_fk" FOREIGN KEY ("orcamento_id") REFERENCES "public"."orcamentos"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "orcamento_itens" ADD CONSTRAINT "orcamento_itens_orcamento_fk" FOREIGN KEY ("clinica_id","orcamento_id") REFERENCES "public"."orcamentos"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orcamentos" ADD CONSTRAINT "orcamentos_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orcamentos" ADD CONSTRAINT "orcamentos_paciente_id_pacientes_id_fk" FOREIGN KEY ("paciente_id") REFERENCES "public"."pacientes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registros_procedimento" ADD CONSTRAINT "registros_procedimento_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "registros_procedimento" ADD CONSTRAINT "registros_procedimento_paciente_id_pacientes_id_fk" FOREIGN KEY ("paciente_id") REFERENCES "public"."pacientes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registros_procedimento" ADD CONSTRAINT "registros_procedimento_procedimento_id_procedimentos_id_fk" FOREIGN KEY ("procedimento_id") REFERENCES "public"."procedimentos"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registros_procedimento" ADD CONSTRAINT "registros_procedimento_profissional_id_profissionais_id_fk" FOREIGN KEY ("profissional_id") REFERENCES "public"."profissionais"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "registros_procedimento" ADD CONSTRAINT "registros_procedimento_paciente_fk" FOREIGN KEY ("clinica_id","paciente_id") REFERENCES "public"."pacientes"("clinica_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "modelos_mensagem" ADD CONSTRAINT "modelos_mensagem_clinica_id_clinicas_id_fk" FOREIGN KEY ("clinica_id") REFERENCES "public"."clinicas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "memberships_clinica_id_idx" ON "memberships" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "comissao_regras_clinica_id_idx" ON "comissao_regras" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "fichas_atendimento_clinica_id_idx" ON "fichas_atendimento" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "fornecedores_clinica_id_idx" ON "fornecedores" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "modelos_documento_clinica_id_idx" ON "modelos_documento" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "pacote_itens_clinica_id_idx" ON "pacote_itens" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "profissional_horarios_clinica_id_idx" ON "profissional_horarios" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "estoque_movimentos_clinica_id_idx" ON "estoque_movimentos" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "agendamentos_clinica_id_idx" ON "agendamentos" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "agendamentos_clinica_inicio_idx" ON "agendamentos" USING btree ("clinica_id","inicio");--> statement-breakpoint
+CREATE INDEX "agendamentos_paciente_id_idx" ON "agendamentos" USING btree ("paciente_id");--> statement-breakpoint
+CREATE INDEX "comissoes_clinica_id_idx" ON "comissoes" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "lancamentos_clinica_id_idx" ON "lancamentos" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "lancamentos_clinica_vencimento_idx" ON "lancamentos" USING btree ("clinica_id","vencimento");--> statement-breakpoint
+CREATE INDEX "lancamentos_paciente_id_idx" ON "lancamentos" USING btree ("paciente_id");--> statement-breakpoint
+CREATE INDEX "orcamento_itens_clinica_id_idx" ON "orcamento_itens" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "orcamentos_clinica_id_idx" ON "orcamentos" USING btree ("clinica_id");--> statement-breakpoint
+CREATE INDEX "registros_procedimento_paciente_id_idx" ON "registros_procedimento" USING btree ("paciente_id");--> statement-breakpoint
 CREATE POLICY "clinicas_select" ON "clinicas" AS PERMISSIVE FOR SELECT TO "authenticated" USING (id in (select private.user_clinica_ids()));--> statement-breakpoint
-CREATE POLICY "clinicas_insert" ON "clinicas" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK (true);--> statement-breakpoint
-CREATE POLICY "clinicas_update" ON "clinicas" AS PERMISSIVE FOR UPDATE TO "authenticated" USING (id in (select private.user_clinica_ids())) WITH CHECK (id in (select private.user_clinica_ids()));--> statement-breakpoint
-CREATE POLICY "clinicas_delete" ON "clinicas" AS PERMISSIVE FOR DELETE TO "authenticated" USING (id in (select private.user_clinica_ids()));--> statement-breakpoint
+CREATE POLICY "clinicas_insert" ON "clinicas" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK (false);--> statement-breakpoint
+CREATE POLICY "clinicas_update" ON "clinicas" AS PERMISSIVE FOR UPDATE TO "authenticated" USING ((select private.user_is_admin(id))) WITH CHECK ((select private.user_is_admin(id)));--> statement-breakpoint
+CREATE POLICY "clinicas_delete" ON "clinicas" AS PERMISSIVE FOR DELETE TO "authenticated" USING ((select private.user_is_owner(id)));--> statement-breakpoint
 CREATE POLICY "memberships_select" ON "memberships" AS PERMISSIVE FOR SELECT TO "authenticated" USING (profile_id = (select auth.uid()) or clinica_id in (select private.user_clinica_ids()));--> statement-breakpoint
-CREATE POLICY "memberships_insert" ON "memberships" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK (profile_id = (select auth.uid()) or clinica_id in (select private.user_clinica_ids()));--> statement-breakpoint
-CREATE POLICY "memberships_update" ON "memberships" AS PERMISSIVE FOR UPDATE TO "authenticated" USING (clinica_id in (select private.user_clinica_ids())) WITH CHECK (clinica_id in (select private.user_clinica_ids()));--> statement-breakpoint
-CREATE POLICY "memberships_delete" ON "memberships" AS PERMISSIVE FOR DELETE TO "authenticated" USING (clinica_id in (select private.user_clinica_ids()));--> statement-breakpoint
+CREATE POLICY "memberships_insert" ON "memberships" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK ((select private.user_is_admin(clinica_id)));--> statement-breakpoint
+CREATE POLICY "memberships_update" ON "memberships" AS PERMISSIVE FOR UPDATE TO "authenticated" USING ((select private.user_is_admin(clinica_id))) WITH CHECK ((select private.user_is_admin(clinica_id)));--> statement-breakpoint
+CREATE POLICY "memberships_delete" ON "memberships" AS PERMISSIVE FOR DELETE TO "authenticated" USING ((select private.user_is_admin(clinica_id)));--> statement-breakpoint
 CREATE POLICY "profiles_select_self" ON "profiles" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = id);--> statement-breakpoint
 CREATE POLICY "profiles_insert_self" ON "profiles" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK ((select auth.uid()) = id);--> statement-breakpoint
 CREATE POLICY "profiles_update_self" ON "profiles" AS PERMISSIVE FOR UPDATE TO "authenticated" USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);--> statement-breakpoint

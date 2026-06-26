@@ -1,5 +1,5 @@
 {
-  "id": "58a58c62-cb0b-4a0d-8a7a-fa6b7ad837e4",
+  "id": "91c96517-2d3a-4b95-afb4-142f3369bbfd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -108,7 +108,7 @@
           "to": [
             "authenticated"
           ],
-          "withCheck": "true"
+          "withCheck": "false"
         },
         "clinicas_update": {
           "name": "clinicas_update",
@@ -117,8 +117,8 @@
           "to": [
             "authenticated"
           ],
-          "using": "id in (select private.user_clinica_ids())",
-          "withCheck": "id in (select private.user_clinica_ids())"
+          "using": "(select private.user_is_admin(id))",
+          "withCheck": "(select private.user_is_admin(id))"
         },
         "clinicas_delete": {
           "name": "clinicas_delete",
@@ -127,7 +127,7 @@
           "to": [
             "authenticated"
           ],
-          "using": "id in (select private.user_clinica_ids())"
+          "using": "(select private.user_is_owner(id))"
         }
       },
       "checkConstraints": {},
@@ -186,7 +186,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "memberships_clinica_id_idx": {
+          "name": "memberships_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "memberships_profile_id_profiles_id_fk": {
           "name": "memberships_profile_id_profiles_id_fk",
@@ -243,7 +259,7 @@
           "to": [
             "authenticated"
           ],
-          "withCheck": "profile_id = (select auth.uid()) or clinica_id in (select private.user_clinica_ids())"
+          "withCheck": "(select private.user_is_admin(clinica_id))"
         },
         "memberships_update": {
           "name": "memberships_update",
@@ -252,8 +268,8 @@
           "to": [
             "authenticated"
           ],
-          "using": "clinica_id in (select private.user_clinica_ids())",
-          "withCheck": "clinica_id in (select private.user_clinica_ids())"
+          "using": "(select private.user_is_admin(clinica_id))",
+          "withCheck": "(select private.user_is_admin(clinica_id))"
         },
         "memberships_delete": {
           "name": "memberships_delete",
@@ -262,7 +278,7 @@
           "to": [
             "authenticated"
           ],
-          "using": "clinica_id in (select private.user_clinica_ids())"
+          "using": "(select private.user_is_admin(clinica_id))"
         }
       },
       "checkConstraints": {},
@@ -425,7 +441,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "categorias_procedimento_clinica_id_id_uq": {
+          "name": "categorias_procedimento_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "categorias_procedimento_select": {
           "name": "categorias_procedimento_select",
@@ -525,7 +550,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "comissao_regras_clinica_id_idx": {
+          "name": "comissao_regras_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "comissao_regras_clinica_id_clinicas_id_fk": {
           "name": "comissao_regras_clinica_id_clinicas_id_fk",
@@ -540,27 +581,31 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "comissao_regras_profissional_id_profissionais_id_fk": {
-          "name": "comissao_regras_profissional_id_profissionais_id_fk",
+        "comissao_regras_profissional_fk": {
+          "name": "comissao_regras_profissional_fk",
           "tableFrom": "comissao_regras",
           "tableTo": "profissionais",
           "columnsFrom": [
+            "clinica_id",
             "profissional_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "comissao_regras_procedimento_id_procedimentos_id_fk": {
-          "name": "comissao_regras_procedimento_id_procedimentos_id_fk",
+        "comissao_regras_procedimento_fk": {
+          "name": "comissao_regras_procedimento_fk",
           "tableFrom": "comissao_regras",
           "tableTo": "procedimentos",
           "columnsFrom": [
+            "clinica_id",
             "procedimento_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -656,7 +701,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "fichas_atendimento_clinica_id_idx": {
+          "name": "fichas_atendimento_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "fichas_atendimento_clinica_id_clinicas_id_fk": {
           "name": "fichas_atendimento_clinica_id_clinicas_id_fk",
@@ -793,7 +854,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "fornecedores_clinica_id_idx": {
+          "name": "fornecedores_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "fornecedores_clinica_id_clinicas_id_fk": {
           "name": "fornecedores_clinica_id_clinicas_id_fk",
@@ -910,7 +987,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "modelos_documento_clinica_id_idx": {
+          "name": "modelos_documento_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "modelos_documento_clinica_id_clinicas_id_fk": {
           "name": "modelos_documento_clinica_id_clinicas_id_fk",
@@ -1095,7 +1188,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pacientes_clinica_id_id_uq": {
+          "name": "pacientes_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "pacientes_select": {
           "name": "pacientes_select",
@@ -1196,7 +1298,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pacote_itens_clinica_id_idx": {
+          "name": "pacote_itens_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "pacote_itens_clinica_id_clinicas_id_fk": {
           "name": "pacote_itens_clinica_id_clinicas_id_fk",
@@ -1211,14 +1329,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "pacote_itens_pacote_id_pacotes_id_fk": {
-          "name": "pacote_itens_pacote_id_pacotes_id_fk",
+        "pacote_itens_pacote_fk": {
+          "name": "pacote_itens_pacote_fk",
           "tableFrom": "pacote_itens",
           "tableTo": "pacotes",
           "columnsFrom": [
+            "clinica_id",
             "pacote_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -1345,7 +1465,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pacotes_clinica_id_id_uq": {
+          "name": "pacotes_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "pacotes_select": {
           "name": "pacotes_select",
@@ -1503,7 +1632,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "procedimentos_clinica_id_id_uq": {
+          "name": "procedimentos_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "procedimentos_select": {
           "name": "procedimentos_select",
@@ -1704,7 +1842,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "profissionais_clinica_id_id_uq": {
+          "name": "profissionais_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "profissionais_select": {
           "name": "profissionais_select",
@@ -1803,7 +1950,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "profissional_horarios_clinica_id_idx": {
+          "name": "profissional_horarios_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "profissional_horarios_clinica_id_clinicas_id_fk": {
           "name": "profissional_horarios_clinica_id_clinicas_id_fk",
@@ -1818,14 +1981,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "profissional_horarios_profissional_id_profissionais_id_fk": {
-          "name": "profissional_horarios_profissional_id_profissionais_id_fk",
+        "profissional_horarios_profissional_fk": {
+          "name": "profissional_horarios_profissional_fk",
           "tableFrom": "profissional_horarios",
           "tableTo": "profissionais",
           "columnsFrom": [
+            "clinica_id",
             "profissional_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -1935,27 +2100,31 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "profissional_procedimentos_profissional_id_profissionais_id_fk": {
-          "name": "profissional_procedimentos_profissional_id_profissionais_id_fk",
+        "profissional_procedimentos_profissional_fk": {
+          "name": "profissional_procedimentos_profissional_fk",
           "tableFrom": "profissional_procedimentos",
           "tableTo": "profissionais",
           "columnsFrom": [
+            "clinica_id",
             "profissional_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "profissional_procedimentos_procedimento_id_procedimentos_id_fk": {
-          "name": "profissional_procedimentos_procedimento_id_procedimentos_id_fk",
+        "profissional_procedimentos_procedimento_fk": {
+          "name": "profissional_procedimentos_procedimento_fk",
           "tableFrom": "profissional_procedimentos",
           "tableTo": "procedimentos",
           "columnsFrom": [
+            "clinica_id",
             "procedimento_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -1963,7 +2132,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "profissional_procedimentos_uq": {
+          "name": "profissional_procedimentos_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "profissional_id",
+            "procedimento_id"
+          ]
+        }
+      },
       "policies": {
         "profissional_procedimentos_select": {
           "name": "profissional_procedimentos_select",
@@ -2101,7 +2279,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "estoque_itens_clinica_id_id_uq": {
+          "name": "estoque_itens_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "estoque_itens_select": {
           "name": "estoque_itens_select",
@@ -2207,7 +2394,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "estoque_movimentos_clinica_id_idx": {
+          "name": "estoque_movimentos_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "estoque_movimentos_clinica_id_clinicas_id_fk": {
           "name": "estoque_movimentos_clinica_id_clinicas_id_fk",
@@ -2222,14 +2425,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "estoque_movimentos_item_id_estoque_itens_id_fk": {
-          "name": "estoque_movimentos_item_id_estoque_itens_id_fk",
+        "estoque_movimentos_item_fk": {
+          "name": "estoque_movimentos_item_fk",
           "tableFrom": "estoque_movimentos",
           "tableTo": "estoque_itens",
           "columnsFrom": [
+            "clinica_id",
             "item_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -2383,7 +2588,59 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "agendamentos_clinica_id_idx": {
+          "name": "agendamentos_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agendamentos_clinica_inicio_idx": {
+          "name": "agendamentos_clinica_inicio_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "inicio",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agendamentos_paciente_id_idx": {
+          "name": "agendamentos_paciente_id_idx",
+          "columns": [
+            {
+              "expression": "paciente_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "agendamentos_clinica_id_clinicas_id_fk": {
           "name": "agendamentos_clinica_id_clinicas_id_fk",
@@ -2563,7 +2820,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "categorias_conta_clinica_id_id_uq": {
+          "name": "categorias_conta_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "categorias_conta_select": {
           "name": "categorias_conta_select",
@@ -2682,7 +2948,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "comissoes_clinica_id_idx": {
+          "name": "comissoes_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "comissoes_clinica_id_clinicas_id_fk": {
           "name": "comissoes_clinica_id_clinicas_id_fk",
@@ -2697,14 +2979,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "comissoes_profissional_id_profissionais_id_fk": {
-          "name": "comissoes_profissional_id_profissionais_id_fk",
+        "comissoes_profissional_fk": {
+          "name": "comissoes_profissional_fk",
           "tableFrom": "comissoes",
           "tableTo": "profissionais",
           "columnsFrom": [
+            "clinica_id",
             "profissional_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -2831,7 +3115,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "contas_financeiras_clinica_id_id_uq": {
+          "name": "contas_financeiras_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "contas_financeiras_select": {
           "name": "contas_financeiras_select",
@@ -2930,13 +3223,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "metodo": {
-          "name": "metodo",
-          "type": "metodo_pgto",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
         "categoria_conta_id": {
           "name": "categoria_conta_id",
           "type": "uuid",
@@ -2982,7 +3268,59 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "lancamentos_clinica_id_idx": {
+          "name": "lancamentos_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "lancamentos_clinica_vencimento_idx": {
+          "name": "lancamentos_clinica_vencimento_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "vencimento",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "lancamentos_paciente_id_idx": {
+          "name": "lancamentos_paciente_id_idx",
+          "columns": [
+            {
+              "expression": "paciente_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "lancamentos_clinica_id_clinicas_id_fk": {
           "name": "lancamentos_clinica_id_clinicas_id_fk",
@@ -3181,7 +3519,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "metodos_pagamento_clinica_id_id_uq": {
+          "name": "metodos_pagamento_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "metodos_pagamento_select": {
           "name": "metodos_pagamento_select",
@@ -3291,14 +3638,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "carteiras_paciente_id_pacientes_id_fk": {
-          "name": "carteiras_paciente_id_pacientes_id_fk",
+        "carteiras_paciente_fk": {
+          "name": "carteiras_paciente_fk",
           "tableFrom": "carteiras",
           "tableTo": "pacientes",
           "columnsFrom": [
+            "clinica_id",
             "paciente_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -3306,7 +3655,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "carteiras_paciente_uq": {
+          "name": "carteiras_paciente_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "paciente_id"
+          ]
+        }
+      },
       "policies": {
         "carteiras_select": {
           "name": "carteiras_select",
@@ -3428,7 +3786,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "orcamento_itens_clinica_id_idx": {
+          "name": "orcamento_itens_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "orcamento_itens_clinica_id_clinicas_id_fk": {
           "name": "orcamento_itens_clinica_id_clinicas_id_fk",
@@ -3443,14 +3817,16 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "orcamento_itens_orcamento_id_orcamentos_id_fk": {
-          "name": "orcamento_itens_orcamento_id_orcamentos_id_fk",
+        "orcamento_itens_orcamento_fk": {
+          "name": "orcamento_itens_orcamento_fk",
           "tableFrom": "orcamento_itens",
           "tableTo": "orcamentos",
           "columnsFrom": [
+            "clinica_id",
             "orcamento_id"
           ],
           "columnsTo": [
+            "clinica_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -3577,7 +3953,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "orcamentos_clinica_id_idx": {
+          "name": "orcamentos_clinica_id_idx",
+          "columns": [
+            {
+              "expression": "clinica_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "orcamentos_clinica_id_clinicas_id_fk": {
           "name": "orcamentos_clinica_id_clinicas_id_fk",
@@ -3607,7 +3999,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "orcamentos_clinica_id_id_uq": {
+          "name": "orcamentos_clinica_id_id_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "id"
+          ]
+        }
+      },
       "policies": {
         "orcamentos_select": {
           "name": "orcamentos_select",
@@ -3752,7 +4153,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "registros_procedimento_paciente_id_idx": {
+          "name": "registros_procedimento_paciente_id_idx",
+          "columns": [
+            {
+              "expression": "paciente_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "registros_procedimento_clinica_id_clinicas_id_fk": {
           "name": "registros_procedimento_clinica_id_clinicas_id_fk",
@@ -3760,19 +4177,6 @@
           "tableTo": "clinicas",
           "columnsFrom": [
             "clinica_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "registros_procedimento_paciente_id_pacientes_id_fk": {
-          "name": "registros_procedimento_paciente_id_pacientes_id_fk",
-          "tableFrom": "registros_procedimento",
-          "tableTo": "pacientes",
-          "columnsFrom": [
-            "paciente_id"
           ],
           "columnsTo": [
             "id"
@@ -3804,6 +4208,21 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "registros_procedimento_paciente_fk": {
+          "name": "registros_procedimento_paciente_fk",
+          "tableFrom": "registros_procedimento",
+          "tableTo": "pacientes",
+          "columnsFrom": [
+            "clinica_id",
+            "paciente_id"
+          ],
+          "columnsTo": [
+            "clinica_id",
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -3944,7 +4363,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "modelos_mensagem_clinica_chave_uq": {
+          "name": "modelos_mensagem_clinica_chave_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinica_id",
+            "chave"
+          ]
+        }
+      },
       "policies": {
         "modelos_mensagem_select": {
           "name": "modelos_mensagem_select",
