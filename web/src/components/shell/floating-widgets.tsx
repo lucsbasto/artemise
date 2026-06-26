@@ -5,8 +5,8 @@ import { currentUser } from "@/lib/mock";
 export function FloatingWidgets() {
   return (
     <>
-      {/* canto inferior esquerdo */}
-      <div className="pointer-events-none fixed bottom-4 left-20 z-20 flex w-72 max-w-[calc(100vw-6rem)] flex-col gap-2">
+      {/* canto inferior esquerdo — recolhe no celular p/ não cobrir conteúdo/FAB (R-RSP-SHELL-4) */}
+      <div className="pointer-events-none fixed bottom-4 left-20 z-20 hidden w-72 max-w-[calc(100vw-6rem)] flex-col gap-2 md:flex">
         <div className="pointer-events-auto rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-3 py-2 text-sm font-semibold text-white shadow-md">
           Ei, {currentUser.nome}! Tô aqui guardando o seu desconto! 🙂
         </div>
@@ -19,8 +19,8 @@ export function FloatingWidgets() {
         </button>
       </div>
 
-      {/* canto inferior direito */}
-      <div className="fixed bottom-5 right-5 z-20 flex flex-col items-center gap-3">
+      {/* canto inferior direito — margem extra p/ barra de navegação do SO (R-RSP-SHELL-4) */}
+      <div className="fixed bottom-5 right-5 z-20 flex flex-col items-center gap-3 mb-[env(safe-area-inset-bottom)]">
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("artemise:criar"))}
           className="grid size-12 place-items-center rounded-full bg-brand text-white shadow-lg hover:bg-brand-600"

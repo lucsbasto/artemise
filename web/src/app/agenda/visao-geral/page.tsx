@@ -27,9 +27,9 @@ import {
 
 export default function AgendaVisaoGeralPage() {
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[1200px] p-5">
           <Breadcrumb items={["Agenda", "Visão geral"]} />
 

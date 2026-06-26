@@ -28,7 +28,7 @@ export function BalancoCard() {
           <p className="text-xl font-semibold text-success">{v(balance.saldoRealizado)}</p>
           <p className="text-xs text-muted-2">de {v(balance.saldoPrevisto)} previstos</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <p className="flex items-center gap-1 text-sm text-muted">
               Entradas: <ExternalLink className="size-3 text-brand" />

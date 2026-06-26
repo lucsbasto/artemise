@@ -6,6 +6,7 @@ import { MessageCircle, MoreVertical, Settings, ChevronDown } from "lucide-react
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 import type { Patient } from "@/lib/mock";
 
 // ── Avatar com iniciais ──────────────────────────────────────────────────────
@@ -41,7 +42,7 @@ function PatientRow({ patient }: { patient: Patient }) {
       className="cursor-pointer border-t border-border hover:bg-background/60 transition-colors"
     >
       {/* checkbox */}
-      <td className="w-10 px-3 py-3" onClick={stop}>
+      <td className="w-10 px-3 py-3" data-label="" onClick={stop}>
         <input
           type="checkbox"
           aria-label={`Selecionar ${patient.nome}`}
@@ -50,7 +51,7 @@ function PatientRow({ patient }: { patient: Patient }) {
       </td>
 
       {/* nome + tipo */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3" data-label="Nome">
         <div className="flex items-center gap-3">
           <PatientAvatar nome={patient.nome} />
           <div className="min-w-0">
@@ -67,7 +68,7 @@ function PatientRow({ patient }: { patient: Patient }) {
       </td>
 
       {/* etiquetas */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3" data-label="Etiquetas">
         <div className="flex flex-wrap gap-1">
           {patient.etiquetas.length === 0 ? null : patient.etiquetas.map((tag) => (
             <span
@@ -81,7 +82,7 @@ function PatientRow({ patient }: { patient: Patient }) {
       </td>
 
       {/* identificador */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3" data-label="Identificador">
         <div className="flex items-center gap-1.5">
           <span className="text-sm text-foreground">{patient.identificador}</span>
           <a
@@ -98,12 +99,12 @@ function PatientRow({ patient }: { patient: Patient }) {
       </td>
 
       {/* toggle ativo */}
-      <td className="px-3 py-3" onClick={stop}>
+      <td className="px-3 py-3" data-label="Ativo" onClick={stop}>
         <Toggle defaultOn={patient.ativo} tone="success" />
       </td>
 
       {/* menu ⋮ */}
-      <td className="w-10 px-3 py-3 text-right" onClick={stop}>
+      <td className="w-10 px-3 py-3 text-right" data-label="" onClick={stop}>
         <button
           aria-label="Ações da linha"
           className="inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-background hover:text-foreground transition-colors"
@@ -183,12 +184,12 @@ export function PatientsTable({ patients }: { patients: Patient[] }) {
       </div>
 
       {/* ── Filtros + busca ───────────────────────────────── */}
-      <div className="flex items-center justify-between border-t border-border px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-y-2 border-t border-border px-5 py-3">
         <button className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
           <span className="text-base leading-none">+</span>
           Adicionar filtro
         </button>
-        <div className="relative w-56">
+        <div className="relative w-full sm:w-56">
           <input
             type="text"
             placeholder="Buscar"
@@ -198,7 +199,7 @@ export function PatientsTable({ patients }: { patients: Patient[] }) {
       </div>
 
       {/* ── Tabela ───────────────────────────────────────── */}
-      <div className="overflow-x-auto">
+      <ResponsiveTable>
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-t border-border bg-background/50">
@@ -241,7 +242,7 @@ export function PatientsTable({ patients }: { patients: Patient[] }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {/* ── Rodapé: por página + paginação ───────────────── */}
       <div className="flex items-center justify-between border-t border-border px-5 py-3">

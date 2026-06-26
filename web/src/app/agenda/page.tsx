@@ -26,11 +26,11 @@ export default function AgendaPage() {
   }, []);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />
 
       {/* Área principal */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Barra de controles */}
         <div className="flex items-center gap-2 border-b border-border bg-surface px-5 py-3">
           {/* Lado esquerdo: Hoje + setas + rótulo */}

@@ -43,14 +43,26 @@ const BOTTOM: Item[] = [
   { icon: Settings, label: "Configurações", href: "/configuracoes/procedimentos", match: "/configuracoes" },
 ];
 
-function NavIcon({ item, active, expanded }: { item: Item; active: boolean; expanded: boolean }) {
+function NavIcon({
+  item,
+  active,
+  open,
+  onNavigate,
+}: {
+  item: Item;
+  active: boolean;
+  open: boolean;
+  onNavigate?: () => void;
+}) {
   const Icon = item.icon;
   const dead = !item.href;
   const inner = (
     <span
       className={cn(
-        "group relative flex items-center rounded-xl transition-colors",
-        expanded ? "h-10 w-full gap-3 px-2.5" : "size-10 justify-center",
+        // base = layout expandido (rótulo visível) — usado no drawer do celular e no md+ aberto
+        "group relative flex h-10 w-full items-center gap-3 rounded-xl px-2.5 transition-colors",
+        // md+ fechado: vira ícone quadrado centralizado (zero regressão desktop)
+        !open && "md:size-10 md:w-auto md:justify-center md:gap-0 md:px-0",
         active && "bg-brand text-white",
         !active && !dead && "text-muted-2 hover:bg-brand-50 hover:text-brand",
         dead && "cursor-not-allowed text-muted-2/60 hover:bg-background"
@@ -60,14 +72,14 @@ function NavIcon({ item, active, expanded }: { item: Item; active: boolean; expa
         <Icon className="size-[19px]" strokeWidth={2} />
         {item.badge && <span className="absolute -right-1 -top-1 size-1.5 rounded-full bg-brand" />}
       </span>
-      {expanded && (
-        <span className="truncate text-sm">
-          {item.label}
-          {dead && <span className="ml-1 opacity-60">· Em breve</span>}
-        </span>
-      )}
-      {!expanded && (
-        <span className="pointer-events-none absolute left-12 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-white group-hover:block">
+      {/* rótulo: sempre no celular (drawer); no md+ só quando aberto */}
+      <span className={cn("truncate text-sm", !open && "md:hidden")}>
+        {item.label}
+        {dead && <span className="ml-1 opacity-60">· Em breve</span>}
+      </span>
+      {/* tooltip só no md+ fechado (ícones) */}
+      {!open && (
+        <span className="pointer-events-none absolute left-12 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-white md:group-hover:block">
           {item.label}
           {dead && <span className="ml-1 text-white/50">· Em breve</span>}
         </span>
@@ -75,17 +87,23 @@ function NavIcon({ item, active, expanded }: { item: Item; active: boolean; expa
     </span>
   );
   return item.href ? (
-    <Link href={item.href} className={expanded ? "w-full" : undefined}>
+    <Link href={item.href} onClick={onNavigate} className="w-full">
       {inner}
     </Link>
   ) : (
-    <button aria-disabled className={cn("cursor-not-allowed", expanded && "w-full")}>
+    <button aria-disabled className="w-full cursor-not-allowed">
       {inner}
     </button>
   );
 }
 
-export function IconSidebar({ expanded = false }: { expanded?: boolean }) {
+export function IconSidebar({
+  open = false,
+  onNavigate,
+}: {
+  open?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const isActive = (it: Item) => {
     if (it.match) return pathname.startsWith(it.match);
@@ -95,16 +113,21 @@ export function IconSidebar({ expanded = false }: { expanded?: boolean }) {
   return (
     <nav
       className={cn(
-        "flex shrink-0 flex-col gap-1 border-r border-border bg-surface py-3 transition-all duration-200",
-        expanded ? "w-60 items-stretch px-2" : "w-16 items-center"
+        "flex shrink-0 flex-col gap-1 border-r border-border bg-surface py-3",
+        // celular: overlay deslizante (sempre largo p/ toque)
+        "fixed inset-y-0 left-0 z-40 w-60 px-2 transition-transform duration-200",
+        open ? "translate-x-0" : "-translate-x-full",
+        // tablet/desktop: volta ao fluxo, largura por estado (comportamento atual)
+        "md:static md:z-auto md:translate-x-0 md:transition-all md:duration-200",
+        open ? "md:w-60 md:items-stretch md:px-2" : "md:w-16 md:items-center md:px-0"
       )}
     >
       {TOP.map((it) => (
-        <NavIcon key={it.label} item={it} active={isActive(it)} expanded={expanded} />
+        <NavIcon key={it.label} item={it} active={isActive(it)} open={open} onNavigate={onNavigate} />
       ))}
-      <div className={cn("mt-auto", expanded && "w-full")}>
+      <div className="mt-auto w-full">
         {BOTTOM.map((it) => (
-          <NavIcon key={it.label} item={it} active={isActive(it)} expanded={expanded} />
+          <NavIcon key={it.label} item={it} active={isActive(it)} open={open} onNavigate={onNavigate} />
         ))}
       </div>
     </nav>

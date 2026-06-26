@@ -1,12 +1,7 @@
-"use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-
-type SubItem = { label: string; href: string };
+import { SubmenuShell, type SubItem } from "@/components/ui/submenu-shell";
 
 const ITEMS: SubItem[] = [
-  { label: "Visão geral", href: "/financeiro" },
+  { label: "Visão geral", href: "/financeiro", exact: true },
   { label: "Extrato de movimentação", href: "/financeiro/extrato-de-movimentacao" },
   { label: "Relatório de competência", href: "/financeiro/relatorio-de-competencia" },
   { label: "Fluxo de caixa diário", href: "/financeiro/fluxo-de-caixa-diario" },
@@ -21,36 +16,5 @@ const ITEMS: SubItem[] = [
 ];
 
 export function FinanceiroSubmenu() {
-  const pathname = usePathname();
-  return (
-    <nav className="w-56 shrink-0 border-r border-border bg-surface p-3">
-      <h2 className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-2">
-        Financeiro
-      </h2>
-      <ul className="flex flex-col gap-0.5">
-        {ITEMS.map((it) => {
-          // "Visão geral" só ativa em /financeiro exato; demais por prefixo.
-          const active =
-            it.href === "/financeiro"
-              ? pathname === "/financeiro"
-              : pathname.startsWith(it.href);
-          return (
-            <li key={it.href}>
-              <Link
-                href={it.href}
-                className={cn(
-                  "block rounded-lg px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-brand text-white font-medium"
-                    : "text-foreground hover:bg-background"
-                )}
-              >
-                {it.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
+  return <SubmenuShell title="Financeiro" items={ITEMS} />;
 }
