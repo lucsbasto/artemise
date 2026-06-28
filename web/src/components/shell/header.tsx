@@ -14,12 +14,12 @@ export function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         <Menu className="size-5" />
       </button>
 
-      <Link href="/" className="flex min-w-0 items-center gap-2">
+      <Link href="/inicio" className="flex min-w-0 items-center gap-2">
         <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-brand text-brand">
           <span className="block size-2.5 rounded-full border-2 border-brand" />
         </span>
         <span className="truncate text-[15px] tracking-tight text-foreground">
-          clínica<span className="font-bold">experts</span>
+          <span className="font-bold">Artemise</span>
         </span>
       </Link>
 

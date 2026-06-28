@@ -25,7 +25,7 @@ type Item = { icon: React.ElementType; label: string; href?: string; badge?: boo
 const TOP: Item[] = [
   { icon: Crown, label: "Planos / Novidades" },
   { icon: Rocket, label: "Atalhos", badge: true },
-  { icon: Home, label: "Início", href: "/" },
+  { icon: Home, label: "Início", href: "/inicio" },
   { icon: Calendar, label: "Agenda", href: "/agenda" },
   { icon: Users, label: "Pacientes", href: "/pacientes" },
   { icon: Stethoscope, label: "Profissionais", href: "/profissionais" },
