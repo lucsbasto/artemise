@@ -1,9 +1,19 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, Search, HelpCircle, Bell, MessageCircle } from "lucide-react";
 import { currentUser } from "@/lib/mock";
+import { createClient } from "@/lib/supabase/client";
 
 export function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
+  const router = useRouter();
+
+  async function handleLogout() {
+    await createClient().auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface px-4">
       <button
@@ -38,7 +48,12 @@ export function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         <button className="hidden size-9 place-items-center rounded-lg text-muted hover:bg-background sm:grid" aria-label="Notificações">
           <Bell className="size-[18px]" />
         </button>
-        <button className="ml-1 grid size-9 place-items-center rounded-full bg-brand-50 text-sm font-semibold text-brand ring-2 ring-green-400/60">
+        <button
+          onClick={handleLogout}
+          aria-label="Sair"
+          title="Sair"
+          className="ml-1 grid size-9 place-items-center rounded-full bg-brand-50 text-sm font-semibold text-brand ring-2 ring-green-400/60"
+        >
           {currentUser.iniciais}
         </button>
       </div>

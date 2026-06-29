@@ -1,7 +1,8 @@
+import { redirect } from "next/navigation";
 import { AgendaSubmenu } from "@/components/agenda/agenda-submenu";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { RelatorioTable } from "@/components/agenda/relatorio-table";
-import { loadServer } from "@/lib/data/server-load";
+import { createClient } from "@/lib/supabase/server";
 import type { AgendaRow, AgendaStatus } from "@/lib/mock";
 
 type AgendaRelatorio = {
@@ -11,7 +12,14 @@ type AgendaRelatorio = {
 };
 
 export default async function AgendaRelatorioPage() {
-  const data = await loadServer<AgendaRelatorio>("/agenda/relatorio");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // TODO(M7): listar/filtrar eventos_agenda no front (paginação client-side).
+  const data: AgendaRelatorio = { rows: [], periodo: "", statusTabs: [] };
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />

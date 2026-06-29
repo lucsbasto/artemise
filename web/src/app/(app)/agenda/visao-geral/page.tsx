@@ -8,8 +8,9 @@ import { MiniBars } from "@/components/charts/mini-bars";
 import { Heatmap } from "@/components/charts/heatmap";
 import { PeriodChart, PeriodLegend } from "@/components/agenda/period-chart";
 import { statusDot } from "@/components/agenda/status-badge";
+import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { loadServer } from "@/lib/data/server-load";
+import { createClient } from "@/lib/supabase/server";
 import type { AgendaKpi, AgendaStatus, RankItem } from "@/lib/mock";
 
 type AgendaVisaoGeral = {
@@ -28,7 +29,27 @@ type AgendaVisaoGeral = {
 };
 
 export default async function AgendaVisaoGeralPage() {
-  const data = await loadServer<AgendaVisaoGeral>("/agenda/visao-geral");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // TODO(M7): agregar eventos_agenda (status, rankings, heatmap) no front.
+  const data: AgendaVisaoGeral = {
+    periodo: "",
+    kpis: [],
+    porPeriodo: [],
+    media: 0,
+    porStatus: [],
+    pacientesFreq: [],
+    procedimentosFreq: [],
+    ociosidadeSala: [],
+    ociosidadeProf: [],
+    diasMovimentados: [],
+    horarios: [],
+    horarioAtivo: "",
+  };
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />

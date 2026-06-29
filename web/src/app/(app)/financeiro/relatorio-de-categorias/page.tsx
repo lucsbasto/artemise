@@ -1,5 +1,6 @@
+import { redirect } from "next/navigation";
 import { RelatorioCategoriasView } from "@/components/financeiro/relatorio-categorias-view";
-import { loadServer } from "@/lib/data/server-load";
+import { createClient } from "@/lib/supabase/server";
 import type { CategoriaReportNode } from "@/lib/mock";
 
 type CategoriasReport = {
@@ -8,7 +9,14 @@ type CategoriasReport = {
 };
 
 export default async function RelatorioCategoriasPage() {
-  const data = await loadServer<CategoriasReport>("/financeiro/categorias");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // TODO(M7): agregar categorias_contas + lancamentos (árvore + %) no front.
+  const data: CategoriasReport = { receitas: [], despesas: [] };
   return (
     <RelatorioCategoriasView
       receitas={data.receitas}

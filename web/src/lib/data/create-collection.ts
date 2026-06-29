@@ -1,29 +1,32 @@
 "use client";
 import * as React from "react";
-import { apiFetch } from "@/lib/api-client";
+import { createClient } from "@/lib/supabase/client";
+import { selectCols, toRow, type FieldMap } from "@/lib/supabase/resource";
 
 /**
- * Store de coleção ligado à API Go.
+ * Store de coleção ligado direto ao Supabase (PostgREST).
  *
  * A interface pública (`Collection<T>`, `useCollection`, `nextId`) é a mesma do
- * store em memória que existia antes — os componentes de UI não mudam. O que
- * troca é a implementação: cada método agora fala HTTP com o backend.
+ * store em memória/HTTP que existia antes — os componentes de UI não mudam. O
+ * que troca é a implementação: cada método agora fala com o Supabase via
+ * `createClient().from(table)`, usando o `FieldMap` do recurso para mapear
+ * camelCase ↔ snake_case (design §5.2).
  *
  * Modelo: `getSnapshot()` devolve um cache local; o primeiro `subscribe`
- * dispara `revalidate()` (GET da lista), que preenche o cache e notifica. Cada
- * mutação (`add/update/remove/toggle`) chama a API e revalida em seguida.
+ * dispara `revalidate()` (SELECT da lista), que preenche o cache e notifica.
+ * Cada mutação (`add/update/remove/toggle`) chama o Supabase e revalida.
  *
- * Para sub-recursos sem endpoint de listagem plano (detalhe rico do
- * profissional, registros por paciente, eventos da agenda — cujo shape difere
- * do contrato REST), use {@link createLocalCollection}: mesma interface, porém
- * memória de sessão (a integração desses recursos é faseada — design §8.6).
+ * Para sub-recursos sem listagem plana (detalhe rico do profissional, registros
+ * por paciente, eventos da agenda — shape divergente), use
+ * {@link createLocalCollection}: mesma interface, memória de sessão. A
+ * integração desses recursos é faseada (lane M5).
  */
 export type WithId = { id: string };
 
 export type Collection<T extends WithId> = {
   getSnapshot: () => T[];
   subscribe: (cb: () => void) => () => void;
-  /** Mutações podem ser assíncronas (HTTP). Os consumidores não precisam aguardar. */
+  /** Mutações podem ser assíncronas (rede). Os consumidores não precisam aguardar. */
   add: (item: T) => void | Promise<void>;
   update: (id: string, patch: Partial<T>) => void | Promise<void>;
   remove: (id: string) => void | Promise<void>;
@@ -33,32 +36,31 @@ export type Collection<T extends WithId> = {
   set: (next: T[]) => void | Promise<void>;
 };
 
-/** Envelope padrão das rotas de listagem (design §5.1). */
-type ListEnvelope<T> = { items: T[] };
-
 /**
- * Cria uma coleção ligada a um recurso REST.
- * @param endpoint path do recurso sob `/api` (ex.: `"/pacientes"`).
- * @param seed hidratação inicial (SSR); o cache é revalidado no client.
+ * Cria uma coleção ligada a uma tabela do Supabase.
+ * @param table nome da tabela snake_case (ex.: `"pacientes"`).
+ * @param map mapa de campos camelCase → coluna snake_case do recurso.
  */
 export function createCollection<T extends WithId>(
-  endpoint: string,
-  seed: T[] = []
+  table: string,
+  map: FieldMap
 ): Collection<T> {
-  let cache: T[] = seed;
+  const sel = selectCols(map);
+  let cache: T[] = [];
   const subs = new Set<() => void>();
   const emit = () => subs.forEach((f) => f());
 
-  // Recarrega a lista do backend e notifica os assinantes. Erros (incl.
-  // AuthError) mantêm o último cache — o tratamento de sessão fica nas páginas.
+  // Recarrega a lista do Supabase e notifica os assinantes. Erros (incl.
+  // sessão expirada / RLS) mantêm o último cache — o tratamento de sessão
+  // fica no proxy e nas páginas.
   async function revalidate(): Promise<void> {
-    try {
-      const { items } = await apiFetch<ListEnvelope<T>>(endpoint);
-      cache = items;
-      emit();
-    } catch {
-      // mantém o cache atual; runtime/erro tratado na camada de página
-    }
+    const { data, error } = await createClient()
+      .from(table)
+      .select(sel)
+      .order("criado_em", { ascending: false });
+    if (error) return; // mantém o cache atual
+    cache = (data ?? []) as unknown as T[];
+    emit();
   }
 
   return {
@@ -69,25 +71,37 @@ export function createCollection<T extends WithId>(
       return () => subs.delete(cb);
     },
     add: async (item) => {
-      await apiFetch(endpoint, { method: "POST", body: JSON.stringify(item) });
+      const row = toRow<T>(map, item);
+      // `id` tem DEFAULT no banco; o id temporário (nextId) seria UUID inválido.
+      delete row.id;
+      const { error } = await createClient().from(table).insert(row);
+      if (error) throw error;
       await revalidate();
     },
     update: async (id, patch) => {
-      await apiFetch(`${endpoint}/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(patch),
-      });
+      const { error } = await createClient()
+        .from(table)
+        .update(toRow<T>(map, patch))
+        .eq("id", id);
+      if (error) throw error;
       await revalidate();
     },
     remove: async (id) => {
-      await apiFetch(`${endpoint}/${id}`, { method: "DELETE" });
+      const { error } = await createClient().from(table).delete().eq("id", id);
+      if (error) throw error;
       await revalidate();
     },
     toggle: async (id, key) => {
-      await apiFetch(`${endpoint}/${id}/toggle`, {
-        method: "PATCH",
-        body: JSON.stringify({ key }),
-      });
+      const k = key as string;
+      const col = map[k] ?? k;
+      const cur = cache.find((x) => x.id === id) as
+        | Record<string, unknown>
+        | undefined;
+      const { error } = await createClient()
+        .from(table)
+        .update({ [col]: !cur?.[k] })
+        .eq("id", id);
+      if (error) throw error;
       await revalidate();
     },
     set: (next) => {
@@ -99,7 +113,7 @@ export function createCollection<T extends WithId>(
 
 /**
  * Coleção em memória de sessão (sem rede), com a mesma interface de
- * {@link Collection}. Para recursos cujo swap p/ API ainda é faseado.
+ * {@link Collection}. Para recursos cujo swap p/ Supabase ainda é faseado (M5).
  */
 export function createLocalCollection<T extends WithId>(
   seed: T[] = []
@@ -137,7 +151,7 @@ export function createLocalCollection<T extends WithId>(
   };
 }
 
-/** Gera id único na sessão (placeholder; o backend gera o id definitivo). */
+/** Gera id único na sessão (placeholder; o banco gera o id definitivo). */
 let _seq = 0;
 export function nextId(prefix = "tmp"): string {
   _seq += 1;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Building2, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
-import { apiFetch, ApiError, AuthError } from "@/lib/api-client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegistrarPage() {
   const router = useRouter();
@@ -25,18 +25,35 @@ export default function RegistrarPage() {
     }
     setLoading(true);
     try {
-      await apiFetch("/auth/register", {
-        method: "POST",
-        body: JSON.stringify({ nome, clinica, email, senha }),
+      const supabase = createClient();
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: senha,
       });
+      if (signUpError) {
+        setErro(
+          signUpError.message.toLowerCase().includes("already")
+            ? "Este e-mail já está cadastrado."
+            : "Não foi possível criar a conta. Tente novamente."
+        );
+        setLoading(false);
+        return;
+      }
+      // RPC privilegiada e idempotente: cria clínica + linha em `usuarios`
+      // ligada ao auth.uid() recém-criado (design §4.2).
+      const { error: rpcError } = await supabase.rpc("criar_clinica", {
+        p_nome_clinica: clinica,
+        p_nome_usuario: nome,
+      });
+      if (rpcError) {
+        setErro("Falha ao criar a clínica. Tente novamente.");
+        setLoading(false);
+        return;
+      }
       router.push("/dashboard");
       router.refresh();
-    } catch (err) {
-      if (err instanceof AuthError || err instanceof ApiError) {
-        setErro(err.message);
-      } else {
-        setErro("Não foi possível conectar. Tente novamente.");
-      }
+    } catch {
+      setErro("Não foi possível conectar. Tente novamente.");
       setLoading(false);
     }
   }

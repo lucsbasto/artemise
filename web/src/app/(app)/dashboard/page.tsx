@@ -9,7 +9,8 @@ import { MiniBars, SingleBar } from "@/components/charts/mini-bars";
 import { Heatmap } from "@/components/charts/heatmap";
 import { BalancoCard } from "@/components/inicio/balanco-card";
 import { Next24hCard } from "@/components/inicio/next24h-card";
-import { loadServer } from "@/lib/data/server-load";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import type { Appointment, Balance, CashflowPoint, Reports } from "@/lib/mock";
 
 type DashboardData = {
@@ -20,8 +21,35 @@ type DashboardData = {
 };
 
 export default async function DashboardPage() {
-  const { balance, cashflowDaily, next24h, reports } =
-    await loadServer<DashboardData>("/dashboard");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // TODO(M7): agregar KPIs/cashflow/reports das tabelas-fonte no front.
+  const { balance, cashflowDaily, next24h, reports }: DashboardData = {
+    balance: {
+      saldoRealizado: 0,
+      saldoPrevisto: 0,
+      entradasRealizadas: 0,
+      entradasPrevistas: 0,
+      saidasRealizadas: 0,
+      saidasPrevistas: 0,
+      periodo: "",
+    },
+    cashflowDaily: [],
+    next24h: [],
+    reports: {
+      porProfissional: [],
+      diasMovimentados: [],
+      horarios: [],
+      heatAtivo: "",
+      statusAgendamento: { total: 0, label: "", legenda: "" },
+      pacientesPorSexo: { total: 0, label: "", legenda: "" },
+      faturamentoComparado: [],
+    },
+  };
   return (
     <div className="mx-auto max-w-[1200px] p-5">
       <Breadcrumb items={["Clínica", "Início"]} />

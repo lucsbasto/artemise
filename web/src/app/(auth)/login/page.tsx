@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
-import { apiFetch, ApiError, AuthError } from "@/lib/api-client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,18 +19,19 @@ export default function LoginPage() {
     setErro(null);
     setLoading(true);
     try {
-      await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, senha }),
+      const { error } = await createClient().auth.signInWithPassword({
+        email,
+        password: senha,
       });
+      if (error) {
+        setErro("Credenciais inválidas");
+        setLoading(false);
+        return;
+      }
       router.push("/dashboard");
       router.refresh();
-    } catch (err) {
-      if (err instanceof AuthError || err instanceof ApiError) {
-        setErro(err.message);
-      } else {
-        setErro("Não foi possível conectar. Tente novamente.");
-      }
+    } catch {
+      setErro("Não foi possível conectar. Tente novamente.");
       setLoading(false);
     }
   }
