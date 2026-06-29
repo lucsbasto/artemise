@@ -49,6 +49,39 @@ DATABASE_URL=... go run ./cmd/migrate down  # reverte (ordem inversa)
 
 **Usuário seed**: `lucsbasto@gmail.com` / senha `senha123` (perfil `admin`).
 
+## Conexão: admin vs runtime (Supabase)
+
+Em Supabase, RLS só isola se o servidor conecta como role **NOBYPASSRLS**. Por isso há
+duas conexões (ambas via **Session pooler**, porta 5432 — a conexão direta é IPv6-only;
+NÃO usar o Transaction pooler 6543, que quebra migrations e `SET LOCAL`):
+
+| Uso | Role | Quando |
+|---|---|---|
+| **Runtime** (`cmd/server`) | `app_role` (NOBYPASSRLS, sem CREATE) | `DATABASE_URL` no `.env` aponta aqui |
+| **Admin** (`cmd/migrate up/down`, provisionamento) | `postgres.<ref>` (tem BYPASSRLS + CREATE) | URL comentada no `.env` |
+
+⚠️ **Migrations rodam com a URL admin**, não `app_role` (ele não tem `CREATE`):
+
+```bash
+cd backend
+DATABASE_URL=postgresql://postgres.<ref>:<senha>@aws-N-<região>.pooler.supabase.com:5432/postgres?sslmode=require go run ./cmd/migrate up
+```
+
+**Provisionar `app_role` num projeto novo** (rodar uma vez como admin no SQL editor):
+
+```sql
+CREATE ROLE app_role LOGIN PASSWORD '<senha-forte>' NOSUPERUSER NOCREATEROLE NOBYPASSRLS;
+GRANT USAGE ON SCHEMA public TO app_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_role;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO app_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO app_role;
+```
+
+`app_role` é NÃO-dono das tabelas: como NOBYPASSRLS, já cai nas policies do `ENABLE RLS`
+(não precisa `FORCE`, que só vale pro dono). Verificado: clínica errada → 0 rows.
+
 ## Executar
 
 ```bash
