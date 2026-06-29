@@ -37,13 +37,13 @@ FECHO (serial, no main):
 
 | ID | Status | Owner | Milestone | Task | Gate / Verificação | Req |
 |----|--------|-------|-----------|------|--------------------|-----|
-| S0  | todo |  | M0 | Abrir worktree `feat/supabase-direct`; `npm i @supabase/supabase-js @supabase/ssr` | `npm ls` ok; tsc compila | — |
-| S1  | todo |  | M1 | `lib/supabase/client.ts` (browser) + `server.ts` (SSR cookies) + envs `NEXT_PUBLIC_SUPABASE_*` | server component faz `select` simples sem erro | SUP-01 |
-| S2  | todo |  | M1 | `middleware.ts` (renova sessão + guarda rota). **Ler `web/node_modules/next/dist/docs/` p/ confirmar middleware vs proxy + matcher** | rota protegida sem sessão → `/login` | SUP-01 |
-| S3  | todo |  | M1 | Boot falha explícito se envs faltarem; remover refs a `NEXT_PUBLIC_API_URL` do código vivo | grep `NEXT_PUBLIC_API_URL` = 0 hits | SUP-01 |
-| MIG1| todo |  | MIG | `0001_base_schema.sql` (DDL negócio do Go, **sem** `sessions`/`senha_hash`) | aplica no Supabase sem erro | SUP-02 |
-| MIG2| todo |  | MIG | `0002_auth_rls.sql`: `usuarios.id`→`auth.users` FK; `auth_clinica_id()` `security definer`; policies 18 tabelas (`tenant_isolation`) + `clinicas`/`usuarios`; `default auth_clinica_id()` nos inserts | **2 clínicas: A não vê B (0 rows)**; sem recursão | SUP-02, SUP-12 |
-| MIG3| todo |  | MIG | `0003_rpcs.sql`: `criar_clinica`, `registrar_procedimento`, `excluir_registro_procedimento`, `salvar_detalhe_profissional` | cada RPC executa; estoque `FOR UPDATE` testado | SUP-06, SUP-09 |
+| S0  | done |  | M0 | Worktree + `npm i @supabase/supabase-js @supabase/ssr` | tsc compila ✅ | — |
+| S1  | done |  | M1 | `lib/supabase/{env,client,server}.ts` + envs `NEXT_PUBLIC_SUPABASE_*` | tsc verde ✅ | SUP-01 |
+| S2  | done |  | M1 | **`proxy.ts`** (Next 16: middleware→proxy, runtime Node) renova sessão + guarda rota | matcher exclui estáticos ✅ | SUP-01 |
+| S3  | done |  | M1 | Boot falha explícito sem envs (`env.ts`) | remoção NEXT_PUBLIC_API_URL → S17 | SUP-01 |
+| MIG1| done |  | MIG | `0001_base_schema.sql` (23 tabelas, sem sessions/senha_hash) | aplicado via pooler como postgres ✅ | SUP-02 |
+| MIG2| done |  | MIG | `0002_auth_rls.sql`: usuarios↔auth.users; `auth_clinica_id()` SD; RLS 21 tabelas + clinicas/usuarios; default auth_clinica_id() | **RLS GATE PASS** (B vê 0 de A; A não vê B; WITH CHECK bloqueia forja) ✅ | SUP-02, SUP-12 |
+| MIG3| done |  | MIG | `0003_rpcs.sql`: criar_clinica, registrar_procedimento (FOR UPDATE), excluir_registro_procedimento, salvar_detalhe_profissional | 6 funções; criar_clinica testado ✅ | SUP-06, SUP-09 |
 | S4  | todo |  | M3 | `/login` → `signInWithPassword` (map `senha`→`password`); erro inválido | login real → `/dashboard` | SUP-03 |
 | S5  | todo |  | M3 | `/registrar` → `signUp` + `rpc criar_clinica`; trata email duplicado + órfão (re-check `/dashboard`) | registrar clínica nova → logado, isolada | SUP-03, SUP-09 |
 | S6  | todo |  | M3 | Logout (`signOut`) + guarda server (`getUser` vazio→`redirect`); **remover** `data/server-load.ts` + `api-client*.ts` + `mock-api.ts` | logout→`/login`; grep AuthError = 0 | SUP-03 |
