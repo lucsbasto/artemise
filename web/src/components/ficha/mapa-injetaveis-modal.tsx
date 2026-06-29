@@ -9,6 +9,7 @@ import * as React from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { MapaInjetaveis } from "./mapa-injetaveis";
+import { SaldoInsuficienteError } from "@/lib/data/registros";
 import { fichaInjetaveisVazia, type FichaInjetaveis } from "@/lib/mock";
 
 interface Props {
@@ -17,7 +18,8 @@ interface Props {
   titulo: string;
   /** Estado já salvo do registro (p/ pré-preencher pontos e calcular saldo disponível). */
   valor?: FichaInjetaveis;
-  onSave: (ficha: FichaInjetaveis) => void;
+  /** Pode ser assíncrono (RPC de estoque). Lança em erro p/ o modal exibir. */
+  onSave: (ficha: FichaInjetaveis) => void | Promise<void>;
 }
 
 function totaisPorSub(f?: FichaInjetaveis): Record<string, number> {
@@ -30,10 +32,24 @@ export function MapaInjetaveisModal({ open, onClose, titulo, valor, onSave }: Pr
   const [draft, setDraft] = React.useState<FichaInjetaveis>(valor ?? fichaInjetaveisVazia());
   // ui já baixadas para este registro — somam ao saldo disponível durante a edição.
   const baseline = React.useMemo(() => totaisPorSub(valor), [valor]);
+  const [erro, setErro] = React.useState<string | null>(null);
+  const [salvando, setSalvando] = React.useState(false);
 
-  function handleSalvar() {
-    onSave(draft);
-    onClose();
+  async function handleSalvar() {
+    setErro(null);
+    setSalvando(true);
+    try {
+      await onSave(draft);
+      onClose();
+    } catch (e) {
+      setErro(
+        e instanceof SaldoInsuficienteError
+          ? e.message
+          : "Não foi possível salvar o mapa. Tente novamente."
+      );
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -43,11 +59,16 @@ export function MapaInjetaveisModal({ open, onClose, titulo, valor, onSave }: Pr
       title={titulo}
       size="xl"
       footer={
-        <Button variant="brand" onClick={handleSalvar}>
-          Salvar mapa
+        <Button variant="brand" onClick={handleSalvar} disabled={salvando}>
+          {salvando ? "Salvando…" : "Salvar mapa"}
         </Button>
       }
     >
+      {erro && (
+        <p className="mb-4 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
+          {erro}
+        </p>
+      )}
       <MapaInjetaveis value={draft} onChange={setDraft} estoqueBaseline={baseline} />
     </Modal>
   );

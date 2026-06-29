@@ -5,7 +5,9 @@ import { Plus, Search } from "lucide-react";
 import { brl, cn } from "@/lib/utils";
 import { useCollection, nextId } from "@/lib/data/create-collection";
 import { registrosProcedimentoStore } from "@/lib/data/stores";
+import { excluirRegistroComMapa, salvarRegistroComMapa } from "@/lib/data/registros";
 import {
+  fichaInjetaveisVazia,
   statusRegistroProcLabel,
   type FichaInjetaveis,
   type RegistroProcedimento,
@@ -17,9 +19,11 @@ import { Pagination } from "./pagination";
 import { RegistroProcedimentoModal } from "./registro-procedimento-modal";
 import { MapaInjetaveisModal } from "./mapa-injetaveis-modal";
 
-// Registros gravam direto na tabela (RLS isola tenant). O `mapa` (jsonb) é
-// persistido como está; a baixa de estoque atômica via RPC `registrar_procedimento`
-// é a lane M6 — a porta fica aberta aqui sem aplicar baixa.
+// Registros SEM mapa gravam direto na tabela via store (RLS isola tenant).
+// Registros COM mapa (`usaMapa`) passam pelas RPCs `registrar_procedimento` /
+// `excluir_registro_procedimento`: a baixa/estorno de estoque é delta atômico
+// (novo − anterior) no banco, nunca no browser (M6). `SALDO_INSUFICIENTE` da RPC
+// vira aviso no modal, sem mudança parcial.
 
 const statusClass: Record<StatusRegistroProc, string> = {
   realizado: "bg-green-50 text-green-600",
@@ -61,18 +65,41 @@ export function AbaProcedimentos() {
     setModalOpen(true);
   }
 
-  function handleSave(data: Omit<RegistroProcedimento, "id" | "pacienteId">) {
-    if (editando) update(editando.id, data);
-    else add({ id: nextId("rproc"), pacienteId, ...data });
+  // Com mapa (novo ou já injetável na edição): baixa atômica via RPC. Sem mapa:
+  // CRUD direto pelo store. Erros propagam p/ o modal exibir (ex.: saldo).
+  async function handleSave(data: Omit<RegistroProcedimento, "id" | "pacienteId">) {
+    if (data.usaMapa || editando?.usaMapa) {
+      await salvarRegistroComMapa({
+        pacienteId,
+        registro: data,
+        mapa: data.mapa ?? fichaInjetaveisVazia(),
+        registroId: editando?.id,
+      });
+      return;
+    }
+    if (editando) await update(editando.id, data);
+    else await add({ id: nextId("rproc"), pacienteId, ...data });
   }
 
   function handleAbrirMapa(r: RegistroProcedimento) {
     setMapaRegistro(r);
   }
 
-  function handleSaveMapa(ficha: FichaInjetaveis) {
+  // Editar o mapa de um registro existente muda o estoque → RPC (delta vs. saldo).
+  async function handleSaveMapa(ficha: FichaInjetaveis) {
     if (!mapaRegistro) return;
-    update(mapaRegistro.id, { mapa: ficha, usaMapa: true });
+    await salvarRegistroComMapa({
+      pacienteId,
+      registro: { ...mapaRegistro, mapa: ficha, usaMapa: true },
+      mapa: ficha,
+      registroId: mapaRegistro.id,
+    });
+  }
+
+  // Com mapa estorna o estoque na RPC (nunca falha); sem mapa, delete direto.
+  function handleExcluir(r: RegistroProcedimento) {
+    if (r.usaMapa) void excluirRegistroComMapa(r.id);
+    else void remove(r.id);
   }
 
   return (
@@ -143,7 +170,7 @@ export function AbaProcedimentos() {
                           ? [{ label: "Mapa", onClick: () => handleAbrirMapa(r) }]
                           : []),
                         { label: "Editar", onClick: () => handleEdit(r) },
-                        { label: "Excluir", danger: true, onClick: () => remove(r.id) },
+                        { label: "Excluir", danger: true, onClick: () => handleExcluir(r) },
                       ]}
                     />
                   </td>

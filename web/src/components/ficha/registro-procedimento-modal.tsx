@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCollection } from "@/lib/data/create-collection";
 import { procedimentosStore, profissionaisDetalheStore } from "@/lib/data/stores";
+import { SaldoInsuficienteError } from "@/lib/data/registros";
 import {
   statusRegistroProcLabel,
   type FichaInjetaveis,
@@ -20,7 +21,8 @@ type RegistroData = Omit<RegistroProcedimento, "id" | "pacienteId">;
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave: (data: RegistroData) => void;
+  /** Pode ser assíncrono (RPC de estoque). Lança em erro p/ o modal exibir. */
+  onSave: (data: RegistroData) => void | Promise<void>;
   registro?: RegistroProcedimento;
 }
 
@@ -41,6 +43,8 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
   const [procError, setProcError] = React.useState(false);
   const [mapa, setMapa] = React.useState<FichaInjetaveis | undefined>(registro?.mapa);
   const [mapaOpen, setMapaOpen] = React.useState(false);
+  const [erro, setErro] = React.useState<string | null>(null);
+  const [salvando, setSalvando] = React.useState(false);
 
   // Procedimento injetável (catálogo) → habilita o caminho do mapa.
   const usaMapa = !!ativos.find((p) => p.nome === procedimento)?.usaMapa;
@@ -53,21 +57,33 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
     if (match && valor === "") setValor(String(match.valor));
   }
 
-  function handleSalvar() {
+  async function handleSalvar() {
     const hasProcError = procedimento.trim() === "";
     setProcError(hasProcError);
     if (hasProcError) return;
-    onSave({
-      procedimento: procedimento.trim(),
-      profissional: profissional.trim(),
-      data: data.trim(),
-      status,
-      valor: Number(valor) || 0,
-      observacoes: observacoes.trim(),
-      usaMapa,
-      mapa: usaMapa ? mapa : undefined,
-    });
-    onClose();
+    setErro(null);
+    setSalvando(true);
+    try {
+      await onSave({
+        procedimento: procedimento.trim(),
+        profissional: profissional.trim(),
+        data: data.trim(),
+        status,
+        valor: Number(valor) || 0,
+        observacoes: observacoes.trim(),
+        usaMapa,
+        mapa: usaMapa ? mapa : undefined,
+      });
+      onClose();
+    } catch (e) {
+      setErro(
+        e instanceof SaldoInsuficienteError
+          ? e.message
+          : "Não foi possível salvar o procedimento. Tente novamente."
+      );
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -77,12 +93,18 @@ export function RegistroProcedimentoModal({ open, onClose, onSave, registro }: P
       title={isEdit ? "Editar Procedimento" : "Registrar Procedimento"}
       size="lg"
       footer={
-        <Button variant="brand" onClick={handleSalvar}>
-          Salvar
+        <Button variant="brand" onClick={handleSalvar} disabled={salvando}>
+          {salvando ? "Salvando…" : "Salvar"}
         </Button>
       }
     >
       <div className="flex flex-col gap-5">
+        {erro && (
+          <p className="rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
+            {erro}
+          </p>
+        )}
+
         <Field label="Procedimento" required>
           <Select
             value={procedimento}
