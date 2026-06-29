@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -221,6 +222,7 @@ func dashboardReports(ctx context.Context, tx pgx.Tx, inicio, fim time.Time, cas
 
 	rep.PorProfissional = rankingPorProfissional(eventos)
 	rep.DiasMovimentados = diasMovimentados(eventos)
+	rep.Horarios, rep.HeatAtivo = horariosMovimentados(eventos)
 
 	total := len(eventos)
 	rep.StatusAgendamento = domain.ResumoIndicador{
@@ -267,6 +269,32 @@ func diasMovimentados(eventos []eventoAgg) []domain.DiaTotal {
 		out[i] = domain.DiaTotal{Dia: labelDiaSemana[i], Total: buckets[i]}
 	}
 	return out
+}
+
+// horariosMovimentados agrupa eventos por hora do dia, devolvendo os rótulos
+// "HH:00" das horas com agendamento (ordenados) e a hora de pico (heatAtivo).
+// Slice nunca-nil: clínica sem eventos serializa como [] (frontend faz .map).
+func horariosMovimentados(eventos []eventoAgg) ([]string, string) {
+	counts := map[int]int{}
+	for _, e := range eventos {
+		counts[e.Inicio.Hour()]++
+	}
+	horas := make([]int, 0, len(counts))
+	for h := range counts {
+		horas = append(horas, h)
+	}
+	sort.Ints(horas)
+
+	labels := make([]string, 0, len(horas))
+	ativo, melhor := "", -1
+	for _, h := range horas {
+		lbl := fmt.Sprintf("%02d:00", h)
+		labels = append(labels, lbl)
+		if counts[h] > melhor {
+			melhor, ativo = counts[h], lbl
+		}
+	}
+	return labels, ativo
 }
 
 // arredonda1 arredonda para 1 casa decimal.

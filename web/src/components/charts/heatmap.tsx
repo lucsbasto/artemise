@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils";
 
 /** Heatmap horário×coluna em grid CSS. Só a faixa ativa fica roxa. */
 export function Heatmap({
-  rows,
+  rows = [],
   active,
   cols = 6,
 }: {
-  rows: string[];
+  rows?: string[];
   active: string;
   cols?: number;
 }) {

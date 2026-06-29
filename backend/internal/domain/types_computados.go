@@ -63,6 +63,8 @@ type ResumoIndicador struct {
 type DashboardReports struct {
 	PorProfissional      []LabelTotal    `json:"porProfissional"`
 	DiasMovimentados     []DiaTotal      `json:"diasMovimentados"`
+	Horarios             []string        `json:"horarios"`
+	HeatAtivo            string          `json:"heatAtivo"`
 	StatusAgendamento    ResumoIndicador `json:"statusAgendamento"`
 	PacientesPorSexo     ResumoIndicador `json:"pacientesPorSexo"`
 	FaturamentoComparado []LabelValor    `json:"faturamentoComparado"`
