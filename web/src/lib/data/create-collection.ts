@@ -37,15 +37,32 @@ export type Collection<T extends WithId> = {
 };
 
 /**
+ * Opções de recursos compostos. `select` substitui a string padrão (gerada do
+ * `FieldMap`) por uma com embeds PostgREST (ex.: `"*, orcamento_itens(*)"`).
+ * `transform` reformata a lista bruta de linhas (ex.: contagem de itens, árvore
+ * de categorias) — recebe todas as linhas para permitir reshape agregado.
+ */
+export type CollectionOptions<T> = {
+  select?: string;
+  transform?: (rows: Record<string, unknown>[]) => T[];
+};
+
+/**
  * Cria uma coleção ligada a uma tabela do Supabase.
  * @param table nome da tabela snake_case (ex.: `"pacientes"`).
  * @param map mapa de campos camelCase → coluna snake_case do recurso.
+ * @param options `select`/`transform` para recursos com embed ou shape derivado.
+ *
+ * Expõe `revalidate()` no objeto retornado (além da interface `Collection<T>`)
+ * para que sub-recursos compostos disparem a recarga desta coleção a partir de
+ * fora (ex.: a coleção de detalhe do profissional refresca a lista de contatos).
  */
 export function createCollection<T extends WithId>(
   table: string,
-  map: FieldMap
-): Collection<T> {
-  const sel = selectCols(map);
+  map: FieldMap,
+  options?: CollectionOptions<T>
+): Collection<T> & { revalidate: () => Promise<void> } {
+  const sel = options?.select ?? selectCols(map);
   let cache: T[] = [];
   const subs = new Set<() => void>();
   const emit = () => subs.forEach((f) => f());
@@ -59,11 +76,13 @@ export function createCollection<T extends WithId>(
       .select(sel)
       .order("criado_em", { ascending: false });
     if (error) return; // mantém o cache atual
-    cache = (data ?? []) as unknown as T[];
+    const rows = (data ?? []) as unknown as Record<string, unknown>[];
+    cache = options?.transform ? options.transform(rows) : (rows as unknown as T[]);
     emit();
   }
 
   return {
+    revalidate,
     getSnapshot: () => cache,
     subscribe: (cb) => {
       subs.add(cb);

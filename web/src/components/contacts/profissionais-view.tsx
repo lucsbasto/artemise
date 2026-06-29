@@ -1,12 +1,15 @@
 "use client";
 import * as React from "react";
-import { useCollection, nextId } from "@/lib/data/create-collection";
+import { useCollection } from "@/lib/data/create-collection";
 import { profissionaisStore, profissionaisDetalheStore } from "@/lib/data/stores";
 import { ContactsTable } from "./contacts-table";
 import { ProfissionalModal, type NovoProfissional } from "./profissional-modal";
 
 export function ProfissionaisView() {
-  const { items, toggle, remove, add } = useCollection(profissionaisStore);
+  // A tabela de contatos lê a lista base; o cadastro rico (detalhe) cuida de
+  // criar/excluir/togglar — ele cria a linha base na mesma tabela `profissionais`
+  // e revalida ambas as coleções (design §6).
+  const { items } = useCollection(profissionaisStore);
   const detalhe = useCollection(profissionaisDetalheStore);
   const [modalOpen, setModalOpen] = React.useState(false);
 
@@ -17,25 +20,14 @@ export function ProfissionaisView() {
     return () => window.removeEventListener("artemise:criar", onCreate);
   }, []);
 
-  // Persiste o cadastro rico e projeta a linha de contato (mesmo id).
+  // Cria a linha base + detalhe via RPC numa transação (id gerado no banco).
   function handleSave(data: NovoProfissional) {
-    const id = nextId("prof");
-    detalhe.add({ id, ...data });
-    add({
-      id,
-      nome: data.nome,
-      tipo: "Profissional",
-      etiquetas: data.especialidade ? [data.especialidade] : [],
-      identificador: data.telefone,
-      ativo: data.ativo,
-      avatarTone: data.avatarTone,
-    });
+    detalhe.add({ id: "", ...data });
     setModalOpen(false);
   }
 
-  // Remove das duas coleções mantendo-as em sincronia.
+  // Exclui a linha base (CASCADE limpa o detalhe) e revalida as coleções.
   function handleDelete(id: string) {
-    remove(id);
     detalhe.remove(id);
   }
 
@@ -45,7 +37,7 @@ export function ProfissionaisView() {
         title="Profissionais"
         rows={items}
         hrefBase="/profissionais"
-        onToggle={(c) => toggle(c.id, "ativo")}
+        onToggle={(c) => detalhe.toggle(c.id, "ativo")}
         onDelete={(c) => handleDelete(c.id)}
       />
 

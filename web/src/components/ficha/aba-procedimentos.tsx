@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { Plus, Search } from "lucide-react";
 import { brl, cn } from "@/lib/utils";
 import { useCollection, nextId } from "@/lib/data/create-collection";
-import { registrosProcedimentoStore, estoqueStore } from "@/lib/data/stores";
+import { registrosProcedimentoStore } from "@/lib/data/stores";
 import {
   statusRegistroProcLabel,
   type FichaInjetaveis,
@@ -17,25 +17,9 @@ import { Pagination } from "./pagination";
 import { RegistroProcedimentoModal } from "./registro-procedimento-modal";
 import { MapaInjetaveisModal } from "./mapa-injetaveis-modal";
 
-/** ui aplicadas por substância (= item de estoque) numa ficha de mapa. */
-function totaisPorSub(f?: FichaInjetaveis): Record<string, number> {
-  const acc: Record<string, number> = {};
-  for (const p of f?.pontos ?? []) acc[p.substanciaId] = (acc[p.substanciaId] ?? 0) + p.unidades;
-  return acc;
-}
-
-/** Baixa no estoque o delta de ui entre o estado salvo e o novo (ajusta na edição). */
-function aplicarBaixaEstoque(anterior: FichaInjetaveis | undefined, novo: FichaInjetaveis | undefined) {
-  const antes = totaisPorSub(anterior);
-  const depois = totaisPorSub(novo);
-  const itens = estoqueStore.getSnapshot();
-  for (const id of new Set([...Object.keys(antes), ...Object.keys(depois)])) {
-    const delta = (depois[id] ?? 0) - (antes[id] ?? 0);
-    if (!delta) continue;
-    const item = itens.find((i) => i.id === id);
-    if (item) estoqueStore.update(id, { saldo: item.saldo - delta });
-  }
-}
+// Registros gravam direto na tabela (RLS isola tenant). O `mapa` (jsonb) é
+// persistido como está; a baixa de estoque atômica via RPC `registrar_procedimento`
+// é a lane M6 — a porta fica aberta aqui sem aplicar baixa.
 
 const statusClass: Record<StatusRegistroProc, string> = {
   realizado: "bg-green-50 text-green-600",
@@ -78,7 +62,6 @@ export function AbaProcedimentos() {
   }
 
   function handleSave(data: Omit<RegistroProcedimento, "id" | "pacienteId">) {
-    aplicarBaixaEstoque(editando?.mapa, data.mapa);
     if (editando) update(editando.id, data);
     else add({ id: nextId("rproc"), pacienteId, ...data });
   }
@@ -89,7 +72,6 @@ export function AbaProcedimentos() {
 
   function handleSaveMapa(ficha: FichaInjetaveis) {
     if (!mapaRegistro) return;
-    aplicarBaixaEstoque(mapaRegistro.mapa, ficha);
     update(mapaRegistro.id, { mapa: ficha, usaMapa: true });
   }
 
