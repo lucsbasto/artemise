@@ -11,22 +11,9 @@ import { statusDot } from "@/components/agenda/status-badge";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
-import type { AgendaKpi, AgendaStatus, RankItem } from "@/lib/mock";
-
-type AgendaVisaoGeral = {
-  periodo: string;
-  kpis: AgendaKpi[];
-  porPeriodo: { label: string; valor: number }[];
-  media: number;
-  porStatus: { status: AgendaStatus; total: number; pct: number }[];
-  pacientesFreq: RankItem[];
-  procedimentosFreq: RankItem[];
-  ociosidadeSala: RankItem[];
-  ociosidadeProf: RankItem[];
-  diasMovimentados: { label: string; valor: number }[];
-  horarios: string[];
-  horarioAtivo: string;
-};
+import { agendaVisaoGeral, type EventoSource } from "@/lib/agenda-calc";
+import { startOfMonth, endOfMonth } from "@/lib/financeiro-calc";
+import type { RankItem } from "@/lib/mock";
 
 export default async function AgendaVisaoGeralPage() {
   const supabase = await createClient();
@@ -35,21 +22,17 @@ export default async function AgendaVisaoGeralPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // TODO(M7): agregar eventos_agenda (status, rankings, heatmap) no front.
-  const data: AgendaVisaoGeral = {
-    periodo: "",
-    kpis: [],
-    porPeriodo: [],
-    media: 0,
-    porStatus: [],
-    pacientesFreq: [],
-    procedimentosFreq: [],
-    ociosidadeSala: [],
-    ociosidadeProf: [],
-    diasMovimentados: [],
-    horarios: [],
-    horarioAtivo: "",
-  };
+  const now = new Date();
+  const inicio = startOfMonth(now);
+  const fim = endOfMonth(now);
+
+  const { data: eventos } = await supabase
+    .from("eventos_agenda")
+    .select("paciente, profissional, procedimento, inicio, fim, status")
+    .gte("inicio", inicio.toISOString())
+    .lte("inicio", fim.toISOString());
+
+  const data = agendaVisaoGeral((eventos ?? []) as EventoSource[], inicio, fim);
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />

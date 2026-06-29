@@ -11,14 +11,21 @@ import { BalancoCard } from "@/components/inicio/balanco-card";
 import { Next24hCard } from "@/components/inicio/next24h-card";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Appointment, Balance, CashflowPoint, Reports } from "@/lib/mock";
-
-type DashboardData = {
-  balance: Balance;
-  cashflowDaily: CashflowPoint[];
-  next24h: Appointment[];
-  reports: Reports;
-};
+import {
+  dashboardBalance,
+  dashboardCashflow,
+  dashboardNext24h,
+  dashboardReports,
+  dashboardKPIs,
+  type EventoSource,
+  type RegistroSource,
+} from "@/lib/dashboard-calc";
+import {
+  startOfMonth,
+  endOfMonth,
+  toISODate,
+  type LancamentoSource,
+} from "@/lib/financeiro-calc";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -27,29 +34,61 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // TODO(M7): agregar KPIs/cashflow/reports das tabelas-fonte no front.
-  const { balance, cashflowDaily, next24h, reports }: DashboardData = {
-    balance: {
-      saldoRealizado: 0,
-      saldoPrevisto: 0,
-      entradasRealizadas: 0,
-      entradasPrevistas: 0,
-      saidasRealizadas: 0,
-      saidasPrevistas: 0,
-      periodo: "",
-    },
-    cashflowDaily: [],
-    next24h: [],
-    reports: {
-      porProfissional: [],
-      diasMovimentados: [],
-      horarios: [],
-      heatAtivo: "",
-      statusAgendamento: { total: 0, label: "", legenda: "" },
-      pacientesPorSexo: { total: 0, label: "", legenda: "" },
-      faturamentoComparado: [],
-    },
-  };
+  const now = new Date();
+  const inicio = startOfMonth(now);
+  const fim = endOfMonth(now);
+  const hojeInicio = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const hojeFim = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  const em24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  const [lancRes, eventosMesRes, next24hRes, registrosRes, pacientesRes, eventosHojeRes] =
+    await Promise.all([
+      supabase
+        .from("lancamentos_financeiros")
+        .select("tipo, situacao, valor, vencimento")
+        .gte("vencimento", toISODate(inicio))
+        .lte("vencimento", toISODate(fim)),
+      supabase
+        .from("eventos_agenda")
+        .select("profissional, procedimento, inicio, status")
+        .gte("inicio", inicio.toISOString())
+        .lte("inicio", fim.toISOString()),
+      supabase
+        .from("eventos_agenda")
+        .select("paciente, procedimento, inicio, fim, status")
+        .gte("inicio", now.toISOString())
+        .lte("inicio", em24h.toISOString())
+        .neq("status", "Cancelado")
+        .order("inicio", { ascending: true })
+        .limit(10),
+      supabase
+        .from("registros_procedimento")
+        .select("pacienteId:paciente_id, status, data")
+        .gte("data", toISODate(inicio))
+        .lte("data", toISODate(fim)),
+      supabase.from("pacientes").select("id", { count: "exact", head: true }),
+      supabase
+        .from("eventos_agenda")
+        .select("id", { count: "exact", head: true })
+        .gte("inicio", hojeInicio.toISOString())
+        .lte("inicio", hojeFim.toISOString()),
+    ]);
+
+  const lancamentosMes = (lancRes.data ?? []) as LancamentoSource[];
+  const eventosMes = (eventosMesRes.data ?? []) as EventoSource[];
+  const registrosMes = (registrosRes.data ?? []) as RegistroSource[];
+  const totalPacientes = pacientesRes.count ?? 0;
+
+  const balance = dashboardBalance(lancamentosMes, inicio, fim);
+  const cashflowDaily = dashboardCashflow(lancamentosMes);
+  const next24h = dashboardNext24h((next24hRes.data ?? []) as EventoSource[]);
+  const kpis = dashboardKPIs({
+    totalPacientes,
+    eventosHoje: eventosHojeRes.count ?? 0,
+    lancamentosMes,
+    registrosMes,
+  });
+  const reports = dashboardReports(eventosMes, cashflowDaily, kpis.totalPacientes);
   return (
     <div className="mx-auto max-w-[1200px] p-5">
       <Breadcrumb items={["Clínica", "Início"]} />

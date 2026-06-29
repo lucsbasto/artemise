@@ -3,13 +3,8 @@ import { AgendaSubmenu } from "@/components/agenda/agenda-submenu";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { RelatorioTable } from "@/components/agenda/relatorio-table";
 import { createClient } from "@/lib/supabase/server";
-import type { AgendaRow, AgendaStatus } from "@/lib/mock";
-
-type AgendaRelatorio = {
-  rows: AgendaRow[];
-  periodo: string;
-  statusTabs: { label: AgendaStatus | "Todos"; total: number }[];
-};
+import { agendaRelatorio, type EventoSource } from "@/lib/agenda-calc";
+import { startOfMonth, endOfMonth } from "@/lib/financeiro-calc";
 
 export default async function AgendaRelatorioPage() {
   const supabase = await createClient();
@@ -18,8 +13,18 @@ export default async function AgendaRelatorioPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // TODO(M7): listar/filtrar eventos_agenda no front (paginação client-side).
-  const data: AgendaRelatorio = { rows: [], periodo: "", statusTabs: [] };
+  const now = new Date();
+  const inicio = startOfMonth(now);
+  const fim = endOfMonth(now);
+
+  const { data: eventos } = await supabase
+    .from("eventos_agenda")
+    .select("paciente, profissional, procedimento, inicio, fim, status")
+    .gte("inicio", inicio.toISOString())
+    .lte("inicio", fim.toISOString())
+    .order("inicio", { ascending: false });
+
+  const data = agendaRelatorio((eventos ?? []) as EventoSource[], inicio, fim);
   return (
     <div className="flex h-full flex-col md:flex-row">
       <AgendaSubmenu />

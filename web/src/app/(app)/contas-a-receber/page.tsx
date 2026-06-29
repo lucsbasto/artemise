@@ -1,14 +1,18 @@
 import { redirect } from "next/navigation";
 import { FinanceTable } from "@/components/financeiro/finance-table";
 import { createClient } from "@/lib/supabase/server";
-import type { FinanceKpi, FinanceRow } from "@/lib/mock";
+import {
+  contasFinanceKpis,
+  toFinanceRow,
+  periodoLabel,
+  startOfMonth,
+  endOfMonth,
+  type LancamentoSource,
+  type Lookup,
+} from "@/lib/financeiro-calc";
 
-type ContasResumo = {
-  periodo: string;
-  total: number;
-  kpis: FinanceKpi[];
-  rows: FinanceRow[];
-};
+const LANCAMENTO_COLS =
+  "tipo, situacao, valor, vencimento, liquidacao, descricao, categoriaId:categoria_id";
 
 export default async function ContasAReceberPage() {
   const supabase = await createClient();
@@ -17,15 +21,29 @@ export default async function ContasAReceberPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // TODO(M7): agregar lancamentos_financeiros (contas a receber) no front.
-  const data: ContasResumo = { periodo: "", total: 0, kpis: [], rows: [] };
+  const now = new Date();
+
+  const [lancRes, catRes] = await Promise.all([
+    supabase
+      .from("lancamentos_financeiros")
+      .select(LANCAMENTO_COLS)
+      .eq("tipo", "receita")
+      .order("vencimento", { ascending: true })
+      .order("criado_em", { ascending: true }),
+    supabase.from("categorias_contas").select("id, descricao"),
+  ]);
+
+  const lancs = (lancRes.data ?? []) as LancamentoSource[];
+  const categorias: Lookup = {};
+  for (const c of (catRes.data ?? []) as { id: string; descricao: string }[]) categorias[c.id] = c.descricao;
+
   return (
     <FinanceTable
       titulo="Contas a receber"
       breadcrumb={["Financeiro", "Contas a receber"]}
-      periodo={data.periodo}
-      kpis={data.kpis}
-      rows={data.rows}
+      periodo={periodoLabel(startOfMonth(now), endOfMonth(now))}
+      kpis={contasFinanceKpis(lancs, "receita")}
+      rows={lancs.map((l) => toFinanceRow(l, categorias))}
       liquidacaoLabel="Recebimento"
     />
   );

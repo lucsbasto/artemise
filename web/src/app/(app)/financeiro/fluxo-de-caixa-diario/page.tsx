@@ -1,7 +1,15 @@
 import { redirect } from "next/navigation";
 import { FluxoCaixaView } from "@/components/financeiro/fluxo-caixa-view";
 import { createClient } from "@/lib/supabase/server";
-import type { CashflowPoint } from "@/lib/mock";
+import {
+  cashflowPorDia,
+  startOfMonth,
+  endOfMonth,
+  toISODate,
+  type LancamentoSource,
+} from "@/lib/financeiro-calc";
+
+const LANCAMENTO_COLS = "tipo, situacao, valor, vencimento";
 
 export default async function FluxoDiarioPage() {
   const supabase = await createClient();
@@ -10,8 +18,14 @@ export default async function FluxoDiarioPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // TODO(M7): encadear saldo diário de lancamentos_financeiros no front.
-  const points: CashflowPoint[] = [];
+  const now = new Date();
+  const { data } = await supabase
+    .from("lancamentos_financeiros")
+    .select(LANCAMENTO_COLS)
+    .gte("vencimento", toISODate(startOfMonth(now)))
+    .lte("vencimento", toISODate(endOfMonth(now)));
+
+  const points = cashflowPorDia((data ?? []) as LancamentoSource[], now);
   return (
     <FluxoCaixaView
       granularidade="dia"
