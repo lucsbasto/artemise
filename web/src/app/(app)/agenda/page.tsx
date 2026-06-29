@@ -11,7 +11,7 @@ export default function AgendaPage() {
   const [modalAberto, setModalAberto] = React.useState(false);
   const [drawerAberto, setDrawerAberto] = React.useState(false);
 
-  // Abre o drawer de detalhe quando chega de /inicio com ?detalhe=... (leitura única da URL no mount).
+  // Abre o drawer de detalhe quando chega de /dashboard com ?detalhe=... (leitura única da URL no mount).
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- leitura única de sistema externo (URL) no mount

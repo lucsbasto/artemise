@@ -14,7 +14,7 @@ export function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
         <Menu className="size-5" />
       </button>
 
-      <Link href="/inicio" className="flex min-w-0 items-center gap-2">
+      <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
         <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-brand text-brand">
           <span className="block size-2.5 rounded-full border-2 border-brand" />
         </span>

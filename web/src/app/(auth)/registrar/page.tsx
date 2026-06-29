@@ -25,13 +25,11 @@ export default function RegistrarPage() {
     }
     setLoading(true);
     try {
-      // NOTA: endpoint /auth/register ainda não existe no backend Go.
-      // Quando criado (POST /api/auth/register), este fluxo já funciona.
       await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({ nome, clinica, email, senha }),
       });
-      router.push("/inicio");
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       if (err instanceof AuthError || err instanceof ApiError) {

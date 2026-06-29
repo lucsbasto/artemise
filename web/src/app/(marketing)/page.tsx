@@ -100,7 +100,7 @@ export default function LandingPage() {
                 <span className="size-3 rounded-full bg-red-300" />
                 <span className="size-3 rounded-full bg-yellow-300" />
                 <span className="size-3 rounded-full bg-green-300" />
-                <span className="ml-3 text-xs text-muted">app.artemise.com.br/inicio</span>
+                <span className="ml-3 text-xs text-muted">app.artemise.com.br/dashboard</span>
               </div>
               <div className="grid grid-cols-12 gap-4 bg-gray-50/60 p-6">
                 <div className="col-span-3 hidden flex-col gap-2 sm:flex">
