@@ -24,6 +24,7 @@ func NewRouter(a *app.App) http.Handler {
 	// --- Rotas públicas (sem sessão) ---
 	root.HandleFunc("GET /api/health", health)
 	root.HandleFunc("POST /api/auth/login", handlers.Login(a))
+	root.HandleFunc("POST /api/auth/register", handlers.Register(a))
 
 	// --- Rotas protegidas (sessão + transação RLS) ---
 	protected := http.NewServeMux()
@@ -36,7 +37,7 @@ func NewRouter(a *app.App) http.Handler {
 	// envolvido por RequireSession (resolve usuário) + WithTx (abre tx + RLS).
 	root.Handle("/api/", a.RequireSession(a.WithTx(protected)))
 
-	return app.Recover(root)
+	return app.Recover(app.Cors(a.Cfg.CORSOrigin, root))
 }
 
 // registerResources liga todos os recursos de negócio ao mux protegido.

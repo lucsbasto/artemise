@@ -14,6 +14,7 @@ type Config struct {
 	DatabaseURL string
 	Port        string
 	AppEnv      string        // "dev" | "prod"
+	CORSOrigin  string        // origem permitida no CORS (frontend)
 	SessionTTL  time.Duration // tempo de vida da sessão
 
 	Argon2Time    uint32
@@ -32,6 +33,7 @@ func Load() (Config, error) {
 		DatabaseURL:   os.Getenv("DATABASE_URL"),
 		Port:          getenv("PORT", "8080"),
 		AppEnv:        getenv("APP_ENV", "dev"),
+		CORSOrigin:    getenv("CORS_ORIGIN", "http://localhost:3000"),
 		SessionTTL:    time.Duration(getenvInt("SESSION_TTL_H", 720)) * time.Hour,
 		Argon2Time:    uint32(getenvInt("ARGON2_TIME", 1)),
 		Argon2Memory:  uint32(getenvInt("ARGON2_MEMORY", 64*1024)),

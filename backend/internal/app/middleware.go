@@ -115,6 +115,29 @@ func (a *App) WithTx(next http.Handler) http.Handler {
 	})
 }
 
+// Cors libera o frontend (origem cross-site em dev: :3000 → :8080) a chamar a
+// API com cookie de sessão. Como usamos credentials:include, a origem deve ser
+// ecoada explicitamente (curinga "*" é proibido com credenciais) e
+// Allow-Credentials precisa ser true. Requests OPTIONS (preflight) respondem 204.
+func Cors(origin string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if o := r.Header.Get("Origin"); o != "" && o == origin {
+			h := w.Header()
+			h.Set("Access-Control-Allow-Origin", origin)
+			h.Set("Access-Control-Allow-Credentials", "true")
+			h.Set("Vary", "Origin")
+			if r.Method == http.MethodOptions {
+				h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+				h.Set("Access-Control-Allow-Headers", "Content-Type")
+				h.Set("Access-Control-Max-Age", "600")
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 // Recover captura panics não tratados e responde 500, evitando derrubar o server.
 func Recover(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
