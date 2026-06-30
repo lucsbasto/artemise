@@ -26,16 +26,28 @@ export default function RegistrarPage() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password: senha,
       });
       if (signUpError) {
+        const msg = signUpError.message.toLowerCase();
         setErro(
-          signUpError.message.toLowerCase().includes("already")
+          msg.includes("already") || msg.includes("registered")
             ? "Este e-mail já está cadastrado."
-            : "Não foi possível criar a conta. Tente novamente."
+            : msg.includes("invalid") && msg.includes("email")
+              ? "E-mail inválido. Verifique o endereço digitado."
+              : msg.includes("rate")
+                ? "Muitas tentativas. Aguarde alguns minutos e tente de novo."
+                : "Não foi possível criar a conta. Tente novamente."
         );
+        setLoading(false);
+        return;
+      }
+      // signUp só devolve sessão quando "Confirm email" está OFF no projeto.
+      // Sem sessão, a RPC abaixo bate em auth.uid() NULL -> 'SEM_SESSAO'. Falha claro.
+      if (!signUpData.session) {
+        setErro("Confirme seu e-mail para ativar a conta e tente entrar.");
         setLoading(false);
         return;
       }
