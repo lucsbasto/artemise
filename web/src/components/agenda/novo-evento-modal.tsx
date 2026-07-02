@@ -17,6 +17,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 import {
   currentUser,
+  procedimentosPredefinidos,
   recorrenciasEvento,
   statusEventoOpcoes,
   weekDays,
@@ -172,7 +173,10 @@ function FormAgendamento({
   horaFim: string;
   setHoraFim: (v: string) => void;
 }) {
-  const { items: procedimentos } = useCollection(procedimentosStore);
+  const { items: procedimentosDb } = useCollection(procedimentosStore);
+  // Catálogo do tenant quando existir; senão, cai nos pré-definidos p/ o campo
+  // nunca ficar vazio. `datalist` deixa selecionar da lista OU digitar livre.
+  const procedimentos = procedimentosDb.length ? procedimentosDb : procedimentosPredefinidos;
   return (
     <>
       <div className="flex items-center justify-between">
@@ -219,14 +223,12 @@ function FormAgendamento({
         </div>
         {itens.map((it, i) => (
           <div key={i} className="grid grid-cols-[1fr_80px_36px] items-center gap-2">
-            <Select value={it.nome} onChange={(e) => patchItem(i, { nome: e.target.value })}>
-              <option value="">Pesquise/Selecione</option>
-              {procedimentos.map((p) => (
-                <option key={p.id} value={p.nome}>
-                  {p.nome}
-                </option>
-              ))}
-            </Select>
+            <Input
+              list="procedimentos-opcoes"
+              placeholder="Pesquise/Selecione ou digite"
+              value={it.nome}
+              onChange={(e) => patchItem(i, { nome: e.target.value })}
+            />
             <Input
               type="number"
               min={1}
@@ -248,6 +250,11 @@ function FormAgendamento({
         >
           <Plus className="size-4" /> Adicionar Procedimentos/Produtos
         </button>
+        <datalist id="procedimentos-opcoes">
+          {procedimentos.map((p) => (
+            <option key={p.id} value={p.nome} />
+          ))}
+        </datalist>
       </div>
 
       {/* Data */}

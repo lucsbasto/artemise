@@ -196,8 +196,10 @@ export const registrosProcedimentoStore =
 /* ---------- Eventos da agenda (calendário) ---------- */
 // Shape (WeekEvent) difere de eventos_agenda; transformação faseada (M5).
 export type WeekEventItem = WeekEvent & { id: string };
+// Prefixo `ev-seed-` no seed evita colisão de key com os ids gerados em runtime
+// por `nextId("ev")` (que reinicia em ev-1) ao criar evento novo no calendário.
 export const eventosStore = createLocalCollection<WeekEventItem>(
-  weekEvents.map((e, i) => ({ ...e, id: `ev-${i + 1}` }))
+  weekEvents.map((e, i) => ({ ...e, id: `ev-seed-${i + 1}` }))
 );
 
 /* ---------- Orçamentos (por paciente, ficha) ---------- */

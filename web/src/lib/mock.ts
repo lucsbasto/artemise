@@ -282,6 +282,19 @@ export type Procedimento = {
 };
 
 // Procedimentos vêm de GET /api/procedimentos (procedimentosStore).
+// Fallback pré-definido: usado no dropdown de agendamento quando a coleção do
+// Supabase ainda está vazia (tenant novo/sem catálogo). Garante que o campo
+// "Procedimentos/Produtos" nunca fique sem opções para selecionar.
+export const procedimentosPredefinidos: Procedimento[] = [
+  { id: "pre-1", nome: "Limpeza de Pele Profunda", categoria: "Facial", duracaoMin: 60, valor: 200, ativo: true, usaMapa: false },
+  { id: "pre-2", nome: "Microagulhamento", categoria: "Facial", duracaoMin: 60, valor: 500, ativo: true, usaMapa: false },
+  { id: "pre-3", nome: "Peeling Químico", categoria: "Facial", duracaoMin: 60, valor: 300, ativo: true, usaMapa: false },
+  { id: "pre-4", nome: "Tratamento de Acne", categoria: "Facial", duracaoMin: 60, valor: 250, ativo: true, usaMapa: false },
+  { id: "pre-5", nome: "Toxina Botulínica", categoria: "Injetáveis", duracaoMin: 45, valor: 900, ativo: true, usaMapa: true },
+  { id: "pre-6", nome: "Preenchimento com Ácido Hialurônico", categoria: "Injetáveis", duracaoMin: 45, valor: 1200, ativo: true, usaMapa: true },
+  { id: "pre-7", nome: "Massagem Modeladora", categoria: "Corporal", duracaoMin: 50, valor: 180, ativo: true, usaMapa: false },
+  { id: "pre-8", nome: "Drenagem Linfática", categoria: "Corporal", duracaoMin: 50, valor: 160, ativo: true, usaMapa: false },
+];
 
 // Paleta nomeada do campo "Cor*" do modal de procedimento.
 export type CorOption = { nome: string; hex: string };
